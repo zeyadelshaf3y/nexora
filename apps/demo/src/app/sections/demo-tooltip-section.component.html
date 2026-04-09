@@ -1,0 +1,151 @@
+<section class="section">
+  <h2 class="section-title">Tooltip</h2>
+  <p class="section-desc">
+    Lightweight hover/focus tooltip. Arrow, open/close animation, and warm-up (skip delay when
+    moving between tooltips). Styled via <code>nxrTooltipPanelClass</code>.
+  </p>
+  <div class="sub-section">
+    <span class="sub-label">Basic (hover + focus):</span>
+    <div class="btn-row">
+      <button class="btn" nxrTooltip="Save your changes" nxrTooltipPanelClass="demo-tooltip-pane">
+        Hover me
+      </button>
+      <button
+        class="btn"
+        nxrTooltip="Delete this item permanently"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+      >
+        Delete
+      </button>
+      <button
+        class="btn"
+        nxrTooltip="Copy link to clipboard"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+      >
+        Copy Link
+      </button>
+    </div>
+  </div>
+  <div class="sub-section">
+    <span class="sub-label">Warm-up: hover quickly between these — second opens instantly:</span>
+    <div class="btn-row">
+      <button
+        class="btn btn-sm"
+        nxrTooltip="Bold"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+        [nxrTooltipOpenDelay]="400"
+        [nxrTooltipClampToViewport]="false"
+        nxrTooltipPlacement="top-start"
+      >
+        Baldma sdasdas dlaks dlas
+      </button>
+      <button
+        class="btn btn-sm"
+        nxrTooltip="Italic"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+        [nxrTooltipOpenDelay]="400"
+      >
+        I
+      </button>
+      <button
+        class="btn btn-sm"
+        nxrTooltip="Underline"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+        [nxrTooltipOpenDelay]="400"
+      >
+        U
+      </button>
+      <button
+        class="btn btn-sm"
+        nxrTooltip="Strikethrough"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+        [nxrTooltipOpenDelay]="400"
+      >
+        S
+      </button>
+      <button
+        class="btn btn-sm"
+        nxrTooltip="Link"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+        [nxrTooltipOpenDelay]="400"
+      >
+        🔗
+      </button>
+    </div>
+  </div>
+  <div class="sub-section">
+    <span class="sub-label">Without arrow:</span>
+    <div class="btn-row">
+      <button
+        class="btn"
+        nxrTooltip="No arrow tooltip"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+        [nxrTooltipDisplayArrow]="false"
+      >
+        No Arrow
+      </button>
+    </div>
+  </div>
+  <div class="sub-section">
+    <span class="sub-label"
+      >With content hover (allowContentHover) — tooltip stays when hovered:</span
+    >
+    <div class="btn-row">
+      <button
+        class="btn"
+        nxrTooltip="Hover over me and then hover the tooltip — it stays open!"
+        nxrTooltipPanelClass="demo-tooltip-pane demo-tooltip-pane--interactive"
+        [nxrTooltipAllowContentHover]="true"
+        [nxrTooltipPlacement]="'top-end'"
+        [nxrTooltipOffset]="30"
+        [nxrTooltipDisplayArrow]="true"
+      >
+        Content Hover
+      </button>
+    </div>
+  </div>
+  <div class="sub-section">
+    <span class="sub-label">Custom offset (20px):</span>
+    <div class="btn-row">
+      <button
+        class="btn"
+        nxrTooltip="Far away tooltip"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+        [nxrTooltipOffset]="20"
+      >
+        Offset 20px
+      </button>
+    </div>
+  </div>
+  <div class="sub-section">
+    <span class="sub-label">Open + close animation (120ms close):</span>
+    <div class="btn-row">
+      <button
+        class="btn"
+        nxrTooltip="Animated tooltip"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+        [nxrTooltipCloseAnimationDurationMs]="120"
+      >
+        Animated Close
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Tooltip — Placements</h2>
+  <p class="section-desc">All 12 placements, RTL‑aware. Viewport flipping and clamping.</p>
+  <div class="placement-grid">
+    @for (p of allPlacements(); track p) {
+      <button
+        class="btn btn-sm"
+        [nxrTooltip]="p"
+        [nxrTooltipPlacement]="p"
+        [nxrTooltipOpenDelay]="0"
+        nxrTooltipPanelClass="demo-tooltip-pane"
+      >
+        {{ p }}
+      </button>
+    }
+  </div>
+</section>

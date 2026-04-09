@@ -1,0 +1,41 @@
+<section class="section">
+  <h2 class="section-title">Snackbar — Placements</h2>
+  <p class="section-desc">Toast notifications at 6 viewport positions. Auto‑close in 5 s.</p>
+  <div class="btn-row">
+    @for (p of snackbarPlacements(); track p) {
+      <button class="btn btn-sm" (click)="openSnackbar.emit(p)">{{ p }}</button>
+    }
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Snackbar — Boundaries (host)</h2>
+  <p class="section-desc">
+    Pass <code>host</code> to show snackbars inside a specific element (e.g. dashboard content area)
+    instead of the full viewport. Placement is relative to the host.
+  </p>
+  <div class="btn-row">
+    <button class="btn btn-sm" (click)="openSnackbarInHost.emit()">
+      Snackbar inside content area
+    </button>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Snackbar — Variants &amp; Grouping</h2>
+  <p class="section-desc"><code>groupId</code> replaces same‑group snackbar. Omit to stack.</p>
+  <div class="sub-section">
+    <span class="sub-label">By variant (replace‑by‑group):</span>
+    <div class="btn-row">
+      @for (v of snackbarVariants(); track v.id) {
+        <button class="btn btn-sm" (click)="openSnackbarVariant.emit(v)">{{ v.label }}</button>
+      }
+    </div>
+  </div>
+  <div class="sub-section">
+    <span class="sub-label">Stack 3× (no groupId):</span>
+    <div class="btn-row">
+      <button class="btn btn-sm" (click)="openSnackbarStack.emit()">Open 3 stacked</button>
+    </div>
+  </div>
+</section>

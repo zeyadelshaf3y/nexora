@@ -1,0 +1,22 @@
+<div class="listbox-page-row">
+  <div
+    class="listbox-host listbox-host--virtual"
+    nxrListbox
+    [nxrListboxValue]="listboxValue()"
+    (nxrListboxValueChange)="onValueChange($event)"
+    [nxrListboxMulti]="multi()"
+    [nxrListboxAccessors]="accessors"
+    [nxrListboxCompareWith]="compareById"
+    nxrListboxInitialHighlight="selected"
+  >
+    <nxr-listbox-cdk-virtual-panel
+      [items]="items"
+      [itemSize]="40"
+      [initialSelectedIndex]="initialIndex()"
+      [labelFor]="labelForFn"
+      [trackByKey]="trackByKeyFn"
+      emptyMessage="No items"
+    />
+  </div>
+  <div class="listbox-page-meta listbox-meta-line">Selected: {{ metaLine() }}</div>
+</div>

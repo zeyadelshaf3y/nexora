@@ -3,3 +3,11 @@
 /coverage
 /.nx/cache
 /.nx/workspace-data
+.angular
+
+/tmp
+/node_modules
+**/.angular
+**/.nx
+**/.cache
+**/.verdaccio

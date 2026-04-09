@@ -1,0 +1,142 @@
+:root {
+  color-scheme: light;
+
+  /* Surface */
+  --nxr-bg: #f0f2f5;
+  --nxr-bg-elevated: #fff;
+  --nxr-bg-subtle: #f8fafc;
+  --nxr-bg-inset: #e8ecf1;
+
+  /* Text */
+  --nxr-text: #0f172a;
+  --nxr-text-secondary: #334155;
+  --nxr-text-muted: #64748b;
+  --nxr-text-faint: #94a3b8;
+
+  /* Border */
+  --nxr-border: #e2e8f0;
+  --nxr-border-subtle: #f1f5f9;
+  --nxr-border-strong: #cbd5e1;
+
+  /* Primary (Indigo-Violet) */
+  --nxr-primary: #6366f1;
+  --nxr-primary-hover: #4f46e5;
+  --nxr-primary-active: #4338ca;
+  --nxr-primary-text: #fff;
+  --nxr-primary-subtle: rgb(99 102 241 / 8%);
+  --nxr-primary-muted: rgb(99 102 241 / 16%);
+  --nxr-primary-glow: 0 0 20px rgb(99 102 241 / 15%);
+
+  /* Accent (Cyan) */
+  --nxr-accent: #06b6d4;
+  --nxr-accent-hover: #0891b2;
+  --nxr-accent-subtle: rgb(6 182 212 / 8%);
+
+  /* Status */
+  --nxr-success: #10b981;
+  --nxr-error: #ef4444;
+  --nxr-warning: #f59e0b;
+  --nxr-info: #3b82f6;
+
+  /* Shadows */
+  --nxr-shadow-xs: 0 1px 2px rgb(0 0 0 / 4%);
+  --nxr-shadow-sm: 0 1px 3px rgb(0 0 0 / 6%), 0 1px 2px rgb(0 0 0 / 4%);
+  --nxr-shadow-md: 0 4px 12px rgb(0 0 0 / 7%);
+  --nxr-shadow-lg: 0 8px 30px rgb(0 0 0 / 10%);
+  --nxr-shadow-xl: 0 20px 60px rgb(0 0 0 / 14%);
+
+  /* Overlay */
+  --nxr-overlay-bg: #fff;
+  --nxr-overlay-shadow: 0 20px 60px rgb(0 0 0 / 14%), 0 0 0 1px rgb(0 0 0 / 5%);
+  --nxr-overlay-ring: 0 0 0 1px rgb(0 0 0 / 5%);
+  --nxr-backdrop: rgb(15 23 42 / 45%);
+
+  /* Snackbar & Tooltip */
+  --nxr-snackbar-bg: #1e293b;
+  --nxr-snackbar-text: #f1f5f9;
+  --nxr-tooltip-bg: #1e293b;
+  --nxr-tooltip-text: #f1f5f9;
+
+  /* Layout */
+  --nxr-sidebar-bg: #fff;
+  --nxr-sidebar-border: #e8ecf1;
+  --nxr-sidebar-hover: rgb(99 102 241 / 6%);
+  --nxr-sidebar-active-bg: rgb(99 102 241 / 10%);
+  --nxr-sidebar-active-text: #4f46e5;
+  --nxr-sidebar-width: 260px;
+  --nxr-sidebar-width-compact: 68px;
+  --nxr-header-bg: rgb(255 255 255 / 82%);
+  --nxr-header-border: #e8ecf1;
+  --nxr-header-height: 56px;
+
+  /* Radii */
+  --nxr-radius-xs: 4px;
+  --nxr-radius-sm: 6px;
+  --nxr-radius: 8px;
+  --nxr-radius-lg: 12px;
+  --nxr-radius-xl: 16px;
+  --nxr-radius-full: 9999px;
+
+  /* Easing */
+  --nxr-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --nxr-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --nxr-duration-fast: 0.15s;
+  --nxr-duration: 0.2s;
+  --nxr-duration-slow: 0.3s;
+
+  /* Scrollbar */
+  --nxr-scrollbar-thumb: rgb(0 0 0 / 15%);
+  --nxr-scrollbar-thumb-hover: rgb(0 0 0 / 25%);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --nxr-bg: #08090e;
+  --nxr-bg-elevated: #111318;
+  --nxr-bg-subtle: #181b22;
+  --nxr-bg-inset: #0c0d13;
+  --nxr-text: #e2e8f0;
+  --nxr-text-secondary: #cbd5e1;
+  --nxr-text-muted: #8b95a5;
+  --nxr-text-faint: #525c6b;
+  --nxr-border: #1e2230;
+  --nxr-border-subtle: #161923;
+  --nxr-border-strong: #2d3345;
+  --nxr-primary: #818cf8;
+  --nxr-primary-hover: #a5b4fc;
+  --nxr-primary-active: #c7d2fe;
+  --nxr-primary-text: #0f0f23;
+  --nxr-primary-subtle: rgb(129 140 248 / 10%);
+  --nxr-primary-muted: rgb(129 140 248 / 18%);
+  --nxr-primary-glow: 0 0 28px rgb(129 140 248 / 18%);
+  --nxr-accent: #22d3ee;
+  --nxr-accent-hover: #67e8f9;
+  --nxr-accent-subtle: rgb(34 211 238 / 8%);
+  --nxr-success: #34d399;
+  --nxr-error: #f87171;
+  --nxr-warning: #fbbf24;
+  --nxr-info: #60a5fa;
+  --nxr-shadow-xs: 0 1px 2px rgb(0 0 0 / 30%);
+  --nxr-shadow-sm: 0 1px 3px rgb(0 0 0 / 35%);
+  --nxr-shadow-md: 0 4px 12px rgb(0 0 0 / 35%);
+  --nxr-shadow-lg: 0 8px 30px rgb(0 0 0 / 45%);
+  --nxr-shadow-xl: 0 20px 60px rgb(0 0 0 / 55%);
+  --nxr-overlay-bg: #181b22;
+  --nxr-overlay-shadow: 0 20px 60px rgb(0 0 0 / 55%), 0 0 0 1px rgb(255 255 255 / 6%);
+  --nxr-overlay-ring: 0 0 0 1px rgb(255 255 255 / 6%);
+  --nxr-backdrop: rgb(0 0 0 / 65%);
+  --nxr-snackbar-bg: #1e2230;
+  --nxr-snackbar-text: #e2e8f0;
+  --nxr-tooltip-bg: #111318;
+  --nxr-tooltip-text: #cbd5e1;
+  --nxr-sidebar-bg: #0c0d13;
+  --nxr-sidebar-border: #1a1d28;
+  --nxr-sidebar-hover: rgb(129 140 248 / 6%);
+  --nxr-sidebar-active-bg: rgb(129 140 248 / 12%);
+  --nxr-sidebar-active-text: #a5b4fc;
+  --nxr-header-bg: rgb(17 19 24 / 85%);
+  --nxr-header-border: #1a1d28;
+  --nxr-scrollbar-thumb: rgb(255 255 255 / 10%);
+  --nxr-scrollbar-thumb-hover: rgb(255 255 255 / 20%);
+}

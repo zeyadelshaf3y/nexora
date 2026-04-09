@@ -1,0 +1,77 @@
+/* Shared demo chrome for combobox/select built-in CDK virtual lists (portaled panel). */
+
+.combobox-virtual-panel-header,
+.combobox-virtual-panel-footer,
+.select-virtual-panel-header,
+.select-virtual-panel-footer {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  background: var(--nxr-bg-subtle);
+  border-color: var(--nxr-border-subtle);
+  color: var(--nxr-text-muted);
+}
+
+.combobox-virtual-panel-header,
+.select-virtual-panel-header {
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--nxr-border-subtle);
+}
+
+.combobox-virtual-panel-footer,
+.select-virtual-panel-footer {
+  border-top: 1px solid var(--nxr-border-subtle);
+}
+
+.combobox-virtual-panel-footer--split {
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.combobox-virtual-panel-title,
+.select-virtual-panel-title {
+  font-weight: 600;
+  color: var(--nxr-text);
+}
+
+.combobox-virtual-panel-meta,
+.select-virtual-panel-meta {
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.combobox-virtual-option-text,
+.select-virtual-option-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.combobox-virtual-option-main,
+.select-virtual-option-main {
+  font-size: 0.875rem;
+  color: var(--nxr-text);
+}
+
+.combobox-virtual-option-sub,
+.select-virtual-option-sub {
+  font-size: 0.6875rem;
+  color: var(--nxr-text-faint);
+}
+
+.combobox-virtual-option-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  flex-shrink: 0;
+  color: var(--nxr-primary);
+}
+
+.combobox-virtual-option-check--on {
+  opacity: 1;
+}

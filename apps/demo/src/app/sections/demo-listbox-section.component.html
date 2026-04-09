@@ -1,0 +1,165 @@
+<section class="section" id="listbox">
+  <h2 class="section-title">Listbox</h2>
+  <p class="section-desc">
+    Headless listbox primitive: item-based options, selection and action modes, keyboard (arrows,
+    Home/End, Enter, Space, typeahead), ARIA. The directive owns host focusability, keyboard, and
+    all ARIA attributes automatically.
+  </p>
+
+  <!-- 1. Single-select with object options and accessors -->
+  <div class="sub-section">
+    <span class="sub-label">Single-select (object options, accessors, disabled option):</span>
+    <div class="listbox-demo-row">
+      <div
+        class="listbox-host"
+        nxrListbox
+        [nxrListboxValue]="singleValue()"
+        (nxrListboxValueChange)="onSingleChange($event)"
+        [nxrListboxAccessors]="accessors"
+        [nxrListboxCompareWith]="compareById"
+        nxrListboxInitialHighlight="selected"
+      >
+        @for (item of fruits; track item.id) {
+          <div class="listbox-option" [nxrListboxOption]="item">
+            {{ item.name }}
+          </div>
+        }
+      </div>
+      <div class="listbox-meta">
+        <p class="listbox-meta-line">Selected: {{ singleValue() ? singleValue()!.name : '—' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Multi-select -->
+  <div class="sub-section">
+    <span class="sub-label">Multi-select (Space toggles, Enter activates):</span>
+    <div class="listbox-demo-row">
+      <div
+        class="listbox-host"
+        nxrListbox
+        [nxrListboxValue]="multiValue()"
+        (nxrListboxValueChange)="onMultiChange($event)"
+        [nxrListboxMulti]="true"
+        [nxrListboxAccessors]="accessors"
+        [nxrListboxCompareWith]="compareById"
+      >
+        @for (item of fruits; track item.id) {
+          <div class="listbox-option" [nxrListboxOption]="item">
+            {{ item.name }}
+          </div>
+        }
+      </div>
+      <div class="listbox-meta">
+        <p class="listbox-meta-line">Selected: {{ getMultiSelectedNames() }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Action mode (menu role, no value) -->
+  <div class="sub-section">
+    <span class="sub-label">Action mode (menu role, no value — optionActivated only):</span>
+    <div class="listbox-demo-row">
+      <div
+        class="listbox-host listbox-host--menu"
+        nxrListbox
+        nxrListboxMode="action"
+        nxrListboxRole="menu"
+        [nxrListboxAccessors]="menuAccessors"
+        (nxrListboxOptionActivated)="onActivated($event)"
+      >
+        @for (action of menuActions; track action.id) {
+          <div class="listbox-option" [nxrListboxOption]="action">
+            {{ action.label }}
+          </div>
+        }
+      </div>
+      <div class="listbox-meta">
+        <p class="listbox-meta-line">
+          Last activated: {{ lastActivated() ? (lastActivated() | json) : '—' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Primitive options (string[], no accessors) -->
+  <div class="sub-section">
+    <span class="sub-label">Primitive options (string[], no accessors):</span>
+    <div class="listbox-demo-row">
+      <div
+        class="listbox-host"
+        nxrListbox
+        [nxrListboxValue]="primitiveValue()"
+        (nxrListboxValueChange)="onPrimitiveChange($event)"
+        (nxrListboxOptionActivated)="onActivated($event)"
+      >
+        @for (tag of tags(); track tag) {
+          <div class="listbox-option" [nxrListboxOption]="tag">
+            {{ tag }}
+          </div>
+        }
+      </div>
+      <div class="listbox-meta">
+        <p class="listbox-meta-line">Selected tag: {{ primitiveValue() ?? '—' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Grouped + separator -->
+  <div class="sub-section">
+    <span class="sub-label">Grouped + separator:</span>
+    <div class="listbox-demo-row">
+      <div
+        class="listbox-host"
+        nxrListbox
+        [nxrListboxValue]="groupedValue()"
+        (nxrListboxValueChange)="onGroupedChange($event)"
+        [nxrListboxAccessors]="accessors"
+        [nxrListboxCompareWith]="compareById"
+      >
+        @for (group of groups(); track group.id) {
+          <div class="listbox-group" [nxrListboxGroup]="getGroupLabelId(group.id)">
+            <span [id]="getGroupLabelId(group.id)" class="listbox-group-label">{{
+              group.label
+            }}</span>
+            @for (item of group.options; track item.id) {
+              <div class="listbox-option" [nxrListboxOption]="item">
+                {{ item.name }}
+              </div>
+            }
+          </div>
+          @if (!$last) {
+            <div class="listbox-separator" nxrListboxSeparator></div>
+          }
+        }
+      </div>
+      <div class="listbox-meta">
+        <p class="listbox-meta-line">Selected: {{ groupedValue() ? groupedValue()!.name : '—' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Horizontal + wrap -->
+  <div class="sub-section">
+    <span class="sub-label">Horizontal + wrap:</span>
+    <div class="listbox-demo-row">
+      <div
+        class="listbox-host listbox-host--horizontal"
+        nxrListbox
+        [nxrListboxValue]="horizontalValue()"
+        (nxrListboxValueChange)="onHorizontalChange($event)"
+        nxrListboxOrientation="horizontal"
+        [nxrListboxWrap]="true"
+      >
+        @for (tag of tags(); track tag) {
+          <div class="listbox-option listbox-option--horizontal" [nxrListboxOption]="tag">
+            {{ tag }}
+          </div>
+        }
+      </div>
+      <div class="listbox-meta">
+        <p class="listbox-meta-line">Selected: {{ horizontalValue() ?? '—' }}</p>
+      </div>
+    </div>
+  </div>
+</section>

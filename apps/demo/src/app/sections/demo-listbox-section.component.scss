@@ -1,0 +1,86 @@
+.listbox-demo-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.listbox-host {
+  min-width: 200px;
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  outline: none;
+
+  &:focus {
+    border-color: var(--primary, #6366f1);
+    box-shadow: 0 0 0 2px rgb(99 102 241 / 20%);
+  }
+}
+
+.listbox-host--menu {
+  min-width: 160px;
+}
+
+.listbox-host--horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  max-height: none;
+  padding: 0.25rem;
+  gap: 0.25rem;
+}
+
+.listbox-option {
+  padding: 0.5rem 0.75rem;
+  cursor: default;
+  font-size: 0.875rem;
+
+  &[data-active] {
+    background: rgb(99 102 241 / 12%);
+  }
+
+  &[aria-selected='true'] {
+    font-weight: 600;
+  }
+
+  &[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.listbox-option--horizontal {
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+}
+
+.listbox-group {
+  padding: 0.5rem 0 0.25rem;
+
+  .listbox-group-label {
+    display: block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted, #64748b);
+  }
+}
+
+.listbox-separator {
+  height: 1px;
+  margin: 0.25rem 0.5rem;
+  background: var(--border, #e2e8f0);
+}
+
+.listbox-meta {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #64748b);
+
+  .listbox-meta-line {
+    margin: 0;
+  }
+}

@@ -1,0 +1,459 @@
+/* Mention demo — all visual styles owned by the app (headless lib ships structural only).
+ * Editor styles via `nxrMentionEditorClass="demo-editor"`.
+ * Chip styles via `nxrMentionChipClass="demo-chip"` + per-trigger class from `getMentionAttributes`.
+ * Placeholder via `isEmpty` signal + positioned overlay or CSS `[data-empty]::before`.
+ */
+
+/* ─── Page chrome ─── */
+app-mention-page .page-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--nxr-text, #0f172a);
+}
+
+app-mention-page > #mention > .page-desc,
+app-mention-page .page-desc {
+  margin: 0 0 1.5rem;
+  max-width: 52rem;
+  color: var(--nxr-text-secondary, #334155);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+app-mention-page .page-desc strong {
+  color: var(--nxr-text, #0f172a);
+}
+
+/* ─── Per-example layout ─── */
+app-mention-page .mention-demo-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ─── nxrMention host ─── */
+app-mention-page .demo-mention-input,
+.demo-mention-input {
+  display: block;
+  width: 100%;
+  max-width: 28rem;
+  align-self: flex-start;
+}
+
+/* ─── Placeholder (positioned inside nxrMention host which has position:relative) ─── */
+app-mention-page .demo-placeholder,
+.demo-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  box-sizing: border-box;
+  padding: 0.625rem 0.875rem;
+  color: var(--nxr-text-faint, #94a3b8);
+  font-size: 0.875rem;
+  font-family: inherit;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Editor (visual styles: borders, padding, colors, focus ring) ─── */
+.demo-editor {
+  min-height: 2.75rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--nxr-text, #0f172a);
+  background: var(--nxr-bg-elevated, #fff);
+  border: 1px solid var(--nxr-border, #e2e8f0);
+  border-radius: var(--nxr-radius, 8px);
+  box-shadow: var(--nxr-shadow-xs, 0 1px 2px rgb(0 0 0 / 6%));
+  transition:
+    border-color var(--nxr-duration-fast, 0.15s) ease,
+    box-shadow var(--nxr-duration-fast, 0.15s) ease,
+    background var(--nxr-duration-fast, 0.15s) ease;
+}
+
+.demo-editor:hover {
+  border-color: var(--nxr-border-strong, #cbd5e1);
+}
+
+.demo-editor:focus-visible {
+  outline: 2px solid var(--nxr-primary, #6366f1);
+  outline-offset: 2px;
+}
+
+.demo-editor:focus {
+  border-color: var(--nxr-primary, #6366f1);
+  box-shadow:
+    var(--nxr-shadow-sm, 0 1px 3px rgb(0 0 0 / 6%)),
+    0 0 0 3px var(--nxr-primary-subtle, rgb(99 102 241 / 12%));
+}
+
+.demo-editor p {
+  margin: 0 0 0.5rem;
+}
+
+.demo-editor p:last-child {
+  margin-bottom: 0;
+}
+
+.demo-editor > div {
+  margin: 0;
+}
+
+/* Disabled editor visual treatment */
+.demo-editor[data-disabled] {
+  opacity: 0.6;
+  background: var(--nxr-bg-inset, #e8ecf1);
+  border-color: var(--nxr-border-subtle, #f1f5f9);
+}
+
+.demo-editor[data-disabled]:hover,
+.demo-editor[data-disabled]:focus {
+  border-color: var(--nxr-border-subtle, #f1f5f9);
+  box-shadow: none;
+}
+
+/* Multiline variant */
+.demo-editor.demo-editor--multiline {
+  min-height: 7rem;
+  max-height: 20rem;
+  overflow-y: auto;
+  resize: vertical;
+}
+
+/* ─── Mention chips (base class applied via nxrMentionChipClass) ─── */
+.demo-chip {
+  padding: 0.0625rem 0.375rem;
+  border-radius: var(--nxr-radius-xs, 4px);
+  font-weight: 500;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.demo-chip.demo-chip-user {
+  background: var(--nxr-primary-subtle, rgb(99 102 241 / 8%));
+  color: var(--nxr-primary, #6366f1);
+}
+
+.demo-chip.demo-chip-tag {
+  background: var(--nxr-accent-subtle, rgb(6 182 212 / 8%));
+  color: var(--nxr-accent-hover, #0891b2);
+}
+
+.demo-chip.demo-chip-command {
+  background: var(--nxr-bg-inset, #e8ecf1);
+  color: var(--nxr-text-muted, #64748b);
+  font-weight: 500;
+}
+
+/* ─── Portaled overlay (global) ─── */
+.nxr-mention-overlay-pane {
+  overflow: visible;
+}
+
+.nxr-mention-overlay-pane.nxr-overlay-pane--entering {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.nxr-mention-overlay-pane[data-placement^='bottom'].nxr-overlay-pane--entering {
+  transform: translateY(-8px) scale(0.96);
+}
+
+.nxr-mention-overlay-pane[data-placement^='top'].nxr-overlay-pane--entering {
+  transform: translateY(8px) scale(0.96);
+}
+
+.nxr-mention-overlay-pane[data-placement^='start'].nxr-overlay-pane--entering {
+  transform: translateX(8px) scale(0.96);
+}
+
+.nxr-mention-overlay-pane[data-placement^='end'].nxr-overlay-pane--entering {
+  transform: translateX(-8px) scale(0.96);
+}
+
+.nxr-mention-overlay-pane.nxr-overlay-pane--open {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+  transition:
+    transform 0.15s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.12s ease;
+}
+
+.nxr-mention-overlay-pane.nxr-overlay-pane--closing {
+  opacity: 0;
+  transition:
+    transform 0.12s ease,
+    opacity 0.1s ease;
+}
+
+.nxr-mention-overlay-pane[data-placement^='bottom'].nxr-overlay-pane--closing {
+  transform: scale(0.96) translateY(-8px);
+}
+
+.nxr-mention-overlay-pane[data-placement^='top'].nxr-overlay-pane--closing {
+  transform: scale(0.96) translateY(8px);
+}
+
+.nxr-mention-overlay-pane[data-placement^='start'].nxr-overlay-pane--closing {
+  transform: scale(0.96) translateX(8px);
+}
+
+.nxr-mention-overlay-pane[data-placement^='end'].nxr-overlay-pane--closing {
+  transform: scale(0.96) translateX(-8px);
+}
+
+.mention-panel {
+  padding: 0.25rem 0;
+  background: var(--nxr-bg-elevated, #fff);
+  border: 1px solid var(--nxr-border, #e2e8f0);
+  border-radius: var(--nxr-radius, 8px);
+  box-shadow: var(--nxr-shadow-md, 0 4px 12px rgb(0 0 0 / 7%));
+  overflow: hidden;
+  min-width: 12.5rem;
+  max-height: 15rem;
+  overflow-y: auto;
+}
+
+.mention-panel-loading,
+.mention-panel-empty {
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--nxr-text-muted, #64748b);
+}
+
+.mention-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0.25rem;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  border-radius: var(--nxr-radius-sm, 6px);
+  cursor: default;
+  transition: background 0.1s ease;
+}
+
+.mention-option:hover {
+  background: var(--nxr-bg-subtle, #f8fafc);
+}
+
+.mention-option[data-active] {
+  background: var(--nxr-primary-subtle, rgb(99 102 241 / 8%));
+  color: var(--nxr-primary, #6366f1);
+  font-weight: 500;
+}
+
+app-mention-page .mention-meta {
+  font-size: 0.8125rem;
+  color: var(--nxr-text-muted, #64748b);
+  padding-top: 0.125rem;
+  line-height: 1.45;
+}
+
+app-mention-page .mention-events {
+  font-size: 0.75rem;
+  color: var(--nxr-text-muted, #64748b);
+  margin-top: 0.25rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--nxr-bg-inset, #e8ecf1);
+  border: 1px solid var(--nxr-border-subtle, #f1f5f9);
+  border-radius: var(--nxr-radius-sm, 6px);
+  max-height: 5rem;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+app-mention-page .mention-events .badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: var(--nxr-radius-xs, 4px);
+  background: var(--nxr-bg-elevated, #fff);
+  border: 1px solid var(--nxr-border, #e2e8f0);
+  color: var(--nxr-text-muted, #64748b);
+  text-transform: uppercase;
+  margin-right: 0.375rem;
+  vertical-align: middle;
+}
+
+app-mention-page .mention-doc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+app-mention-page .mention-doc-actions button {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  border: 1px solid var(--nxr-border, #e2e8f0);
+  border-radius: var(--nxr-radius-sm, 6px);
+  background: var(--nxr-bg-elevated, #fff);
+  color: var(--nxr-text, #0f172a);
+  cursor: pointer;
+  box-shadow: var(--nxr-shadow-xs, 0 1px 2px rgb(0 0 0 / 4%));
+  transition:
+    border-color var(--nxr-duration-fast, 0.15s) ease,
+    background var(--nxr-duration-fast, 0.15s) ease,
+    box-shadow var(--nxr-duration-fast, 0.15s) ease;
+}
+
+app-mention-page .mention-doc-actions button:hover {
+  border-color: var(--nxr-border-strong, #cbd5e1);
+  background: var(--nxr-bg-subtle, #f8fafc);
+}
+
+app-mention-page .mention-doc-actions button:active {
+  box-shadow: none;
+}
+
+app-mention-page .mention-doc-json,
+app-mention-page .mention-submit-json {
+  max-width: 28rem;
+  margin: 0.25rem 0 0;
+  background: var(--nxr-bg-inset, #e8ecf1);
+  border: 1px solid var(--nxr-border, #e2e8f0);
+  border-radius: var(--nxr-radius-sm, 6px);
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  overflow: auto;
+  color: var(--nxr-text-secondary, #334155);
+}
+
+app-mention-page .mention-submit-json {
+  background: var(--nxr-bg-elevated, #fff);
+}
+
+/* ─── Chip hover card (Slack-like popover) ─── */
+
+/* Portaled popover pane animation (uses nxrOverlay pane state classes). */
+.chip-hover-overlay-pane {
+  overflow: visible;
+}
+
+.chip-hover-overlay-pane.nxr-overlay-pane--entering {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.chip-hover-overlay-pane[data-placement^='bottom'].nxr-overlay-pane--entering {
+  transform: translateY(-8px) scale(0.96);
+}
+
+.chip-hover-overlay-pane[data-placement^='top'].nxr-overlay-pane--entering {
+  transform: translateY(8px) scale(0.96);
+}
+
+.chip-hover-overlay-pane[data-placement^='start'].nxr-overlay-pane--entering {
+  transform: translateX(8px) scale(0.96);
+}
+
+.chip-hover-overlay-pane[data-placement^='end'].nxr-overlay-pane--entering {
+  transform: translateX(-8px) scale(0.96);
+}
+
+.chip-hover-overlay-pane.nxr-overlay-pane--open {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+  transition:
+    transform 0.15s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.12s ease;
+}
+
+.chip-hover-overlay-pane.nxr-overlay-pane--closing {
+  opacity: 0;
+  transition:
+    transform 0.12s ease,
+    opacity 0.1s ease;
+}
+
+.chip-hover-overlay-pane[data-placement^='bottom'].nxr-overlay-pane--closing {
+  transform: scale(0.96) translateY(-8px);
+}
+
+.chip-hover-overlay-pane[data-placement^='top'].nxr-overlay-pane--closing {
+  transform: scale(0.96) translateY(8px);
+}
+
+.chip-hover-overlay-pane[data-placement^='start'].nxr-overlay-pane--closing {
+  transform: scale(0.96) translateX(8px);
+}
+
+.chip-hover-overlay-pane[data-placement^='end'].nxr-overlay-pane--closing {
+  transform: scale(0.96) translateX(-8px);
+}
+
+app-mention-page .chip-hover-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.625rem 0.875rem;
+  background: var(--nxr-bg-elevated, #fff);
+  border: 1px solid var(--nxr-border, #e2e8f0);
+  border-radius: var(--nxr-radius-sm, 6px);
+  box-shadow: var(--nxr-shadow-md, 0 4px 12px rgb(0 0 0 / 7%));
+  font-size: 0.8125rem;
+  max-width: 14rem;
+}
+
+/* Same card styling when rendered inside a portaled overlay pane. */
+.chip-hover-overlay-pane .chip-hover-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.625rem 0.875rem;
+  background: var(--nxr-bg-elevated, #fff);
+  border: 1px solid var(--nxr-border, #e2e8f0);
+  border-radius: var(--nxr-radius-sm, 6px);
+  box-shadow: var(--nxr-shadow-md, 0 4px 12px rgb(0 0 0 / 7%));
+  font-size: 0.8125rem;
+  max-width: 14rem;
+}
+
+app-mention-page .chip-hover-card strong {
+  color: var(--nxr-text, #0f172a);
+  font-size: 0.875rem;
+}
+
+.chip-hover-overlay-pane .chip-hover-card strong {
+  color: var(--nxr-text, #0f172a);
+  font-size: 0.875rem;
+}
+
+app-mention-page .chip-hover-role {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--nxr-primary, #6366f1);
+}
+
+.chip-hover-overlay-pane .chip-hover-role {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--nxr-primary, #6366f1);
+}
+
+app-mention-page .chip-hover-username {
+  color: var(--nxr-text-muted, #64748b);
+  font-size: 0.75rem;
+}
+
+.chip-hover-overlay-pane .chip-hover-username {
+  color: var(--nxr-text-muted, #64748b);
+  font-size: 0.75rem;
+}

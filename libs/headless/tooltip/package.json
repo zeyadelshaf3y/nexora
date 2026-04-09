@@ -1,0 +1,9 @@
+{
+  "name": "@nexora-ui/tooltip",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/core": "^21.1.0",
+    "@nexora-ui/overlay": "~0.0.1"
+  },
+  "sideEffects": false
+}

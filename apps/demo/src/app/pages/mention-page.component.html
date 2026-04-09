@@ -1,0 +1,635 @@
+<div id="mention">
+  <h1 class="page-title">Mention</h1>
+  <p class="page-desc">
+    Headless mention primitive: type a trigger (<code>&#64;</code>, <code>#</code>, <code>/</code>)
+    to open a suggestion panel at the caret. Select with Enter, Tab, or click. The library ships
+    <strong>zero opinionated styles</strong> — all visual styling is provided by the demo via
+    <code>nxrMentionEditorClass</code>, <code>nxrMentionChipClass</code>, and CSS targeting
+    <code>[data-empty]</code> for placeholders.
+  </p>
+
+  <!-- 1. Basic @ users -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Basic &#64; users</h2>
+    <p class="page-section-desc">
+      Single trigger <code>&#64;</code>, sync <code>getItems</code>,
+      <code>openOnTrigger: true</code>, <code>selectOnTab: true</code>. Placeholder via CSS
+      <code>[data-empty]::before</code>. Editor styling via <code>nxrMentionEditorClass</code>.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #basicEditor="nxrMention"
+        [nxrMentionTriggers]="userTriggers"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Mention users"
+        (mentionValueChange)="basicValue.set($event)"
+        [nxrMentionMovePanelWithCaret]="true"
+        class="demo-mention-input"
+      >
+        @if (basicEditor.isEmpty()) {
+          <div class="demo-placeholder">Type &#64; to mention a user…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <span class="mention-meta">Text: {{ basicValue() || '—' }}</span>
+    </div>
+  </section>
+
+  <!-- 2. Multi-trigger @, #, / -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Multi-trigger &#64;, #, /</h2>
+    <p class="page-section-desc">
+      Three triggers: <code>&#64;</code> users, <code>#</code> tags (min 1 char),
+      <code>/</code> commands. Per-trigger chip classes via <code>getMentionAttributes</code>,
+      merged with base <code>nxrMentionChipClass</code>.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #multiEditor="nxrMention"
+        [nxrMentionTriggers]="multiTriggers"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Mention users, tags, or commands"
+        (mentionValueChange)="multiTriggerValue.set($event)"
+        class="demo-mention-input"
+      >
+        @if (multiEditor.isEmpty()) {
+          <div class="demo-placeholder">Try &#64;user, #tag, or /command…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <span class="mention-meta">Text: {{ multiTriggerValue() || '—' }}</span>
+    </div>
+  </section>
+
+  <!-- 3. Async with debounce -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Async with debounce</h2>
+    <p class="page-section-desc">
+      Simulated async <code>getItems</code> (300ms delay). <code>nxrMentionDebounceMs="150"</code>.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #asyncEditor="nxrMention"
+        [nxrMentionTriggers]="asyncTriggers"
+        [nxrMentionDebounceMs]="150"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Async mention"
+        (mentionValueChange)="asyncValue.set($event)"
+        class="demo-mention-input"
+      >
+        @if (asyncEditor.isEmpty()) {
+          <div class="demo-placeholder">Type &#64; (async, 150ms debounce)…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <span class="mention-meta">Text: {{ asyncValue() || '—' }}</span>
+    </div>
+  </section>
+
+  <!-- 4. Multiline (tall editor) -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Multiline</h2>
+    <p class="page-section-desc">
+      Same behavior in a taller contenteditable. Use Enter for new lines; panel follows the caret.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #multilineEditor="nxrMention"
+        [nxrMentionTriggers]="userTriggers"
+        nxrMentionEditorClass="demo-editor demo-editor--multiline"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Mention in multiline editor"
+        (mentionValueChange)="textareaValue.set($event)"
+        class="demo-mention-input"
+      >
+        @if (multilineEditor.isEmpty()) {
+          <div class="demo-placeholder">Type &#64; for mentions…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <span class="mention-meta">Text: {{ textareaValue() || '—' }}</span>
+    </div>
+  </section>
+
+  <!-- 5. Outputs -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Outputs</h2>
+    <p class="page-section-desc">
+      <code>mentionSelect</code>, <code>mentionOpenChange</code>, <code>mentionQueryChange</code>,
+      <code>mentionFocus</code>, <code>mentionBlur</code>.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #outputsEditor="nxrMention"
+        [nxrMentionTriggers]="userTriggers"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Mention with outputs"
+        (mentionValueChange)="outputsValue.set($event)"
+        (mentionSelect)="onMentionSelect($event)"
+        (mentionOpenChange)="onMentionOpenChange($event)"
+        (mentionQueryChange)="onMentionQueryChange($event)"
+        (mentionFocus)="onFocus()"
+        (mentionBlur)="onBlur()"
+        class="demo-mention-input"
+      >
+        @if (outputsEditor.isEmpty()) {
+          <div class="demo-placeholder">Type &#64; — events below…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <div class="mention-events">
+        <span class="badge">select</span>
+        {{ lastSelect() ? lastSelect()?.trigger + ' ' + lastSelectLabel : '—' }}<br />
+        <span class="badge">open</span> {{ lastOpenChange() !== null ? lastOpenChange() : '—'
+        }}<br />
+        <span class="badge">query</span> {{ lastQueryChange() ?? '—' }}<br />
+        <span class="badge">focus</span> {{ lastFocus() }}<br />
+        <span class="badge">blur</span> {{ lastBlur() }}
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Serialize + restore -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Serialize + restore</h2>
+    <p class="page-section-desc">
+      Emits <code>MentionDocument</code> on each edit and accepts
+      <code>[nxrMentionDocument]</code> to restore content.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #docEditor="nxrMention"
+        [nxrMentionTriggers]="multiTriggers"
+        [nxrMentionDocument]="savedDoc()"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Document round-trip mention editor"
+        (mentionValueChange)="docValue.set($event)"
+        (mentionDocumentChange)="onDocumentChange($event)"
+        class="demo-mention-input"
+      >
+        @if (docEditor.isEmpty()) {
+          <div class="demo-placeholder">Type and select mentions, then save/restore…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <div class="mention-doc-actions">
+        <button type="button" (click)="saveCurrentDocument()">Save current document</button>
+        <button type="button" (click)="reapplySavedDocument()">Re-apply saved</button>
+        <button type="button" (click)="loadDemoMentionDocument()">Load demo document</button>
+        <button type="button" (click)="clearEditorDocument()">Clear editor via setDocument</button>
+        <button type="button" (click)="submitDocument()">Submit payload</button>
+      </div>
+      <span class="mention-meta">Text: {{ docValue() || '—' }}</span>
+      <span class="mention-meta">Submitted payload:</span>
+      <pre class="mention-submit-json">{{ submittedDocJson }}</pre>
+      <pre class="mention-doc-json">{{ savedDocJson }}</pre>
+    </div>
+  </section>
+
+  <!-- 7. minQueryLength -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">minQueryLength</h2>
+    <p class="page-section-desc">
+      Trigger <code>#</code> with <code>minQueryLength: 1</code> and
+      <code>openOnTrigger: false</code>.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #minQueryEditor="nxrMention"
+        [nxrMentionTriggers]="minQueryTriggers"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Hashtag mention"
+        (mentionValueChange)="minQueryValue.set($event)"
+        class="demo-mention-input"
+      >
+        @if (minQueryEditor.isEmpty()) {
+          <div class="demo-placeholder">Type # then at least one letter (e.g. #ang)…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <span class="mention-meta">Text: {{ minQueryValue() || '—' }}</span>
+    </div>
+  </section>
+
+  <!-- 8. Disabled state -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Disabled</h2>
+    <p class="page-section-desc">
+      <code>nxrMentionDisabled</code> sets <code>contenteditable=false</code>, closes any open
+      panel, and suppresses events. Style disabled state with <code>[data-disabled]</code> or the
+      <code>.nxr-mention-editor--disabled</code> class.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #disabledEditor="nxrMention"
+        [nxrMentionTriggers]="userTriggers"
+        [nxrMentionDisabled]="editorDisabled()"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Disabled mention editor"
+        class="demo-mention-input"
+      >
+        @if (disabledEditor.isEmpty()) {
+          <div class="demo-placeholder">This editor can be disabled…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <div class="mention-doc-actions">
+        <button type="button" (click)="toggleDisabled()">
+          {{ editorDisabled() ? 'Enable' : 'Disable' }} editor
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Lifecycle hooks -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Lifecycle hooks (beforeInsert / afterInsert)</h2>
+    <p class="page-section-desc">
+      <code>beforeInsert</code> and <code>afterInsert</code> on the trigger config. Events are
+      logged below.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #lifecycleEditor="nxrMention"
+        [nxrMentionTriggers]="lifecycleTriggers"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Lifecycle hooks mention"
+        class="demo-mention-input"
+      >
+        @if (lifecycleEditor.isEmpty()) {
+          <div class="demo-placeholder">Type &#64; — lifecycle events log below…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <div class="mention-events">
+        @for (entry of lifecycleLog(); track $index) {
+          <div>{{ entry }}</div>
+        }
+        @if (lifecycleLog().length === 0) {
+          <span>No events yet</span>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. Paste handling -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Paste handling</h2>
+    <p class="page-section-desc">
+      All paste events are intercepted: raw HTML is stripped, only plain text is inserted.
+      <code>nxrMentionBeforePaste</code> callback lets you transform or prevent paste.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #pasteEditor="nxrMention"
+        [nxrMentionTriggers]="userTriggers"
+        [nxrMentionBeforePaste]="onBeforePaste"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Paste-handling mention"
+        class="demo-mention-input"
+      >
+        @if (pasteEditor.isEmpty()) {
+          <div class="demo-placeholder">Paste text here to see handling…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <div class="mention-events">
+        @for (entry of pasteLog(); track $index) {
+          <div>{{ entry }}</div>
+        }
+        @if (pasteLog().length === 0) {
+          <span>No paste events yet</span>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. Chip hover (Slack-like popover) -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Chip hover (Slack-like)</h2>
+    <p class="page-section-desc">
+      Hover over a mention chip to see user info. Uses <code>mentionChipMouseEnter</code> /
+      <code>mentionChipClick</code> outputs. The <code>event.element</code> is passed to
+      <code>nxrPopoverAnchor</code> so the popover is anchored to the chip.
+    </p>
+    <div class="mention-demo-wrapper">
+      <span
+        #chipHoverPopover="nxrPopover"
+        [nxrPopover]="chipHoverUserTpl"
+        nxrPopoverTrigger="hover"
+        [nxrPopoverAnchor]="chipHoverAnchor()"
+        [nxrPopoverDisabled]="chipHoverAnchor() === null"
+        nxrPopoverPlacement="top-start"
+        nxrPopoverPanelClass="chip-hover-overlay-pane"
+        [nxrPopoverCloseAnimationDurationMs]="150"
+        (nxrPopoverClosed)="onChipHoverPopoverClosed()"
+      ></span>
+      <div
+        nxrMention
+        #chipHoverEditor="nxrMention"
+        [nxrMentionTriggers]="userTriggers"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Chip hover mention"
+        (mentionChipMouseEnter)="onChipHoverEnter($event)"
+        (mentionChipClick)="onChipHoverClick($event)"
+        class="demo-mention-input"
+      >
+        @if (chipHoverEditor.isEmpty()) {
+          <div class="demo-placeholder">
+            Type &#64; and select a user, then hover over the chip…
+          </div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+    </div>
+    <ng-template #chipHoverUserTpl>
+      @if (chipHoverUser()) {
+        <div class="chip-hover-card">
+          <strong>{{ chipHoverUser()?.displayName }}</strong>
+          <span class="chip-hover-role">{{ chipHoverUser()?.role }}</span>
+          <span class="chip-hover-username">&#64;{{ chipHoverUser()?.username }}</span>
+        </div>
+      }
+    </ng-template>
+  </section>
+
+  <!-- 12. Programmatic API -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Programmatic API</h2>
+    <p class="page-section-desc">
+      Access the editor via <code>#apiEditor="nxrMention"</code> or
+      <code>ViewChild(MentionDirective)</code>. Signals: <code>isEmpty</code>, <code>isOpen</code>,
+      <code>currentQuery</code>. Methods: <code>clear()</code>, <code>getMentions()</code>,
+      <code>getDocument()</code>, <code>getPlainText()</code>, <code>focus()</code>,
+      <code>blur()</code>.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #apiEditor="nxrMention"
+        [nxrMentionTriggers]="userTriggers"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Programmatic API mention"
+        class="demo-mention-input"
+      >
+        @if (apiEditor.isEmpty()) {
+          <div class="demo-placeholder">Use the API buttons below…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-panel">
+            @if (state.loading) {
+              <div class="mention-panel-loading">Loading…</div>
+            } @else if (state.items.length === 0) {
+              <div class="mention-panel-empty">No results</div>
+            } @else {
+              @for (item of state.items; track $index) {
+                <div
+                  class="mention-option"
+                  [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  (mousedown)="select(item)"
+                >
+                  {{ state.session?.triggerConfig?.displayWith(item) }}
+                </div>
+              }
+            }
+          </div>
+        </ng-template>
+      </div>
+      <div class="mention-doc-actions">
+        <button type="button" (click)="apiGetMentions()">getMentions()</button>
+        <button type="button" (click)="apiGetDocument()">getDocument()</button>
+        <button type="button" (click)="apiGetPlainText()">getPlainText()</button>
+        <button type="button" (click)="apiInsertAlice()">insertMention(alice)</button>
+        <button type="button" (click)="apiClear()">clear()</button>
+        <button type="button" (click)="apiFocus()">focus()</button>
+      </div>
+      <div class="mention-events">
+        <span class="badge">isEmpty</span> {{ apiEditor.isEmpty() }}<br />
+        <span class="badge">isOpen</span> {{ apiEditor.isOpen() }}<br />
+        <span class="badge">query</span> {{ apiEditor.currentQuery() || '—' }}
+      </div>
+      @if (apiResultJson()) {
+        <pre class="mention-doc-json">{{ apiResultJson() }}</pre>
+      }
+    </div>
+  </section>
+</div>
