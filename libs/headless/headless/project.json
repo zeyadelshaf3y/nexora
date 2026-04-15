@@ -1,0 +1,43 @@
+{
+  "name": "headless",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/headless/headless",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": ["dist/{projectRoot}"],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
+  "tags": ["scope:headless", "layer:meta"],
+  "implicitDependencies": [
+    "combobox",
+    "core",
+    "dropdown",
+    "interactions",
+    "listbox",
+    "listbox-cdk",
+    "mention",
+    "menu",
+    "overlay",
+    "popover",
+    "select",
+    "snackbar",
+    "tooltip"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "options": {
+        "command": "mkdir -p dist/libs/headless/headless && cp libs/headless/headless/package.json dist/libs/headless/headless/package.json && cp libs/headless/headless/README.md dist/libs/headless/headless/README.md && cp libs/headless/headless/index.js dist/libs/headless/headless/index.js && cp libs/headless/headless/index.d.ts dist/libs/headless/headless/index.d.ts"
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
+    }
+  }
+}

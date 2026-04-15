@@ -81,7 +81,37 @@
     }
   },
   "release": {
+    "groups": {
+      "headless": {
+        "projects": [
+          "core",
+          "overlay",
+          "interactions",
+          "listbox-cdk",
+          "listbox",
+          "dropdown",
+          "popover",
+          "menu",
+          "tooltip",
+          "snackbar",
+          "select",
+          "combobox",
+          "mention",
+          "headless"
+        ],
+        "projectsRelationship": "independent",
+        "version": {
+          "conventionalCommits": true
+        }
+      }
+    },
+    "changelog": {
+      "automaticFromRef": true,
+      "projectChangelogs": true,
+      "workspaceChangelog": false
+    },
     "version": {
+      "preserveMatchingDependencyRanges": false,
       "preVersionCommand": "npx nx run-many -t build"
     }
   },

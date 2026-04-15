@@ -12,7 +12,12 @@
     "stylelint": "stylelint \"**/*.{css,scss}\" --allow-empty-input",
     "stylelint:fix": "stylelint \"**/*.{css,scss}\" --fix --allow-empty-input",
     "verify:tree-shake": "nx run demo:build --configuration=production && echo 'Production build done. To verify tooltip-only apps do not pull dialog/drawer: use an app that imports only @nexora-ui/tooltip, build, and grep the bundle for DialogService/DrawerService (see docs/DEVELOPMENT.md).'",
-    "playwright:install": "playwright install --with-deps"
+    "playwright:install": "playwright install --with-deps",
+    "release:build:headless": "nx run-many -t build --projects=core,overlay,interactions,listbox-cdk,listbox,dropdown,popover,menu,tooltip,snackbar,select,combobox,mention,headless",
+    "release:publish:headless": "for p in core overlay interactions listbox-cdk listbox dropdown popover menu tooltip snackbar select combobox mention headless; do npm publish \"dist/libs/headless/$p\" --access public; done",
+    "release:nx": "nx release --yes",
+    "release:nx:dry-run": "nx release --dry-run --yes",
+    "release:headless": "npm run release:build:headless && npm run release:publish:headless"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [

@@ -6,6 +6,7 @@ Headless UI primitives for Angular. Unstyled, accessible building blocks you sty
 
 | Package                                                             | Description                                                                                                                               |
 | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [**@nexora-ui/headless**](libs/headless/headless/README.md)         | Meta package that installs all published `@nexora-ui/*` headless libraries for users who want the full set.                               |
 | [**@nexora-ui/overlay**](libs/headless/overlay/README.md)           | Overlay system: dialogs (9 positions), drawers (4 positions), anchored strategy for popovers. Scroll/focus strategies, optional arrow.    |
 | [**@nexora-ui/popover**](libs/headless/popover/README.md)           | Popover: open a panel anchored to a trigger. Trigger: click, focus, or hover. 12 placements, optional arrow.                              |
 | [**@nexora-ui/tooltip**](libs/headless/tooltip/README.md)           | Tooltip: short content on hover/focus; optional arrow and delays.                                                                         |
@@ -20,6 +21,8 @@ Headless UI primitives for Angular. Unstyled, accessible building blocks you sty
 | [**@nexora-ui/interactions**](libs/headless/interactions/README.md) | Focus trap and related helpers for modal surfaces.                                                                                        |
 
 **Roadmap (overlay-based):** Autocomplete, command palette, mega/tiered/context menus, menu bar, date/time/color pickers, confirm popup, tree select, cascade select, and related primitives. See [HEADLESS-COMPONENTS-PLAN.md](docs/HEADLESS-COMPONENTS-PLAN.md).
+
+Install either one package (e.g. `npm i @nexora-ui/mention`) or all headless primitives at once (`npm i @nexora-ui/headless`).
 
 ## Quick start
 
