@@ -1,0 +1,116 @@
+<section class="section">
+  <h2 class="section-title">Popover — Triggers</h2>
+  <p class="section-desc">Open via click, focus, or hover. Arrow tracks anchor center.</p>
+  <div class="btn-row">
+    <button
+      class="btn"
+      [nxrPopover]="popoverRichTpl()"
+      nxrPopoverPanelClass="demo-popover-pane"
+      [nxrPopoverClampToViewport]="false"
+      [nxrPopoverCloseAnimationDurationMs]="150"
+    >
+      Click
+    </button>
+    <button
+      class="btn"
+      [nxrPopover]="popoverRichTpl()"
+      nxrPopoverTrigger="focus"
+      nxrPopoverPlacement="bottom"
+      nxrPopoverPanelClass="demo-popover-pane"
+      [nxrPopoverCloseAnimationDurationMs]="150"
+    >
+      Focus
+    </button>
+    <button
+      class="btn"
+      [nxrPopover]="popoverRichTpl()"
+      [nxrPopoverTrigger]="['hover', 'focus']"
+      nxrPopoverPlacement="bottom"
+      [nxrPopoverOffset]="30"
+      nxrPopoverPanelClass="demo-popover-pane"
+      [nxrPopoverCloseAnimationDurationMs]="150"
+    >
+      Hover + Focus
+    </button>
+    <button
+      class="btn"
+      [nxrPopover]="popoverRichTpl()"
+      nxrPopoverPanelClass="demo-popover-pane"
+      [nxrPopoverCloseAnimationDurationMs]="150"
+      [nxrPopoverHasBackdrop]="true"
+    >
+      With Backdrop
+    </button>
+    <button
+      class="btn"
+      [nxrPopover]="popoverRichTpl()"
+      nxrPopoverPanelClass="demo-popover-pane"
+      [nxrPopoverCloseAnimationDurationMs]="150"
+      [nxrPopoverDisabled]="true"
+    >
+      Disabled
+    </button>
+  </div>
+  <div class="sub-section" style="margin-top: 1rem">
+    <span class="sub-label">Input with focus popover (autocomplete pattern):</span>
+    <input
+      class="demo-input"
+      type="text"
+      placeholder="Focus me for suggestions…"
+      [nxrPopover]="popoverSuggestionsTpl()"
+      [nxrPopoverTrigger]="['focus', 'click']"
+      nxrPopoverPlacement="bottom-start"
+      nxrPopoverPanelClass="demo-popover-pane"
+      [nxrPopoverMatchAnchorWidth]="true"
+      [nxrPopoverCloseAnimationDurationMs]="120"
+      [nxrPopoverOffset]="4"
+      nxrPopoverRole="listbox"
+    />
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Popover — All 12 Placements</h2>
+  <p class="section-desc">Each button forces its preferred placement (no flip).</p>
+  <div class="placement-grid">
+    @for (p of allPlacements(); track p) {
+      <button
+        class="btn btn-sm"
+        [nxrPopover]="popoverSimpleTpl()"
+        [nxrPopoverPlacement]="p"
+        [nxrPopoverPreferredPlacementOnly]="true"
+        nxrPopoverPanelClass="demo-popover-pane"
+        [nxrPopoverCloseAnimationDurationMs]="150"
+      >
+        {{ p }}
+      </button>
+    }
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Popover — Custom Sizing</h2>
+  <p class="section-desc">Min/max width/height constraints on the panel.</p>
+  <div class="btn-row">
+    <button
+      class="btn"
+      [nxrPopover]="popoverLongTpl()"
+      nxrPopoverPanelClass="demo-popover-pane"
+      [nxrPopoverCloseAnimationDurationMs]="150"
+      nxrPopoverMaxWidth="250px"
+      nxrPopoverMaxHeight="150px"
+    >
+      maxW 250, maxH 150
+    </button>
+    <button
+      class="btn"
+      [nxrPopover]="popoverSimpleTpl()"
+      nxrPopoverPanelClass="demo-popover-pane"
+      [nxrPopoverCloseAnimationDurationMs]="150"
+      nxrPopoverWidth="300px"
+      nxrPopoverMinHeight="120px"
+    >
+      fixed W 300, minH 120
+    </button>
+  </div>
+</section>

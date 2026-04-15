@@ -1,0 +1,39 @@
+<section class="section">
+  <h2 class="section-title">Dialog</h2>
+  <p class="section-desc">
+    Centered modal with backdrop. Close via Escape, backdrop click, or programmatically. Dialogs
+    animate from the trigger button (scale-from-origin, ng-zorro style).
+  </p>
+  <div class="btn-row">
+    <button class="btn" (click)="openDialog.emit($event)">Template Dialog</button>
+    <button class="btn" (click)="openComponentDialog.emit($event)">Component Dialog</button>
+    <button class="btn" (click)="openScrollableDialog.emit($event)">
+      Scrollable (max-height 400px)
+    </button>
+    <button
+      class="btn"
+      [nxrOverlay]="inlineDialogTpl()"
+      nxrOverlayMaxWidth="min(400px, 90vw)"
+      nxrOverlayPanelClass="demo-dialog-pane"
+    >
+      Directive Dialog
+    </button>
+  </div>
+  <p class="section-desc sub-desc">
+    Without trigger: dialog opens with center-only animation (no scale-from-trigger).
+  </p>
+  <div class="btn-row">
+    <button class="btn btn-ghost" (click)="openDialogCenterOnly.emit(undefined)">
+      Template Dialog (center only)
+    </button>
+  </div>
+  <p class="section-desc sub-desc">
+    <strong>Content-scoped dialog</strong>: opens only in the main content area (not over
+    header/sidebar). Clicks on header or sidebar do not close it; backdrop and Escape still do.
+  </p>
+  <div class="btn-row">
+    <button class="btn btn-primary" (click)="openContentScopedDialog.emit(undefined)">
+      Content-scoped Dialog (with backdrop)
+    </button>
+  </div>
+</section>

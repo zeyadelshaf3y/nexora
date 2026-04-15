@@ -1,0 +1,82 @@
+.listbox-page-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.listbox-page-meta {
+  font-size: 0.8125rem;
+  color: var(--nxr-text-muted);
+  padding-top: 0.25rem;
+}
+
+.listbox-host {
+  min-width: 200px;
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--nxr-border);
+  border-radius: var(--nxr-radius);
+  background: var(--nxr-bg-elevated);
+  outline: none;
+}
+
+.listbox-host:focus {
+  border-color: var(--nxr-primary);
+  box-shadow: 0 0 0 2px var(--nxr-primary-subtle);
+}
+
+.listbox-host--horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  max-height: none;
+  gap: 0.25rem;
+  padding: 0.375rem;
+}
+
+.listbox-host--menu {
+  min-width: 160px;
+}
+
+.listbox-option {
+  padding: 0.5rem 0.75rem;
+  cursor: default;
+  font-size: 0.875rem;
+  transition: background 0.1s;
+}
+
+.listbox-option[data-active] {
+  background: var(--nxr-primary-subtle);
+}
+
+.listbox-option[aria-selected='true'] {
+  font-weight: 600;
+  color: var(--nxr-primary);
+}
+
+.listbox-option[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.listbox-option--horizontal {
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--nxr-radius-sm);
+  border: 1px solid var(--nxr-border-subtle);
+}
+
+.listbox-group-label {
+  display: block;
+  padding: 0.5rem 0.75rem 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--nxr-text-faint);
+}
+
+.listbox-separator {
+  height: 1px;
+  margin: 0.25rem 0.75rem;
+  background: var(--nxr-border-subtle);
+}

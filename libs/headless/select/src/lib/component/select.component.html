@@ -1,0 +1,17 @@
+<ng-content />
+@if (useVirtualPanel()) {
+  <ng-template nxrSelectPanel #virtualBuiltin="nxrSelectPanel">
+    <nxr-builtin-virtual-dropdown-panel
+      [headerTemplate]="virtualHeaderTpl()?.templateRef ?? null"
+      [footerTemplate]="virtualFooterTpl()?.templateRef ?? null"
+      [items]="virtualItems()!"
+      [itemSize]="virtualItemSize()"
+      [initialSelectedIndex]="virtualSelectedIndex()"
+      [labelFor]="virtualLabelFor()"
+      [trackByKey]="virtualTrackKeyFn()"
+      [emptyMessage]="virtualEmptyMessage()"
+      [viewportMaxHeight]="maxHeight()"
+      [optionTemplate]="virtualOptionTpl()?.templateRef ?? null"
+    />
+  </ng-template>
+}

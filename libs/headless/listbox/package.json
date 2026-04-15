@@ -1,0 +1,10 @@
+{
+  "name": "@nexora-ui/listbox",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^21.1.0",
+    "@angular/core": "^21.1.0",
+    "@nexora-ui/core": "~0.0.1"
+  },
+  "sideEffects": false
+}

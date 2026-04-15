@@ -1,0 +1,11 @@
+<section class="section">
+  <h2 class="section-title">Drawer</h2>
+  <p class="section-desc">
+    Edge panel (RTL‑aware). Width/height auto‑sizes to content with min/max constraints.
+  </p>
+  <div class="btn-row">
+    @for (p of drawerPlacements(); track p) {
+      <button class="btn" (click)="openDrawer.emit(p)">{{ p }}</button>
+    }
+  </div>
+</section>

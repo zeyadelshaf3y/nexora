@@ -1,0 +1,10 @@
+export { ownerDocument } from './owner-document';
+export { getActiveElement } from './get-active-element';
+export { safeFocus } from './safe-focus';
+export { FOCUSABLE_SELECTOR } from './focusable';
+export { contains } from './contains';
+export { hasClosest } from './element-with-closest';
+export { scrollParents } from './scroll-parents';
+export { observeResize } from './observe-resize';
+export { getViewportRect } from './viewport';
+export { getResolvedDir } from './get-resolved-dir';

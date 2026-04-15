@@ -1,0 +1,479 @@
+/* Select page demo styles.
+ * - Panel styles are at root: panel is portaled to overlay (outside #select).
+ * - Trigger and page layout are scoped under #select.
+ */
+
+/* ─── Panel (rendered in overlay container, not under #select) ─────── */
+.nxr-listbox-overlay-panel-host {
+  > [role='listbox'] {
+    padding: 0.25rem 0;
+  }
+
+  > [role='listbox']:has(> .select-panel-header) {
+    scroll-padding-top: 2.75rem;
+  }
+
+  > [role='listbox']:has(> .select-panel-footer) {
+    scroll-padding-bottom: 2.75rem;
+  }
+
+  .large-list-viewport {
+    height: 200px;
+    overflow: auto;
+  }
+
+  .select-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    cursor: default;
+    transition: background 0.1s;
+  }
+
+  .select-option:hover:not([aria-disabled='true']) {
+    background: var(--nxr-bg-subtle);
+  }
+
+  .select-option[data-active] {
+    background: var(--nxr-primary-subtle);
+  }
+
+  .select-option[aria-selected='true'] {
+    font-weight: 600;
+    color: var(--nxr-primary);
+  }
+
+  .select-option[aria-disabled='true'] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .select-option--with-check {
+    justify-content: space-between;
+  }
+
+  .select-checkbox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1.5px solid var(--nxr-border);
+    background: var(--nxr-bg-elevated);
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+
+  .select-checkbox.checked {
+    background: var(--nxr-primary);
+    border-color: var(--nxr-primary);
+    color: var(--nxr-primary-text);
+  }
+
+  .select-check-icon {
+    flex-shrink: 0;
+    color: var(--nxr-primary);
+  }
+
+  .select-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--nxr-primary-subtle);
+    color: var(--nxr-primary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .select-avatar.sm {
+    width: 22px;
+    height: 22px;
+    font-size: 0.5625rem;
+  }
+
+  .select-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+  }
+
+  .select-user-name {
+    font-size: 0.875rem;
+  }
+
+  .select-user-email {
+    font-size: 0.75rem;
+    color: var(--nxr-text-muted);
+  }
+
+  .select-group-label {
+    display: block;
+    padding: 0.5rem 0.75rem 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--nxr-text-faint);
+  }
+
+  .select-separator {
+    height: 1px;
+    margin: 0.25rem 0.75rem;
+    background: var(--nxr-border-subtle);
+  }
+
+  .select-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--nxr-border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--nxr-bg-elevated);
+  }
+
+  .select-panel-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--nxr-text-muted);
+  }
+
+  .select-panel-count {
+    font-size: 0.75rem;
+    color: var(--nxr-text-faint);
+  }
+
+  .select-panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--nxr-border-subtle);
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: var(--nxr-bg-elevated);
+  }
+
+  .select-empty {
+    padding: 1rem 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--nxr-text-faint);
+    text-align: center;
+  }
+
+  .select-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid var(--nxr-border);
+  }
+
+  .select-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    border-radius: 9px;
+    background: var(--nxr-primary);
+    color: var(--nxr-primary-text);
+  }
+
+  .select-option-badge {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    color: var(--nxr-text-faint);
+    font-style: italic;
+  }
+}
+
+/* Overlay pane (attach point is outside #select) */
+.nxr-select-pane {
+  background: var(--nxr-bg-elevated);
+  border: 1px solid var(--nxr-border);
+  border-radius: var(--nxr-radius);
+  box-shadow: var(--nxr-shadow-md);
+  overflow: hidden;
+}
+
+.nxr-select-pane.nxr-overlay-pane--entering {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.nxr-select-pane[data-placement^='bottom'].nxr-overlay-pane--entering {
+  transform: translateY(-8px) scale(0.96);
+}
+
+.nxr-select-pane[data-placement^='top'].nxr-overlay-pane--entering {
+  transform: translateY(8px) scale(0.9);
+}
+
+.nxr-select-pane.nxr-overlay-pane--open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    transform 0.15s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.12s ease;
+}
+
+.nxr-select-pane.nxr-overlay-pane--closing {
+  opacity: 0;
+  transition:
+    transform 0.12s ease,
+    opacity 0.1s ease;
+}
+
+.nxr-select-pane[data-placement^='bottom'].nxr-overlay-pane--closing {
+  transform: scale(0.9) translateY(-8px);
+}
+
+.nxr-select-pane[data-placement^='top'].nxr-overlay-pane--closing {
+  transform: scale(0.9) translateY(8px);
+}
+
+/* ─── Page layout and trigger (under #select) ──────────────────── */
+#select {
+  .select-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 220px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-family: inherit;
+    line-height: 1.4;
+    border: 1px solid var(--nxr-border);
+    border-radius: var(--nxr-radius);
+    background: var(--nxr-bg-elevated);
+    color: var(--nxr-text);
+    cursor: pointer;
+    transition:
+      border-color var(--nxr-duration-fast) ease,
+      box-shadow var(--nxr-duration-fast) ease;
+    text-align: left;
+  }
+
+  .select-trigger:hover {
+    border-color: var(--nxr-primary-subtle);
+  }
+
+  .select-trigger:focus-visible {
+    outline: 2px solid var(--nxr-primary);
+    outline-offset: 2px;
+  }
+
+  .select-trigger[aria-expanded='true'] {
+    border-color: var(--nxr-primary);
+    box-shadow: 0 0 0 3px var(--nxr-primary-subtle);
+  }
+
+  .select-trigger[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .select-trigger .select-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    margin: 0 -2px;
+    color: var(--nxr-text-muted);
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: var(--nxr-radius-sm);
+  }
+
+  .select-trigger .select-clear:hover {
+    background: var(--nxr-bg-subtle);
+    color: var(--nxr-text);
+  }
+
+  .select-trigger--wide {
+    min-width: 280px;
+  }
+
+  .select-trigger-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .select-trigger-label.placeholder {
+    color: var(--nxr-text-faint);
+  }
+
+  .select-trigger-icon {
+    flex-shrink: 0;
+    color: var(--nxr-text-muted);
+    transition: transform var(--nxr-duration-fast) ease;
+  }
+
+  .select-trigger[aria-expanded='true'] .select-trigger-icon {
+    transform: rotate(180deg);
+  }
+
+  .select-trigger-pre-icon {
+    flex-shrink: 0;
+    color: var(--nxr-text-muted);
+  }
+
+  .select-trigger-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    flex: 1;
+  }
+
+  /* ─── Chips (on trigger) ──────────────────────────────────────── */
+  .select-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: var(--nxr-radius-sm);
+    background: var(--nxr-primary-subtle);
+    color: var(--nxr-primary);
+    font-weight: 500;
+  }
+
+  /* ─── Layout ─────────────────────────────────────────────────── */
+  .select-demo-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .select-api-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    padding-top: 0.25rem;
+  }
+
+  .scroll-strategy-demo {
+    margin-top: 0.5rem;
+  }
+
+  .scroll-strategy-scrollbox {
+    height: 200px;
+    overflow: auto;
+    border: 1px solid var(--demo-border, #ccc);
+    border-radius: 6px;
+    padding: 12px;
+  }
+
+  .scroll-strategy-spacer {
+    height: 120px;
+  }
+
+  .scroll-strategy-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .select-trigger--sm {
+    min-width: 100px;
+  }
+
+  .select-meta {
+    font-size: 0.8125rem;
+    color: var(--nxr-text-muted);
+    padding-top: 0.5rem;
+  }
+
+  .select-narrow-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .select-demo-combobox-link {
+    color: var(--nxr-primary);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .select-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--nxr-text-muted);
+    cursor: pointer;
+    padding-top: 0.5rem;
+  }
+
+  /* ─── Form state badges ──────────────────────────────────────── */
+  .select-form-state {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--nxr-text-muted);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    border-radius: var(--nxr-radius-sm);
+    background: var(--nxr-bg-subtle);
+    color: var(--nxr-text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .badge.active {
+    background: var(--nxr-primary-subtle);
+    color: var(--nxr-primary);
+  }
+
+  /* ─── Form group ─────────────────────────────────────────────── */
+  .select-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 260px;
+  }
+
+  .select-pre {
+    font-size: 0.75rem;
+    color: var(--nxr-text-muted);
+    background: var(--nxr-bg-subtle);
+    padding: 0.75rem;
+    border-radius: var(--nxr-radius);
+    min-width: 200px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}

@@ -1,0 +1,800 @@
+<div id="combobox">
+  <h1 class="page-title">Combobox</h1>
+  <p class="page-desc">
+    Input + dropdown with search. Single or multi selection; reactive forms, ngModel,
+    value/valueChange, scroll strategies, and public API demos.
+  </p>
+
+  <!-- 1. Basic single -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Basic Single</h2>
+    <p class="page-section-desc">
+      Two-way <code>[(value)]</code> and <code>[(search)]</code>. Filtered list from computed
+      signal.
+    </p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [value]="singleValue()"
+        (valueChange)="setSingleValue($event)"
+        (searchChange)="singleSearch.set($event)"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        placeholder="Search countries…"
+        #single="nxrCombobox"
+      >
+        <div class="combobox-control">
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search countries…"
+            autocomplete="off"
+            aria-label="Search countries"
+          />
+          @if (single.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open list">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxPanel>
+          @for (country of filteredCountriesSingle(); track country.code) {
+            <div class="combobox-option" nxrComboboxOption [value]="country">
+              {{ country.name }}
+            </div>
+          }
+          @if (filteredCountriesSingle().length === 0) {
+            <div class="combobox-empty">No results</div>
+          }
+        </ng-template>
+      </nxr-combobox>
+      <div class="combobox-api-buttons">
+        <button type="button" class="btn btn-sm" (click)="single.disable()">Disable API</button>
+        <button type="button" class="btn btn-sm" (click)="single.enable()">Enable API</button>
+      </div>
+      <span class="combobox-meta">Value: {{ singleValue()?.name ?? '—' }}</span>
+    </div>
+  </section>
+
+  <!-- 2. Basic multi -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Multi Select</h2>
+    <p class="page-section-desc">
+      Input is search-only; selected values shown as chips; panel stays open on selection.
+    </p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [value]="multiValue()"
+        (valueChange)="setMultiValue($event)"
+        (searchChange)="multiSearch.set($event)"
+        [multi]="true"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        placeholder="Search countries…"
+        #multi="nxrCombobox"
+      >
+        <div class="combobox-control combobox-control-multi">
+          @for (c of multi.selectedValues(); track c.code) {
+            <span class="combobox-chip" (mousedown)="$event.stopPropagation()">
+              {{ c.name }}
+              <button
+                type="button"
+                class="combobox-chip-remove"
+                (click)="multi.unselect(c); $event.stopPropagation()"
+                aria-label="Remove {{ c.name }}"
+              >
+                ×
+              </button>
+            </span>
+          }
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search countries…"
+            autocomplete="off"
+            aria-label="Search countries"
+          />
+          @if (multi.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear all"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open list">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxPanel>
+          @for (country of filteredCountriesMulti(); track country.code) {
+            <div class="combobox-option" nxrComboboxOption [value]="country">
+              <span class="combobox-checkbox" [class.checked]="multi.isSelected(country)">
+                @if (multi.isSelected(country)) {
+                  <app-icon name="check" [size]="12" />
+                }
+              </span>
+              {{ country.name }}
+            </div>
+          }
+          @if (filteredCountriesMulti().length === 0) {
+            <div class="combobox-empty">No results</div>
+          }
+        </ng-template>
+      </nxr-combobox>
+      <span class="combobox-meta">
+        @if (multi.selectedValues().length === 0) {
+          No selection
+        } @else {
+          @for (c of multi.selectedValues(); track c.code) {
+            <span class="combobox-chip">{{ c.name }}</span>
+          }
+        }
+      </span>
+    </div>
+  </section>
+
+  <!-- 3. [value] + (valueChange) -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">[value] + (valueChange)</h2>
+    <p class="page-section-desc">One-way binding with explicit change handler.</p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [value]="oneWayValue()"
+        (valueChange)="onOneWayChange($event)"
+        (searchChange)="oneWaySearch.set($event)"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        placeholder="One-way"
+        #ow="nxrCombobox"
+      >
+        <div class="combobox-control">
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search…"
+            autocomplete="off"
+            aria-label="Search"
+          />
+          @if (ow.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxPanel>
+          @for (c of filteredOneWay(); track c.code) {
+            <div class="combobox-option" nxrComboboxOption [value]="c">{{ c.name }}</div>
+          }
+          @if (filteredOneWay().length === 0) {
+            <div class="combobox-empty">No results</div>
+          }
+        </ng-template>
+      </nxr-combobox>
+      <span class="combobox-meta"
+        >Value: {{ oneWayValue()?.name ?? '—' }} (changes: {{ oneWayChangeCount() }})</span
+      >
+    </div>
+  </section>
+
+  <!-- 4. Reactive Forms -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Reactive Forms (FormControl)</h2>
+    <p class="page-section-desc">Integrated with FormControl; touched/dirty/valid.</p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [formControl]="countryControl"
+        (searchChange)="controlSearch.set($event)"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        placeholder="FormControl"
+        #fc="nxrCombobox"
+      >
+        <div class="combobox-control">
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search…"
+            autocomplete="off"
+            aria-label="Search"
+          />
+          @if (fc.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxPanel>
+          @for (c of filteredControl(); track c.code) {
+            <div class="combobox-option" nxrComboboxOption [value]="c">{{ c.name }}</div>
+          }
+          @if (filteredControl().length === 0) {
+            <div class="combobox-empty">No results</div>
+          }
+        </ng-template>
+      </nxr-combobox>
+      <div class="combobox-form-state">
+        <span class="badge" [class.active]="countryControl.touched">touched</span>
+        <span class="badge" [class.active]="countryControl.dirty">dirty</span>
+        <span class="badge" [class.active]="countryControl.valid">valid</span>
+        <span>Value: {{ countryControl.value?.name ?? '—' }}</span>
+        <button class="btn btn-sm" (click)="countryControl.reset()">Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. NgModel -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">NgModel (FormsModule)</h2>
+    <p class="page-section-desc">
+      Two-way binding with ngModel (one-way value + change handler for signal).
+    </p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [ngModel]="ngModelValue()"
+        (ngModelChange)="ngModelValue.set($event)"
+        (searchChange)="ngModelSearch.set($event)"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        placeholder="NgModel"
+        #nm="nxrCombobox"
+      >
+        <div class="combobox-control">
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search…"
+            autocomplete="off"
+            aria-label="Search"
+          />
+          @if (nm.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxPanel>
+          @for (c of filteredNgModel(); track c.code) {
+            <div class="combobox-option" nxrComboboxOption [value]="c">{{ c.name }}</div>
+          }
+          @if (filteredNgModel().length === 0) {
+            <div class="combobox-empty">No results</div>
+          }
+        </ng-template>
+      </nxr-combobox>
+      <span class="combobox-meta">Value: {{ ngModelValue()?.name ?? '—' }}</span>
+    </div>
+  </section>
+
+  <!-- 6. FormGroup -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Reactive Form Group</h2>
+    <p class="page-section-desc">Combobox inside a FormGroup with formControlName.</p>
+    <div class="combobox-demo-row">
+      <form
+        [formGroup]="profileForm"
+        class="combobox-demo-row"
+        style="flex-direction: column; gap: 0.75rem"
+      >
+        <input
+          class="combobox-input"
+          style="
+            max-width: 220px;
+            border: 1px solid var(--nxr-border);
+            border-radius: var(--nxr-radius);
+            padding: 0.5rem 0.75rem;
+          "
+          formControlName="name"
+          placeholder="Full name"
+        />
+        <nxr-combobox
+          formControlName="country"
+          (searchChange)="formGroupSearch.set($event)"
+          [accessors]="countryAccessors"
+          [compareWith]="compareByCode"
+          placeholder="Country"
+          #fg="nxrCombobox"
+        >
+          <div class="combobox-control">
+            <input
+              class="combobox-input"
+              nxrComboboxInput
+              placeholder="Search…"
+              autocomplete="off"
+              aria-label="Search"
+            />
+            @if (fg.hasValue()) {
+              <button
+                type="button"
+                class="combobox-clear"
+                nxrComboboxClear
+                [clearSearch]="true"
+                aria-label="Clear"
+              >
+                ×
+              </button>
+            }
+            <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open">
+              <app-icon name="chevron-down" [size]="14" />
+            </button>
+          </div>
+          <ng-template nxrComboboxPanel>
+            @for (c of filteredFormGroup(); track c.code) {
+              <div class="combobox-option" nxrComboboxOption [value]="c">{{ c.name }}</div>
+            }
+            @if (filteredFormGroup().length === 0) {
+              <div class="combobox-empty">No results</div>
+            }
+          </ng-template>
+        </nxr-combobox>
+      </form>
+      <pre class="combobox-meta" style="margin: 0">{{ profileForm.value | json }}</pre>
+    </div>
+  </section>
+
+  <!-- 7. Scroll strategies -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Scroll Strategies</h2>
+    <p class="page-section-desc">
+      Inside a scrollable area: <strong>noop</strong> — panel sticks to trigger;
+      <strong>reposition</strong> — repositions in viewport; <strong>close</strong> — closes on
+      scroll.
+    </p>
+    <div class="scroll-strategy-scrollbox">
+      <div class="scroll-strategy-spacer"></div>
+      <div class="scroll-strategy-row">
+        <nxr-combobox
+          [value]="scrollNoopValue()"
+          (valueChange)="setScrollNoopValue($event)"
+          (searchChange)="scrollNoopSearch.set($event)"
+          [accessors]="countryAccessors"
+          [compareWith]="compareByCode"
+          placeholder="noop"
+          scrollStrategy="noop"
+          #scrollNoop="nxrCombobox"
+        >
+          <div class="combobox-control">
+            <input
+              class="combobox-input"
+              nxrComboboxInput
+              placeholder="noop"
+              autocomplete="off"
+              aria-label="noop"
+            />
+            @if (scrollNoop.hasValue()) {
+              <button
+                type="button"
+                class="combobox-clear"
+                nxrComboboxClear
+                [clearSearch]="true"
+                aria-label="Clear"
+              >
+                ×
+              </button>
+            }
+            <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open">
+              <app-icon name="chevron-down" [size]="14" />
+            </button>
+          </div>
+          <ng-template nxrComboboxPanel>
+            @for (c of scrollFiltered(); track c.code) {
+              <div class="combobox-option" nxrComboboxOption [value]="c">{{ c.name }}</div>
+            }
+          </ng-template>
+        </nxr-combobox>
+        <nxr-combobox
+          [value]="scrollRepositionValue()"
+          (valueChange)="setScrollRepositionValue($event)"
+          (searchChange)="scrollRepositionSearch.set($event)"
+          [accessors]="countryAccessors"
+          [compareWith]="compareByCode"
+          placeholder="reposition"
+          scrollStrategy="reposition"
+          #scrollReposition="nxrCombobox"
+        >
+          <div class="combobox-control">
+            <input
+              class="combobox-input"
+              nxrComboboxInput
+              placeholder="reposition"
+              autocomplete="off"
+              aria-label="reposition"
+            />
+            @if (scrollReposition.hasValue()) {
+              <button
+                type="button"
+                class="combobox-clear"
+                nxrComboboxClear
+                [clearSearch]="true"
+                aria-label="Clear"
+              >
+                ×
+              </button>
+            }
+            <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open">
+              <app-icon name="chevron-down" [size]="14" />
+            </button>
+          </div>
+          <ng-template nxrComboboxPanel>
+            @for (c of scrollRepositionFiltered(); track c.code) {
+              <div class="combobox-option" nxrComboboxOption [value]="c">{{ c.name }}</div>
+            }
+          </ng-template>
+        </nxr-combobox>
+        <nxr-combobox
+          [value]="scrollCloseValue()"
+          (valueChange)="setScrollCloseValue($event)"
+          (searchChange)="scrollCloseSearch.set($event)"
+          [accessors]="countryAccessors"
+          [compareWith]="compareByCode"
+          placeholder="close"
+          scrollStrategy="close"
+          #scrollClose="nxrCombobox"
+        >
+          <div class="combobox-control">
+            <input
+              class="combobox-input"
+              nxrComboboxInput
+              placeholder="close"
+              autocomplete="off"
+              aria-label="close"
+            />
+            @if (scrollClose.hasValue()) {
+              <button
+                type="button"
+                class="combobox-clear"
+                nxrComboboxClear
+                [clearSearch]="true"
+                aria-label="Clear"
+              >
+                ×
+              </button>
+            }
+            <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open">
+              <app-icon name="chevron-down" [size]="14" />
+            </button>
+          </div>
+          <ng-template nxrComboboxPanel>
+            @for (c of scrollCloseFiltered(); track c.code) {
+              <div class="combobox-option" nxrComboboxOption [value]="c">{{ c.name }}</div>
+            }
+          </ng-template>
+        </nxr-combobox>
+      </div>
+      <div class="scroll-strategy-spacer"></div>
+    </div>
+  </section>
+
+  <!-- 8. Public API in action -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Public API in Action</h2>
+    <p class="page-section-desc">
+      Open, close, toggle, select, reset, setSearchQuery, clearSearchQuery, disable, enable,
+      focusInput.
+    </p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [value]="apiValue()"
+        (valueChange)="setApiValue($event)"
+        (searchChange)="apiSearch.set($event)"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        placeholder="Search…"
+        #api="nxrCombobox"
+      >
+        <div class="combobox-control">
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search…"
+            autocomplete="off"
+            aria-label="Search"
+          />
+          @if (api.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxPanel>
+          @for (c of apiFiltered(); track c.code) {
+            <div class="combobox-option" nxrComboboxOption [value]="c">{{ c.name }}</div>
+          }
+          @if (apiFiltered().length === 0) {
+            <div class="combobox-empty">No results</div>
+          }
+        </ng-template>
+      </nxr-combobox>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem">
+        <span class="combobox-meta"
+          >Value: {{ apiValue()?.name ?? '—' }} | Filter: "{{ api.search() }}" | Open:
+          {{ api.isOpen() }}</span
+        >
+        <div class="combobox-api-buttons">
+          <button class="btn btn-sm" (click)="api.open()">Open</button>
+          <button class="btn btn-sm" (click)="api.close()">Close</button>
+          <button class="btn btn-sm" (click)="api.toggle()">Toggle</button>
+          <button class="btn btn-sm" (click)="api.select(countries[0])">Select US</button>
+          <button class="btn btn-sm" (click)="api.reset()">Reset</button>
+          <button class="btn btn-sm" (click)="api.reset(countries[2])">Reset to Mexico</button>
+          <button class="btn btn-sm" (click)="api.setSearchQuery('germany')">
+            setSearchQuery('germany')
+          </button>
+          <button class="btn btn-sm" (click)="api.clearSearchQuery()">clearSearchQuery</button>
+          <button class="btn btn-sm" (click)="api.disable()">Disable</button>
+          <button class="btn btn-sm" (click)="api.enable()">Enable</button>
+          <button class="btn btn-sm" (click)="api.focusInput()">Focus input</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Large list — single (CDK virtual scroll) -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Large List — Single ({{ VIRTUAL_SCROLL_COUNT }} items)</h2>
+    <p class="page-section-desc">
+      CDK virtual scroll with custom row template (<code>ng-template nxrComboboxVirtualOption</code
+      >), panel header and footer. Type to filter; arrows + Enter to select.
+    </p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [value]="virtualScrollValue()"
+        (valueChange)="setVirtualScrollValue($event)"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        [virtualScroll]="true"
+        [virtualItems]="virtualSingleFiltered()"
+        [virtualItemSize]="52"
+        [virtualTrackByKey]="virtualScrollTrackByKey"
+        placeholder="Search {{ VIRTUAL_SCROLL_COUNT }} countries…"
+        #virtual="nxrCombobox"
+      >
+        <div class="combobox-control">
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search {{ VIRTUAL_SCROLL_COUNT }} countries…"
+            autocomplete="off"
+            aria-label="Search countries"
+          />
+          @if (virtual.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open list">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxVirtualOption let-c>
+          <span class="combobox-virtual-option-text">
+            <span class="combobox-virtual-option-main">{{ c.name }}</span>
+            <span class="combobox-virtual-option-sub">{{ c.continent }}</span>
+          </span>
+        </ng-template>
+      </nxr-combobox>
+      <span class="combobox-meta"
+        >Value: {{ virtualScrollValue()?.name ?? '—' }} ({{
+          virtualSingleFiltered().length
+        }}
+        items)</span
+      >
+    </div>
+  </section>
+
+  <!-- 9b. Large list — multi (CDK virtual scroll) -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Large List — Multi ({{ VIRTUAL_SCROLL_COUNT }} items)</h2>
+    <p class="page-section-desc">
+      Same virtual chrome: custom rows with selection hint, header meta, footer actions. Chips in
+      the trigger; initial open scrolls to the first matching selected row.
+    </p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [value]="virtualMultiValue()"
+        (valueChange)="setVirtualMultiValue($event)"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        [multi]="true"
+        [virtualScroll]="true"
+        [virtualItems]="virtualMultiFiltered()"
+        [virtualItemSize]="52"
+        [virtualTrackByKey]="virtualScrollTrackByKey"
+        placeholder="Search virtual list…"
+        #virtualMulti="nxrCombobox"
+      >
+        <div class="combobox-control combobox-control-multi">
+          @for (c of virtualMultiSelectedCountries(); track c.code) {
+            <span class="combobox-chip" (mousedown)="$event.stopPropagation()">
+              {{ c.name }}
+              <button
+                type="button"
+                class="combobox-chip-remove"
+                (click)="virtualMulti.unselect(c); $event.stopPropagation()"
+                aria-label="Remove {{ c.name }}"
+              >
+                ×
+              </button>
+            </span>
+          }
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search virtual list…"
+            autocomplete="off"
+            aria-label="Search virtual list"
+          />
+          @if (virtualMulti.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear all"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open list">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxVirtualHeader>
+          <div class="combobox-virtual-panel-header">
+            <span class="combobox-virtual-panel-title">Select countries</span>
+            <span class="combobox-virtual-panel-meta">
+              {{ virtualMultiSelectedCountries().length }} selected ·
+              {{ virtualMultiFiltered().length }} visible
+            </span>
+          </div>
+        </ng-template>
+        <ng-template nxrComboboxVirtualOption let-c>
+          <span
+            class="combobox-virtual-option-check"
+            [class.combobox-virtual-option-check--on]="virtualMulti.isSelected(c)"
+            aria-hidden="true"
+          >
+            @if (virtualMulti.isSelected(c)) {
+              <app-icon name="check" [size]="14" />
+            }
+          </span>
+          <span class="combobox-virtual-option-text">
+            <span class="combobox-virtual-option-main">{{ c.name }}</span>
+            <span class="combobox-virtual-option-sub">{{ c.continent }}</span>
+          </span>
+        </ng-template>
+        <ng-template nxrComboboxVirtualFooter>
+          <div class="combobox-virtual-panel-footer combobox-virtual-panel-footer--split">
+            <button
+              type="button"
+              class="btn btn-sm btn-ghost"
+              (click)="virtualMulti.clearSearchQuery()"
+            >
+              Clear search
+            </button>
+            <button type="button" class="btn btn-sm" (click)="virtualMulti.close()">Done</button>
+          </div>
+        </ng-template>
+      </nxr-combobox>
+      <span class="combobox-meta">
+        {{ virtualMultiSelectedCountries().length }} selected ·
+        {{ virtualMultiFiltered().length }} visible rows
+      </span>
+    </div>
+  </section>
+
+  <!-- 10. Grouped options -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Grouped Options</h2>
+    <p class="page-section-desc">
+      Countries grouped by continent with nxrComboboxGroup and nxrComboboxGroupLabel.
+    </p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [value]="groupedValue()"
+        (valueChange)="setGroupedValue($event)"
+        (searchChange)="groupedSearch.set($event)"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        placeholder="Search countries…"
+        #grp="nxrCombobox"
+      >
+        <div class="combobox-control">
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search…"
+            autocomplete="off"
+            aria-label="Search"
+          />
+          @if (grp.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxPanel>
+          @for (group of filteredGroups(); track group.continent) {
+            <div nxrComboboxGroup>
+              <span nxrComboboxGroupLabel class="combobox-group-label">{{ group.continent }}</span>
+              @for (country of group.countries; track country.code) {
+                <div class="combobox-option" nxrComboboxOption [value]="country">
+                  {{ country.name }}
+                </div>
+              }
+            </div>
+            @if (!$last) {
+              <div class="combobox-separator" nxrComboboxSeparator></div>
+            }
+          }
+          @if (filteredGroups().length === 0) {
+            <div class="combobox-empty">No results</div>
+          }
+        </ng-template>
+      </nxr-combobox>
+      <span class="combobox-meta">Value: {{ groupedValue()?.name ?? '—' }}</span>
+    </div>
+  </section>
+</div>

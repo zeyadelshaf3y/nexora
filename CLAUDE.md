@@ -10,5 +10,6 @@
 - For questions around nx configuration, best practices or if you're unsure, use the `nx_docs` tool to get relevant, up-to-date docs. Always use this instead of assuming things about nx configuration
 - If the user needs help with an Nx configuration or project graph error, use the `nx_workspace` tool to get any errors
 - For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
+- For headless UI work (features, bugs, overlay/dialog/drawer/popover/tooltip/snackbar): read **docs/** for context — [docs/HEADLESS.md](docs/HEADLESS.md) (overview + documentation index), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/HEADLESS-BEHAVIOR.md](docs/HEADLESS-BEHAVIOR.md), [docs/PUBLIC-API-DESIGN.md](docs/PUBLIC-API-DESIGN.md), [docs/ANGULAR-GUIDELINES.md](docs/ANGULAR-GUIDELINES.md), [docs/CLEAN-CODE.md](docs/CLEAN-CODE.md).
 
 <!-- nx configuration end-->
