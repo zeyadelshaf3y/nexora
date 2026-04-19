@@ -1,6 +1,11 @@
 export { CloseSnackbarDirective } from './lib/directives/close-snackbar.directive';
-export type { SnackbarRef } from './lib/ref/snackbar-ref';
+export type { SnackbarAutoCloseState, SnackbarRef } from './lib/ref/snackbar-ref';
 export type { SnackbarOpenOptions } from './lib/options/snackbar-open-options';
+export type {
+  SnackbarDefaultsConfig,
+  SnackbarNotifyOptions,
+} from './lib/options/snackbar-defaults.config';
+export { provideSnackbarDefaults, SNACKBAR_DEFAULTS } from './lib/options/snackbar-defaults.config';
 export type { SnackbarPlacement } from './lib/position/snackbar-placement';
 export {
   SnackbarService,

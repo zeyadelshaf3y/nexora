@@ -1,4 +1,5 @@
 import type { Injector, ViewContainerRef } from '@angular/core';
+import type { OpenInputs, OpenInputsFor, OpenOutputs, OpenOutputsFor } from '@nexora-ui/overlay';
 
 import type { SnackbarPlacement } from '../position/snackbar-placement';
 
@@ -46,14 +47,30 @@ interface SnackbarOpenOptionsCommon {
   ariaLabel?: string;
   /** ID of the element that labels the snackbar pane. Applied as `aria-labelledby`. */
   ariaLabelledBy?: string;
+  /**
+   * Exposes remaining auto-close progress (`1 -> 0`) on pane style as
+   * `--nxr-snackbar-progress`.
+   */
+  showProgress?: boolean;
+  /**
+   * Pauses auto-close timer while pointer hovers the snackbar pane. Default `false`.
+   * No-op when `duration <= 0`.
+   */
+  pauseOnHover?: boolean;
+  /**
+   * Maximum number of visible snackbars for this placement lane.
+   * Older snackbars beyond the cap are hidden (not closed) until visible slots free up.
+   * `undefined` keeps unlimited visibility.
+   */
+  maxVisibleSnackbars?: number;
 }
 
 /** Options when opening a snackbar with a component. */
-export interface SnackbarOpenOptionsForComponent extends SnackbarOpenOptionsCommon {
+export interface SnackbarOpenOptionsForComponent<T = unknown> extends SnackbarOpenOptionsCommon {
   /** Inputs to pass to the component. */
-  inputs?: Record<string, unknown>;
+  inputs?: OpenInputsFor<T> | OpenInputs;
   /** Outputs to subscribe to. */
-  outputs?: Record<string, (value: unknown) => void>;
+  outputs?: OpenOutputsFor<T> | OpenOutputs;
 }
 
 /** Options when opening a snackbar with a template. */

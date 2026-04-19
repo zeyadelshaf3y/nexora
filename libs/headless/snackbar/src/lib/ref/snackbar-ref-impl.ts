@@ -1,7 +1,12 @@
 import { type OverlayRef, subscribeOnceAfterClosed } from '@nexora-ui/overlay';
-import { Subject, type Observable } from 'rxjs';
+import { BehaviorSubject, Subject, type Observable } from 'rxjs';
 
-import type { SnackbarRef } from './snackbar-ref';
+import type { SnackbarAutoCloseState, SnackbarRef } from './snackbar-ref';
+
+interface SnackbarAutoCloseControls {
+  pause: () => void;
+  resume: () => void;
+}
 
 /**
  * Wraps an {@link OverlayRef} and adds typed close-with-value semantics for snackbars.
@@ -9,6 +14,13 @@ import type { SnackbarRef } from './snackbar-ref';
  */
 export class SnackbarRefImpl<T = unknown> implements SnackbarRef<T> {
   private readonly closedSubject = new Subject<T | undefined>();
+  private readonly autoCloseStateSubject = new BehaviorSubject<SnackbarAutoCloseState>({
+    durationMs: 0,
+    remainingMs: 0,
+    progress: 0,
+    paused: false,
+  });
+  private autoCloseControls: SnackbarAutoCloseControls | null = null;
   private closed = false;
 
   constructor(private readonly overlayRef: OverlayRef) {
@@ -19,8 +31,10 @@ export class SnackbarRefImpl<T = unknown> implements SnackbarRef<T> {
     if (this.closed) return;
 
     this.closed = true;
+    this.autoCloseControls = null;
     this.closedSubject.next(value);
     this.closedSubject.complete();
+    this.autoCloseStateSubject.complete();
     void this.overlayRef.close();
   }
 
@@ -32,6 +46,20 @@ export class SnackbarRefImpl<T = unknown> implements SnackbarRef<T> {
     return this.closedSubject.asObservable();
   }
 
+  autoCloseState(): Observable<SnackbarAutoCloseState> {
+    return this.autoCloseStateSubject.asObservable();
+  }
+
+  pauseAutoClose(): void {
+    if (this.closed) return;
+    this.autoCloseControls?.pause();
+  }
+
+  resumeAutoClose(): void {
+    if (this.closed) return;
+    this.autoCloseControls?.resume();
+  }
+
   getPaneElement(): HTMLElement | null {
     return this.overlayRef.getPaneElement();
   }
@@ -41,12 +69,26 @@ export class SnackbarRefImpl<T = unknown> implements SnackbarRef<T> {
     if (!this.closed) this.overlayRef.reposition();
   }
 
+  /** @internal */
+  setAutoCloseState(state: SnackbarAutoCloseState): void {
+    if (!this.closed) {
+      this.autoCloseStateSubject.next(state);
+    }
+  }
+
+  /** @internal */
+  bindAutoCloseControls(controls: SnackbarAutoCloseControls | null): void {
+    this.autoCloseControls = controls;
+  }
+
   /** Handles the overlay closing externally (Escape, outside click, programmatic). */
   private onOverlayClosed(): void {
     if (!this.closed) {
       this.closed = true;
+      this.autoCloseControls = null;
       this.closedSubject.next(undefined);
       this.closedSubject.complete();
+      this.autoCloseStateSubject.complete();
     }
   }
 }

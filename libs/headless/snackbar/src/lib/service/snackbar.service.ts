@@ -1,10 +1,12 @@
 import {
   inject,
   Injectable,
+  isDevMode,
   type TemplateRef,
   type Type,
   type ViewContainerRef,
 } from '@angular/core';
+import { warnOnce } from '@nexora-ui/core';
 import {
   type OverlayConfig,
   type ComponentPortal,
@@ -22,10 +24,22 @@ import {
   unsubscribeComponentOutputSubscriptions,
 } from '@nexora-ui/overlay/internal';
 
-import type { SnackbarOpenOptions } from '../options/snackbar-open-options';
+import {
+  type SnackbarDefaultsConfig,
+  type SnackbarNotifyOptions,
+  SNACKBAR_DEFAULTS,
+} from '../options/snackbar-defaults.config';
+import type {
+  SnackbarOpenOptions,
+  SnackbarOpenOptionsForComponent,
+  SnackbarOpenOptionsForTemplate,
+} from '../options/snackbar-open-options';
 import type { SnackbarPlacement } from '../position/snackbar-placement';
-import { SnackbarPositionStrategy } from '../position/snackbar-position-strategy';
-import type { SnackbarRef } from '../ref/snackbar-ref';
+import {
+  DEFAULT_SNACKBAR_PADDING,
+  SnackbarPositionStrategy,
+} from '../position/snackbar-position-strategy';
+import type { SnackbarAutoCloseState, SnackbarRef } from '../ref/snackbar-ref';
 import { SnackbarRefImpl } from '../ref/snackbar-ref-impl';
 
 import {
@@ -34,10 +48,21 @@ import {
   type SnackbarInternalRef,
   SNACKBAR_OVERLAY_CLOSE_POLICY,
 } from './internal/snackbar-open-helpers';
-import { SnackbarStackRegistry } from './internal/snackbar-stack-registry';
+import {
+  SnackbarStackRegistry,
+  type SnackbarVisibilityChange,
+} from './internal/snackbar-stack-registry';
+
+type SnackbarAutoCloseRef = SnackbarInternalRef & {
+  bindAutoCloseControls(controls: { pause: () => void; resume: () => void } | null): void;
+  setAutoCloseState(state: SnackbarAutoCloseState): void;
+};
 
 /** Default auto-close duration in ms. Override via `options.duration`. */
 export const DEFAULT_SNACKBAR_DURATION = 4000;
+const AUTO_CLOSE_PROGRESS_TICK_MS = 100;
+const ATTR_HIDDEN = 'hidden';
+const ATTR_INERT = 'inert';
 
 /** Default snackbar placement. Override via `options.placement`. */
 export const DEFAULT_SNACKBAR_PLACEMENT: SnackbarPlacement = 'bottom-end';
@@ -51,6 +76,9 @@ export const DEFAULT_SNACKBAR_PLACEMENT: SnackbarPlacement = 'bottom-end';
 @Injectable({ providedIn: 'root' })
 export class SnackbarService {
   private readonly overlay = inject(OverlayService);
+  private readonly defaults = inject<SnackbarDefaultsConfig | null>(SNACKBAR_DEFAULTS, {
+    optional: true,
+  });
   private readonly stack = new SnackbarStackRegistry();
 
   /**
@@ -59,6 +87,11 @@ export class SnackbarService {
    *
    * @throws Error if a ViewContainerRef cannot be obtained (pass viewContainerRef in options, pass an injector that provides ViewContainerRef, or ensure the overlay container can be created (DOM available).
    */
+  open(
+    content: TemplateRef<unknown>,
+    options?: SnackbarOpenOptionsForTemplate,
+  ): SnackbarRef<unknown>;
+  open<T>(content: Type<T>, options?: SnackbarOpenOptionsForComponent<T>): SnackbarRef<T>;
   open<T = unknown>(
     content: TemplateRef<unknown> | Type<T>,
     options: SnackbarOpenOptions = {},
@@ -69,6 +102,10 @@ export class SnackbarService {
 
     const vcr = this.resolveViewContainerRef(options);
     this.stack.closeExistingInGroup(groupId);
+    this.stack.setPlacementMaxVisible(
+      placement,
+      this.resolvePlacementMaxVisibleForOpen(placement, options),
+    );
 
     const refHolder: { current: SnackbarRefImpl<T> | null } = { current: null };
 
@@ -80,10 +117,10 @@ export class SnackbarService {
     );
     refHolder.current = new SnackbarRefImpl<T>(overlayRef);
     const snackbarRef = refHolder.current;
-    this.stack.registerRef(placement, snackbarRef);
+    this.applyVisibilityChanges(this.stack.registerRef(placement, snackbarRef));
 
     subscribeOnceAfterClosed(snackbarRef, () => {
-      this.stack.unregisterRef(placement, snackbarRef);
+      this.applyVisibilityChanges(this.stack.unregisterRef(placement, snackbarRef));
       if (groupId) this.stack.unregisterRefByGroupId(groupId, snackbarRef);
       this.stack.repositionPlacementStack(placement);
     });
@@ -97,7 +134,7 @@ export class SnackbarService {
       this.handleAttachResult(opened, {
         overlayRef,
         placement,
-        snackbarRef,
+        snackbarRef: snackbarRef as SnackbarAutoCloseRef,
         groupId,
         portal,
         content,
@@ -107,6 +144,41 @@ export class SnackbarService {
     });
 
     return snackbarRef;
+  }
+
+  notify(message: string, options?: Omit<SnackbarNotifyOptions, 'message'>): SnackbarRef<unknown>;
+  notify(options: SnackbarNotifyOptions): SnackbarRef<unknown>;
+  notify(
+    messageOrOptions: string | SnackbarNotifyOptions,
+    options: Omit<SnackbarNotifyOptions, 'message'> = {},
+  ): SnackbarRef<unknown> {
+    const defaults = this.defaults;
+    if (!defaults) {
+      throw new Error(
+        'SnackbarService.notify(): no defaults configured. Provide SNACKBAR_DEFAULTS via provideSnackbarDefaults(...).',
+      );
+    }
+
+    const notifyOptions: SnackbarNotifyOptions =
+      typeof messageOrOptions === 'string'
+        ? { ...options, message: messageOrOptions }
+        : messageOrOptions;
+    const refHolder: { current: SnackbarRef<unknown> | null } = { current: null };
+    const mappedInputs = defaults.mapInputs?.(notifyOptions);
+    const mappedOutputs = defaults.mapOutputs?.({
+      notify: notifyOptions,
+      close: (value?: unknown) => refHolder.current?.close(value),
+    });
+    const mergedOptions: SnackbarOpenOptionsForComponent = {
+      ...(defaults.defaultOpenOptions ?? {}),
+      ...this.getNotifyOpenOptions(notifyOptions),
+      ...(mappedInputs != null ? { inputs: mappedInputs } : {}),
+      ...(mappedOutputs != null ? { outputs: mappedOutputs } : {}),
+    };
+
+    refHolder.current = this.open(defaults.component, mergedOptions);
+
+    return refHolder.current;
   }
 
   // ---------------------------------------------------------------------------
@@ -145,7 +217,10 @@ export class SnackbarService {
       closePolicy: SNACKBAR_OVERLAY_CLOSE_POLICY,
       closeAnimationDurationMs: options.closeAnimationDurationMs ?? 0,
       width: options.width,
-      maxWidth: options.maxWidth,
+      maxWidth: this.resolveClampedMaxWidth(
+        options.maxWidth,
+        options.padding ?? DEFAULT_SNACKBAR_PADDING,
+      ),
       panelClass: options.panelClass,
       panelStyle: options.panelStyle,
       ariaLabel: options.ariaLabel,
@@ -153,12 +228,19 @@ export class SnackbarService {
     };
   }
 
+  private resolveClampedMaxWidth(maxWidth: string | undefined, paddingPx: number): string {
+    const viewportCap = `max(0px, calc(100vw - ${Math.max(0, paddingPx) * 2}px))`;
+    if (!maxWidth || maxWidth.trim().length === 0) return viewportCap;
+
+    return `min(${maxWidth}, ${viewportCap})`;
+  }
+
   private handleAttachResult(
     opened: boolean,
     params: {
       overlayRef: { dispose: () => void; getPaneElement: () => HTMLElement | null };
       placement: SnackbarPlacement;
-      snackbarRef: SnackbarInternalRef;
+      snackbarRef: SnackbarAutoCloseRef;
       groupId: string | undefined;
       portal: ComponentPortal<unknown>;
       content: TemplateRef<unknown> | Type<unknown>;
@@ -169,15 +251,21 @@ export class SnackbarService {
     const { overlayRef, placement, snackbarRef, groupId, portal, content, options, duration } =
       params;
     if (!opened) {
-      this.stack.unregisterRef(placement, snackbarRef);
+      this.applyVisibilityChanges(this.stack.unregisterRef(placement, snackbarRef));
       if (groupId) this.stack.unregisterRefByGroupId(groupId, snackbarRef);
       overlayRef.dispose();
+      this.stack.repositionPlacementStack(placement);
 
       return;
     }
     this.setupAttachedPane(overlayRef, placement, snackbarRef);
     this.applyComponentBindings(portal, content, options, snackbarRef);
-    this.scheduleAutoClose(snackbarRef, duration);
+    this.scheduleAutoClose(snackbarRef, duration, {
+      pauseOnHover: options.pauseOnHover ?? false,
+      showProgress: options.showProgress ?? false,
+    });
+    // Keep stack layout correct when visibility queue changes during open.
+    this.stack.repositionPlacementStack(placement);
   }
 
   private setupAttachedPane(
@@ -195,6 +283,7 @@ export class SnackbarService {
     this.stack.stackMetrics.trackPane(snackbarRef, pane, () =>
       this.stack.repositionPlacementStack(placement),
     );
+    this.applyPaneHiddenState(snackbarRef, this.stack.isRefHidden(snackbarRef));
   }
 
   // ---------------------------------------------------------------------------
@@ -226,10 +315,211 @@ export class SnackbarService {
     }
   }
 
-  private scheduleAutoClose(ref: SnackbarInternalRef, duration: number): void {
-    if (duration <= 0) return;
+  private getNotifyOpenOptions(
+    options: SnackbarNotifyOptions,
+  ): Omit<SnackbarOpenOptionsForComponent, 'inputs' | 'outputs'> {
+    return {
+      ...(options.host !== undefined ? { host: options.host } : {}),
+      ...(options.placement !== undefined ? { placement: options.placement } : {}),
+      ...(options.duration !== undefined ? { duration: options.duration } : {}),
+      ...(options.viewContainerRef !== undefined
+        ? { viewContainerRef: options.viewContainerRef }
+        : {}),
+      ...(options.injector !== undefined ? { injector: options.injector } : {}),
+      ...(options.panelClass !== undefined ? { panelClass: options.panelClass } : {}),
+      ...(options.panelStyle !== undefined ? { panelStyle: options.panelStyle } : {}),
+      ...(options.width !== undefined ? { width: options.width } : {}),
+      ...(options.maxWidth !== undefined ? { maxWidth: options.maxWidth } : {}),
+      ...(options.stackGap !== undefined ? { stackGap: options.stackGap } : {}),
+      ...(options.padding !== undefined ? { padding: options.padding } : {}),
+      ...(options.closeAnimationDurationMs !== undefined
+        ? { closeAnimationDurationMs: options.closeAnimationDurationMs }
+        : {}),
+      ...(options.groupId !== undefined ? { groupId: options.groupId } : {}),
+      ...(options.ariaLabel !== undefined ? { ariaLabel: options.ariaLabel } : {}),
+      ...(options.ariaLabelledBy !== undefined ? { ariaLabelledBy: options.ariaLabelledBy } : {}),
+      ...(options.showProgress !== undefined ? { showProgress: options.showProgress } : {}),
+      ...(options.pauseOnHover !== undefined ? { pauseOnHover: options.pauseOnHover } : {}),
+      ...(options.maxVisibleSnackbars !== undefined
+        ? { maxVisibleSnackbars: options.maxVisibleSnackbars }
+        : {}),
+    };
+  }
 
-    const tid = setTimeout(() => ref.close(), duration);
-    subscribeOnceAfterClosed(ref, () => clearTimeout(tid));
+  private resolveMaxVisibleSnackbars(options: SnackbarOpenOptions): number | undefined {
+    const value = options.maxVisibleSnackbars ?? this.defaults?.maxVisibleSnackbars;
+
+    if (value == null) return undefined;
+
+    if (!Number.isFinite(value)) return undefined;
+
+    return Math.floor(value);
+  }
+
+  private resolvePlacementMaxVisibleForOpen(
+    placement: SnackbarPlacement,
+    options: SnackbarOpenOptions,
+  ): number | undefined {
+    const requested = this.resolveMaxVisibleSnackbars(options);
+    const hasActiveRefs = this.stack.hasRefsForPlacement(placement);
+    const activeCap = this.stack.getPlacementMaxVisible(placement);
+
+    if (!hasActiveRefs || activeCap === undefined || activeCap === requested) {
+      return requested;
+    }
+    if (isDevMode()) {
+      warnOnce(
+        `nxr-snackbar-max-visible-conflict-${placement}`,
+        [
+          `SNACKBAR maxVisibleSnackbars conflict for placement "${placement}".`,
+          `Active cap (${activeCap}) is kept until this placement queue is drained.`,
+          `Requested value (${requested}) will apply to subsequent queues.`,
+        ].join(' '),
+      );
+    }
+
+    return activeCap;
+  }
+
+  private applyVisibilityChanges(changes: readonly SnackbarVisibilityChange[]): void {
+    for (const change of changes) {
+      this.applyPaneHiddenState(change.ref, change.hidden);
+    }
+  }
+
+  private applyPaneHiddenState(ref: SnackbarInternalRef, hidden: boolean): void {
+    const pane = ref.getPaneElement();
+    if (!pane) return;
+
+    if (hidden) {
+      pane.setAttribute('data-hidden', 'true');
+      pane.setAttribute('aria-hidden', 'true');
+      pane.setAttribute(ATTR_HIDDEN, '');
+      pane.setAttribute(ATTR_INERT, '');
+      pane.style.pointerEvents = 'none';
+
+      return;
+    }
+
+    pane.removeAttribute('data-hidden');
+    pane.removeAttribute('aria-hidden');
+    pane.removeAttribute(ATTR_HIDDEN);
+    pane.removeAttribute(ATTR_INERT);
+    pane.style.removeProperty('pointer-events');
+  }
+
+  private scheduleAutoClose(
+    ref: SnackbarAutoCloseRef,
+    duration: number,
+    options: { pauseOnHover: boolean; showProgress: boolean },
+  ): void {
+    const pane = ref.getPaneElement();
+    const setPaneProgress = (progress: number): void => {
+      if (!options.showProgress || !pane) return;
+      pane.style.setProperty('--nxr-snackbar-progress', progress.toFixed(4));
+    };
+    const clearPaneProgress = (): void => {
+      if (!options.showProgress || !pane) return;
+      pane.style.removeProperty('--nxr-snackbar-progress');
+    };
+
+    if (duration <= 0) {
+      ref.bindAutoCloseControls(null);
+      ref.setAutoCloseState({
+        durationMs: 0,
+        remainingMs: 0,
+        progress: 0,
+        paused: false,
+      });
+      clearPaneProgress();
+
+      return;
+    }
+
+    let remainingMs = duration;
+    let endAt = Date.now() + duration;
+    let paused = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const updateState = (): void => {
+      const now = Date.now();
+      if (!paused) {
+        remainingMs = Math.max(0, endAt - now);
+      }
+      const progress = Math.max(0, Math.min(1, remainingMs / duration));
+      ref.setAutoCloseState({
+        durationMs: duration,
+        remainingMs,
+        progress,
+        paused,
+      });
+      setPaneProgress(progress);
+    };
+
+    const clearTimeoutIfNeeded = (): void => {
+      if (timeoutId != null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    const scheduleTimeout = (): void => {
+      clearTimeoutIfNeeded();
+      timeoutId = setTimeout(() => ref.close(), remainingMs);
+    };
+
+    const pause = (): void => {
+      if (paused) return;
+
+      remainingMs = Math.max(0, endAt - Date.now());
+      paused = true;
+      clearTimeoutIfNeeded();
+      updateState();
+    };
+
+    const resume = (): void => {
+      if (!paused) return;
+      if (remainingMs <= 0) {
+        ref.close();
+
+        return;
+      }
+
+      paused = false;
+      endAt = Date.now() + remainingMs;
+      scheduleTimeout();
+      updateState();
+    };
+
+    const onMouseEnter = (): void => pause();
+    const onMouseLeave = (): void => resume();
+
+    ref.bindAutoCloseControls({ pause, resume });
+    scheduleTimeout();
+    updateState();
+    if (options.showProgress) {
+      intervalId = setInterval(() => {
+        if (!paused) updateState();
+      }, AUTO_CLOSE_PROGRESS_TICK_MS);
+    }
+
+    if (options.pauseOnHover && pane) {
+      pane.addEventListener('mouseenter', onMouseEnter);
+      pane.addEventListener('mouseleave', onMouseLeave);
+    }
+
+    subscribeOnceAfterClosed(ref, () => {
+      clearTimeoutIfNeeded();
+      if (intervalId != null) {
+        clearInterval(intervalId);
+      }
+      if (options.pauseOnHover && pane) {
+        pane.removeEventListener('mouseenter', onMouseEnter);
+        pane.removeEventListener('mouseleave', onMouseLeave);
+      }
+      clearPaneProgress();
+      ref.bindAutoCloseControls(null);
+    });
   }
 }

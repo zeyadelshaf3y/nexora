@@ -1,31 +1,64 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   inject,
-  ViewChild,
+  Input,
+  Output,
   ViewEncapsulation,
-  type TemplateRef,
 } from '@angular/core';
-import {
-  CloseSnackbarDirective,
-  SnackbarService,
-  type SnackbarPlacement,
-} from '@nexora-ui/snackbar';
+import { SNACKBAR_REF, SnackbarService, type SnackbarPlacement } from '@nexora-ui/snackbar';
 
 import { IconComponent } from '../core/icons';
+
+@Component({
+  selector: 'app-custom-snackbar',
+  standalone: true,
+  template: `
+    <div class="notify-snackbar notify-snackbar--custom" [attr.data-variant]="variant || 'info'">
+      <strong class="notify-snackbar-title">{{ title }}</strong>
+      <span class="notify-snackbar-message">{{ message }}</span>
+      <div class="notify-snackbar-actions">
+        <button class="notify-snackbar-action" type="button" (click)="triggerAction()">
+          {{ actionLabel || 'Action' }}
+        </button>
+        <button class="notify-snackbar-dismiss" type="button" (click)="dismiss()">x</button>
+      </div>
+    </div>
+  `,
+})
+class DemoCustomSnackbarComponent {
+  @Input() variant = 'info';
+  @Input() title = 'Custom Snackbar';
+  @Input() message = '';
+  @Input() actionLabel = 'Action';
+
+  @Output() readonly action = new EventEmitter<{ acknowledged: true }>();
+
+  private readonly ref = inject(SNACKBAR_REF);
+
+  triggerAction(): void {
+    this.action.emit({ acknowledged: true });
+    this.ref.close('custom-action');
+  }
+
+  dismiss(): void {
+    this.ref.close('dismiss');
+  }
+}
 
 @Component({
   selector: 'app-snackbar-page',
   standalone: true,
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CloseSnackbarDirective, IconComponent],
+  imports: [IconComponent],
   template: `
     <!-- Placements -->
     <section class="page-section">
       <h2 class="page-section-title">Snackbar Placements</h2>
       <p class="page-section-desc">
-        Toast notifications at 6 viewport positions. Auto-close in 5s.
+        Uses <code>notify(...)</code> with app-level defaults provider and placement overrides.
       </p>
       <div class="btn-row">
         @for (p of snackbarPlacements; track p) {
@@ -38,7 +71,7 @@ import { IconComponent } from '../core/icons';
     <section class="page-section">
       <h2 class="page-section-title">Variants &amp; Grouping</h2>
       <p class="page-section-desc">
-        Colored left border indicates status. <code>groupId</code> replaces same-group snackbars.
+        Variant is passed through <code>notify</code> and can be styled by your default component.
       </p>
       <div class="snackbar-page-variants">
         @for (v of variants; track v.id) {
@@ -57,20 +90,21 @@ import { IconComponent } from '../core/icons';
     <!-- Stacking -->
     <section class="page-section">
       <h2 class="page-section-title">Stacking</h2>
-      <p class="page-section-desc">Open 3 snackbars without groupId — they stack vertically.</p>
-      <button class="btn" (click)="openStack()">Open 3 stacked</button>
+      <p class="page-section-desc">
+        Demo defaults cap visible snackbars at 3 per placement. Open 5 and watch oldest queue/hide.
+      </p>
+      <button class="btn" (click)="openStack()">Open 5 stacked (max visible 3)</button>
     </section>
 
-    <!-- ═══ Templates ═══ -->
-    <ng-template #snackbarTpl let-message="message">
-      <div class="tpl-snackbar">
-        <span class="tpl-snackbar-msg">{{ message }}</span>
-        <button class="tpl-snackbar-action" nxrSnackbarClose>Dismiss</button>
-        <button class="tpl-snackbar-action tpl-snackbar-action--accent" [nxrSnackbarClose]="'undo'">
-          Undo
-        </button>
-      </div>
-    </ng-template>
+    <!-- Custom component inputs/outputs -->
+    <section class="page-section">
+      <h2 class="page-section-title">Custom Component (typed inputs/outputs)</h2>
+      <p class="page-section-desc">
+        Demonstrates <code>open(Component, options)</code> with typed
+        <code>inputs</code>/<code>outputs</code>.
+      </p>
+      <button class="btn btn-sm" (click)="openCustomComponent()">Open custom snackbar</button>
+    </section>
   `,
   styles: [
     `
@@ -88,8 +122,6 @@ import { IconComponent } from '../core/icons';
   ],
 })
 export class SnackbarPageComponent {
-  @ViewChild('snackbarTpl') snackbarTpl!: TemplateRef<unknown>;
-
   private readonly snackbarSvc = inject(SnackbarService);
 
   readonly snackbarPlacements: SnackbarPlacement[] = [
@@ -106,62 +138,86 @@ export class SnackbarPageComponent {
       id: 'success',
       label: 'Success',
       message: 'Changes saved successfully.',
-      cls: 'snackbar-success',
       icon: 'check',
     },
     {
       id: 'error',
       label: 'Error',
       message: 'Something went wrong.',
-      cls: 'snackbar-error',
       icon: 'x',
     },
     {
       id: 'info',
       label: 'Info',
       message: 'Session expires in 5 min.',
-      cls: 'snackbar-info',
       icon: 'bell',
     },
     {
       id: 'warning',
       label: 'Warning',
       message: 'This cannot be undone.',
-      cls: 'snackbar-warning',
       icon: 'zap',
     },
   ] as const;
 
   openSnackbar(placement: SnackbarPlacement): void {
-    this.snackbarSvc.open(this.snackbarTpl, {
+    this.snackbarSvc.notify({
       placement,
-      duration: 5000,
-      panelClass: 'demo-snackbar-pane',
-      closeAnimationDurationMs: 200,
-      data: { message: `Snackbar at ${placement}` },
+      title: 'Placement demo',
+      message: `Snackbar at ${placement}`,
+      actionLabel: 'Dismiss',
+      variant: 'info',
+      pauseOnHover: true,
     });
   }
 
-  openVariant(v: { id: string; label: string; message: string; cls: string }): void {
-    this.snackbarSvc.open(this.snackbarTpl, {
+  openVariant(v: { id: string; label: string; message: string }): void {
+    this.snackbarSvc.notify({
+      variant: v.id,
+      title: v.label,
+      message: v.message,
+      actionLabel: 'Dismiss',
       placement: 'bottom-end',
-      duration: 5000,
       groupId: v.id,
-      panelClass: ['demo-snackbar-pane', v.cls],
-      closeAnimationDurationMs: 200,
-      data: { message: v.message },
+      pauseOnHover: true,
     });
   }
 
   openStack(): void {
-    [1, 2, 3].forEach((i) => {
-      this.snackbarSvc.open(this.snackbarTpl, {
+    [1, 2, 3, 4, 5].forEach((i) => {
+      this.snackbarSvc.notify({
+        title: `Notification ${i}`,
+        message: `Stacked item ${i} of 5`,
+        actionLabel: 'Dismiss',
         placement: 'bottom-end',
         duration: 6000,
-        panelClass: 'demo-snackbar-pane',
-        closeAnimationDurationMs: 200,
-        data: { message: `Notification ${i} of 3` },
       });
+    });
+  }
+
+  openCustomComponent(): void {
+    this.snackbarSvc.open(DemoCustomSnackbarComponent, {
+      placement: 'top-end',
+      duration: 8000,
+      panelClass: ['demo-snackbar-pane', 'snackbar-info'],
+      showProgress: true,
+      pauseOnHover: true,
+      inputs: {
+        variant: 'info',
+        title: 'Custom I/O snackbar',
+        message: 'This one uses typed component inputs and outputs.',
+        actionLabel: 'Confirm',
+      },
+      outputs: {
+        action: () =>
+          this.snackbarSvc.notify({
+            variant: 'success',
+            title: 'Output fired',
+            message: 'Custom snackbar output handler executed.',
+            actionLabel: 'Nice',
+            duration: 2500,
+          }),
+      },
     });
   }
 }
