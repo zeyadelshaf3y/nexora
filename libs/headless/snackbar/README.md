@@ -38,6 +38,17 @@ openNotification() {
     data: { message: 'New message' },
   });
 }
+
+// Notify API with default component (opt-in)
+notifySuccess() {
+  this.snackbar.notify({
+    variant: 'success',
+    title: 'Saved',
+    message: 'Profile updated',
+    actionLabel: 'Dismiss',
+    pauseOnHover: true,
+  });
+}
 ```
 
 ```html
@@ -58,26 +69,101 @@ openNotification() {
   - **placement**: `'top-start' | 'top' | 'top-end' | 'bottom-start' | 'bottom' | 'bottom-end'` — default `'bottom-end'`.
   - **duration**: ms to auto-close; `0` = no auto-close. Default `4000`.
   - **groupId**: when set, only one snackbar per group is shown; opening another with the same `groupId` closes the previous (replace-by-group). Omit to allow stacking.
+  - **maxVisibleSnackbars**: per-placement visible cap. Older snackbars beyond the cap are hidden (not closed) and re-shown when visible slots free up.
   - **viewContainerRef**: optional; uses the same default as `OverlayService` (internal host or default set via `setDefaultViewContainerRef`).
   - **injector**, **panelClass**, **panelStyle**, **stackGap**, **padding**, **closeAnimationDurationMs**.
   - For component: **inputs**, **outputs**.
   - For template: **data** (context).
 
-Returns `SnackbarRef<T>`: `close(value?)`, `dismiss(value?)`, `afterClosed(): Observable<T | undefined>`, `getPaneElement()`.
+Returns `SnackbarRef<T>`:
+
+- `close(value?)`
+- `dismiss(value?)`
+- `afterClosed(): Observable<T | undefined>`
+- `getPaneElement()`
+- `autoCloseState(): Observable<{ durationMs; remainingMs; progress; paused }>`
+- `pauseAutoClose()`
+- `resumeAutoClose()`
+
+### SnackbarService.notify(options) / notify(message, options?)
+
+`notify(...)` opens a configured default component. It requires `provideSnackbarDefaults(...)`.
+
+```ts
+import { provideSnackbarDefaults } from '@nexora-ui/snackbar';
+
+providers: [
+  provideSnackbarDefaults({
+    component: AppSnackbarComponent,
+    defaultOpenOptions: {
+      placement: 'bottom-end',
+      duration: 4000,
+      panelClass: 'app-snackbar',
+      showProgress: true,
+      maxVisibleSnackbars: 3,
+    },
+    maxVisibleSnackbars: 3,
+    mapInputs: (n) => ({
+      variant: n.variant,
+      title: n.title,
+      message: n.message,
+      actionLabel: n.actionLabel,
+    }),
+    mapOutputs: ({ notify }) => ({
+      actionClick: () => notify.onAction?.(),
+    }),
+  }),
+];
+```
+
+Then call:
+
+```ts
+this.snackbar.notify({
+  variant: 'success',
+  title: 'Saved',
+  message: 'Profile updated',
+  actionLabel: 'Dismiss',
+});
+```
+
+`notify(...)` still accepts snackbar open options (duration, placement, panelClass, etc.) and per-call options override defaults provider values.
 
 ### Styling hooks
 
-| Hook         | Type                     | Applies to   | Notes                                                   |
-| ------------ | ------------------------ | ------------ | ------------------------------------------------------- |
-| `panelClass` | `string \| string[]`     | Overlay pane | Preferred for reusable themes and animation states.     |
-| `panelStyle` | `Record<string, string>` | Overlay pane | Inline one-off pane style overrides.                    |
-| `placement`  | `SnackbarPlacement`      | Positioning  | Viewport/host edge placement and stack direction.       |
-| `stackGap`   | `number`                 | Stack layout | Gap in px between snackbars in the same placement lane. |
-| `padding`    | `number`                 | Stack layout | Offset from host/viewport edge in px.                   |
-| `width`      | `string`                 | Overlay pane | Fixed pane width (optional).                            |
-| `maxWidth`   | `string`                 | Overlay pane | Pane maximum width constraint.                          |
+| Hook                  | Type                     | Applies to   | Notes                                                                     |
+| --------------------- | ------------------------ | ------------ | ------------------------------------------------------------------------- |
+| `panelClass`          | `string \| string[]`     | Overlay pane | Preferred for reusable themes and animation states.                       |
+| `panelStyle`          | `Record<string, string>` | Overlay pane | Inline one-off pane style overrides.                                      |
+| `placement`           | `SnackbarPlacement`      | Positioning  | Viewport/host edge placement and stack direction.                         |
+| `stackGap`            | `number`                 | Stack layout | Gap in px between snackbars in the same placement lane.                   |
+| `padding`             | `number`                 | Stack layout | Offset from host/viewport edge in px.                                     |
+| `width`               | `string`                 | Overlay pane | Fixed pane width (optional).                                              |
+| `maxWidth`            | `string`                 | Overlay pane | Pane maximum width constraint.                                            |
+| `showProgress`        | `boolean`                | Overlay pane | Writes `--nxr-snackbar-progress` (`1 -> 0`) on pane style.                |
+| `pauseOnHover`        | `boolean`                | Auto-close   | When true, pauses countdown while pointer is over pane.                   |
+| `maxVisibleSnackbars` | `number`                 | Queue policy | Max visible per placement; older active snackbars are hidden, not closed. |
 
 Use classes for reusable themes and animations; use `panelStyle` for one-off overrides.
+
+`maxWidth` is internally clamped to viewport width minus placement padding, so panes never overflow the viewport even if a larger value is passed.
+
+### Auto-close progress + hover pause
+
+- Use `showProgress: true` to expose countdown ratio on pane style as `--nxr-snackbar-progress`.
+- Use `pauseOnHover: true` to pause/resume timer while hovering the snackbar pane.
+- Default is `pauseOnHover: false`.
+- `SnackbarRef.autoCloseState()` emits `{ durationMs, remainingMs, progress, paused }`.
+- `SnackbarRef.pauseAutoClose()` / `resumeAutoClose()` provide programmatic control.
+
+### Max Visible Queue
+
+- `maxVisibleSnackbars` applies per placement lane (`top-start`, `bottom-end`, etc.).
+- Exceeding the cap hides oldest snackbars in that lane without closing them.
+- Hidden snackbars remain active: they still auto-close and can still be closed programmatically.
+- When a visible snackbar closes, the oldest hidden active snackbar is re-shown.
+- Precedence: per-call `open/notify` option > defaults provider > unlimited library default.
+- Conflict guard: while a placement queue is active, its cap is locked for that queue. If a later `open/notify` call in the same placement passes a different cap, the active queue cap is kept and the new value applies only after that placement queue drains.
 
 ### nxrSnackbarClose
 

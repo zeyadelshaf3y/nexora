@@ -18,11 +18,7 @@ import {
   type OverlayRef,
 } from '@nexora-ui/overlay';
 import { PopoverTriggerDirective } from '@nexora-ui/popover';
-import {
-  CloseSnackbarDirective,
-  SnackbarService,
-  type SnackbarPlacement,
-} from '@nexora-ui/snackbar';
+import { SnackbarService, type SnackbarPlacement } from '@nexora-ui/snackbar';
 import { TooltipTriggerDirective } from '@nexora-ui/tooltip';
 
 import { bindClearOverlayOnClose } from '../core/bind-clear-overlay-on-close';
@@ -48,7 +44,6 @@ interface MenuAction {
     OverlayArrowDirective,
     OverlayTriggerDirective,
     PopoverTriggerDirective,
-    CloseSnackbarDirective,
     TooltipTriggerDirective,
     ListboxDirective,
     ListboxOptionDirective,
@@ -254,17 +249,6 @@ interface MenuAction {
         }
       </div>
     </ng-template>
-
-    <!-- Snackbar -->
-    <ng-template #snackbarTpl let-message="message">
-      <div class="tpl-snackbar">
-        <span class="tpl-snackbar-msg">{{ message }}</span>
-        <button class="tpl-snackbar-action" nxrSnackbarClose>Dismiss</button>
-        <button class="tpl-snackbar-action tpl-snackbar-action--accent" [nxrSnackbarClose]="'undo'">
-          Undo
-        </button>
-      </div>
-    </ng-template>
   `,
   styles: [
     `
@@ -292,8 +276,6 @@ export class DialogPageComponent {
   @ViewChild('dialogTpl') dialogTpl!: TemplateRef<unknown>;
   @ViewChild('scrollableDialogTpl') scrollableDialogTpl!: TemplateRef<unknown>;
   @ViewChild('mixedDialogTpl') mixedDialogTpl!: TemplateRef<unknown>;
-  @ViewChild('snackbarTpl') snackbarTpl!: TemplateRef<unknown>;
-
   readonly nestedPopoverContent = NestedPopoverContentComponent;
 
   private readonly dialogSvc = inject(DialogService);
@@ -404,12 +386,13 @@ export class DialogPageComponent {
   }
 
   openSnackbar(placement: SnackbarPlacement): void {
-    this.snackbarSvc.open(this.snackbarTpl, {
+    this.snackbarSvc.notify({
+      variant: 'info',
+      title: 'Dialog event',
+      message: `Snackbar fired from dialog`,
+      actionLabel: 'Dismiss',
       placement,
-      duration: 5000,
-      panelClass: 'demo-snackbar-pane',
-      closeAnimationDurationMs: 200,
-      data: { message: `Snackbar fired from dialog` },
+      pauseOnHover: true,
     });
   }
 

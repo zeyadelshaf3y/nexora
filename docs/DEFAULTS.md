@@ -52,6 +52,7 @@ Each overlay-based package has a local defaults provider:
 - `provideSelectDefaults`
 - `provideComboboxDefaults`
 - `provideMenuDefaults`
+- `provideSnackbarDefaults`
 - `provideDialogDefaults`
 - `provideDrawerDefaults`
 

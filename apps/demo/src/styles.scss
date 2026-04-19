@@ -483,6 +483,66 @@ body {
   }
 }
 
+/* Default/custom notify snackbar content */
+.notify-snackbar {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.375rem 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem 0.9rem;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: 2px;
+    background: color-mix(in oklab, var(--nxr-primary), transparent 30%);
+    transform-origin: left center;
+    transform: scaleX(var(--nxr-snackbar-progress, 0));
+    transition: transform 100ms linear;
+    pointer-events: none;
+  }
+}
+
+.notify-snackbar-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--nxr-snackbar-text);
+}
+
+.notify-snackbar-message {
+  grid-column: 1 / 2;
+  font-size: 0.775rem;
+  color: color-mix(in oklab, var(--nxr-snackbar-text), white 12%);
+}
+
+.notify-snackbar-actions {
+  grid-column: 2 / 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.notify-snackbar-action,
+.notify-snackbar-dismiss {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: var(--nxr-radius-xs);
+  cursor: pointer;
+  background: rgb(255 255 255 / 10%);
+  color: rgb(255 255 255 / 75%);
+}
+
+.notify-snackbar-dismiss {
+  padding-inline: 0.45rem;
+}
+
 /* Buttons inside portaled overlay content */
 .tpl-drawer .btn,
 .tpl-dialog .btn,
