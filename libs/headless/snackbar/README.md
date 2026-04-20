@@ -231,7 +231,7 @@ openSnackbar() {
 }
 ```
 
-When **host** is set, the overlay uses that element’s rect for positioning and caps the pane size to the host, so snackbars stay within the boundary.
+When **host** is set, the overlay uses that element's rect for positioning and caps the pane size to the host, so snackbars stay within that boundary.
 
 ## Internal structure
 
