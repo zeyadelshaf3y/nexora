@@ -5,5 +5,40 @@
     "types": []
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
+  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"],
+  "references": [
+    {
+      "path": "../../libs/headless/mention"
+    },
+    {
+      "path": "../../libs/headless/listbox-cdk"
+    },
+    {
+      "path": "../../libs/headless/select"
+    },
+    {
+      "path": "../../libs/headless/menu"
+    },
+    {
+      "path": "../../libs/headless/combobox"
+    },
+    {
+      "path": "../../libs/headless/interactions"
+    },
+    {
+      "path": "../../libs/headless/popover"
+    },
+    {
+      "path": "../../libs/headless/listbox"
+    },
+    {
+      "path": "../../libs/headless/tooltip"
+    },
+    {
+      "path": "../../libs/headless/snackbar"
+    },
+    {
+      "path": "../../libs/headless/overlay"
+    }
+  ]
 }
