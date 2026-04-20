@@ -69,7 +69,7 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc --noEmit -p apps/demo/tsconfig.app.json && tsc --noEmit -p apps/demo/tsconfig.spec.json"
+        "command": "tsc --noEmit -p apps/demo/tsconfig.app.typecheck.json && tsc --noEmit -p apps/demo/tsconfig.spec.json"
       }
     },
     "serve-static": {
