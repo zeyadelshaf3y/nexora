@@ -66,6 +66,12 @@
       "executor": "@angular/build:unit-test",
       "options": {}
     },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p apps/demo/tsconfig.app.json && tsc --noEmit -p apps/demo/tsconfig.spec.json"
+      }
+    },
     "serve-static": {
       "continuous": true,
       "executor": "@nx/web:file-server",
