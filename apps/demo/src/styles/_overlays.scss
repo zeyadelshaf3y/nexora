@@ -386,6 +386,8 @@
       opacity: 1;
       transform: translateY(0) scale(1);
       transition:
+        top 0.24s cubic-bezier(0.32, 0.72, 0, 1),
+        left 0.24s cubic-bezier(0.32, 0.72, 0, 1),
         transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
         opacity 0.2s ease;
     }
@@ -409,6 +411,8 @@
       opacity: 1;
       transform: translateY(0) scale(1);
       transition:
+        top 0.24s cubic-bezier(0.32, 0.72, 0, 1),
+        left 0.24s cubic-bezier(0.32, 0.72, 0, 1),
         transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
         opacity 0.2s ease;
     }

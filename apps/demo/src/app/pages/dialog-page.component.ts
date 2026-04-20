@@ -387,12 +387,14 @@ export class DialogPageComponent {
 
   openSnackbar(placement: SnackbarPlacement): void {
     this.snackbarSvc.notify({
-      variant: 'info',
-      title: 'Dialog event',
-      message: `Snackbar fired from dialog`,
-      actionLabel: 'Dismiss',
       placement,
       pauseOnHover: true,
+      inputs: {
+        variant: 'info',
+        title: 'Dialog event',
+        message: `Snackbar fired from dialog`,
+        actionLabel: 'Dismiss',
+      },
     });
   }
 

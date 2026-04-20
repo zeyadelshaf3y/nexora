@@ -473,24 +473,28 @@ export class OverviewPageComponent {
 
   fireSnackbar(placement: SnackbarPlacement): void {
     this.snackbarSvc.notify({
-      variant: 'info',
-      title: 'Overview event',
-      message: 'Snackbar fired from overview',
-      actionLabel: 'Dismiss',
       placement,
       pauseOnHover: true,
+      inputs: {
+        variant: 'info',
+        title: 'Overview event',
+        message: 'Snackbar fired from overview',
+        actionLabel: 'Dismiss',
+      },
     });
   }
 
   openVariantSnackbar(v: { id: string; message: string }): void {
     this.snackbarSvc.notify({
-      variant: v.id,
-      title: 'Variant demo',
-      message: v.message,
-      actionLabel: 'Dismiss',
       groupId: v.id,
       placement: 'bottom-end',
       pauseOnHover: true,
+      inputs: {
+        variant: v.id,
+        title: 'Variant demo',
+        message: v.message,
+        actionLabel: 'Dismiss',
+      },
     });
   }
 

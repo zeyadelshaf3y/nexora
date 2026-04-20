@@ -10,10 +10,7 @@ import { OverlayService, type CloseReason, type OverlayRef } from '@nexora-ui/ov
 import { Subject, type Observable } from 'rxjs';
 import { vi } from 'vitest';
 
-import {
-  provideSnackbarDefaults,
-  type SnackbarNotifyOptions,
-} from '../options/snackbar-defaults.config';
+import { provideSnackbarDefaults } from '../options/snackbar-defaults.config';
 import type { SnackbarAutoCloseState, SnackbarRef } from '../ref/snackbar-ref';
 
 import { SnackbarService } from './snackbar.service';
@@ -211,19 +208,15 @@ describe('SnackbarService', () => {
   });
 
   it('throws when notify defaults are not configured', () => {
-    expect(() => snackbarService.notify({ message: 'Saved' })).toThrow(/no defaults configured/);
+    expect(() =>
+      snackbarService.notify({
+        inputs: { message: 'Saved' },
+      }),
+    ).toThrow(/no defaults configured/);
   });
 
-  it('notify maps defaults and explicit options before opening default component', () => {
-    const mapInputs = vi.fn((notify: SnackbarNotifyOptions) => ({
-      variant: notify.variant,
-      title: notify.title,
-      message: notify.message,
-      actionLabel: notify.actionLabel,
-    }));
-    const mapOutputs = vi.fn(() => ({
-      actionClick: vi.fn(),
-    }));
+  it('notify merges defaults and explicit options before opening default component', () => {
+    const actionClick = vi.fn();
     configure([
       provideSnackbarDefaults({
         component: DefaultSnackbarComponent,
@@ -232,8 +225,6 @@ describe('SnackbarService', () => {
           placement: 'bottom-end',
           panelClass: 'default-snackbar',
         },
-        mapInputs,
-        mapOutputs,
       }),
     ]);
 
@@ -249,16 +240,20 @@ describe('SnackbarService', () => {
     const openSpy = vi.spyOn(snackbarService, 'open').mockReturnValue(mockRef);
 
     snackbarService.notify({
-      variant: 'success',
-      title: 'Saved',
-      message: 'Profile updated',
       duration: 3000,
       panelClass: 'explicit-class',
       maxVisibleSnackbars: 2,
+      inputs: {
+        variant: 'success',
+        title: 'Saved',
+        message: 'Profile updated',
+        actionLabel: 'Undo',
+      },
+      outputs: {
+        actionClick,
+      },
     });
 
-    expect(mapInputs).toHaveBeenCalled();
-    expect(mapOutputs).toHaveBeenCalled();
     expect(openSpy).toHaveBeenCalledWith(
       DefaultSnackbarComponent,
       expect.objectContaining({
@@ -270,7 +265,10 @@ describe('SnackbarService', () => {
           variant: 'success',
           title: 'Saved',
           message: 'Profile updated',
-          actionLabel: undefined,
+          actionLabel: 'Undo',
+        },
+        outputs: {
+          actionClick,
         },
       }),
     );

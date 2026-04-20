@@ -42,11 +42,13 @@ openNotification() {
 // Notify API with default component (opt-in)
 notifySuccess() {
   this.snackbar.notify({
-    variant: 'success',
-    title: 'Saved',
-    message: 'Profile updated',
-    actionLabel: 'Dismiss',
     pauseOnHover: true,
+    inputs: {
+      variant: 'success',
+      title: 'Saved',
+      message: 'Profile updated',
+      actionLabel: 'Dismiss',
+    },
   });
 }
 ```
@@ -85,9 +87,14 @@ Returns `SnackbarRef<T>`:
 - `pauseAutoClose()`
 - `resumeAutoClose()`
 
-### SnackbarService.notify(options) / notify(message, options?)
+### SnackbarService.notify(options)
 
 `notify(...)` opens a configured default component. It requires `provideSnackbarDefaults(...)`.
+`notify(...)` is a direct pass-through API:
+
+- Pass snackbar behavior/styling as top-level open options (`placement`, `duration`, `panelClass`, etc.).
+- Pass default component values via `inputs`.
+- Pass default component event handlers via `outputs`.
 
 ```ts
 import { provideSnackbarDefaults } from '@nexora-ui/snackbar';
@@ -103,15 +110,6 @@ providers: [
       maxVisibleSnackbars: 3,
     },
     maxVisibleSnackbars: 3,
-    mapInputs: (n) => ({
-      variant: n.variant,
-      title: n.title,
-      message: n.message,
-      actionLabel: n.actionLabel,
-    }),
-    mapOutputs: ({ notify }) => ({
-      actionClick: () => notify.onAction?.(),
-    }),
   }),
 ];
 ```
@@ -120,14 +118,39 @@ Then call:
 
 ```ts
 this.snackbar.notify({
-  variant: 'success',
-  title: 'Saved',
-  message: 'Profile updated',
-  actionLabel: 'Dismiss',
+  pauseOnHover: true,
+  inputs: {
+    variant: 'success',
+    title: 'Saved',
+    message: 'Profile updated',
+    actionLabel: 'Dismiss',
+  },
+  outputs: {
+    actionClick: () => this.undoLastChange(),
+  },
 });
 ```
 
-`notify(...)` still accepts snackbar open options (duration, placement, panelClass, etc.) and per-call options override defaults provider values.
+Per-call options override `defaultOpenOptions` on conflicts.
+
+There is no `mapInputs` / `mapOutputs` layer in the current API.
+
+### Typing `notify(...)` without explicit generics
+
+`notify(...)` defaults to `unknown` component type unless you provide a global app typing.
+Add module augmentation once in your app (e.g. `src/app/core/snackbar-notify-typing.d.ts`):
+
+```ts
+import type { AppSnackbarComponent } from './app-snackbar.component';
+
+declare module '@nexora-ui/snackbar' {
+  interface SnackbarNotifyComponentMap {
+    appSnackbar: AppSnackbarComponent;
+  }
+}
+```
+
+After that, `this.snackbar.notify({ inputs, outputs })` gets autocomplete for your default component inputs/outputs without writing `notify<AppSnackbarComponent>(...)`.
 
 ### Styling hooks
 
@@ -176,6 +199,18 @@ Directive on an element inside snackbar content. On click, closes the snackbar. 
 ## Stacking and placement
 
 Snackbars at the same placement stack (new ones push previous down or up). Use **panelClass** and **data-placement** (e.g. `snackbar-bottom-end`) for your CSS. When one closes, the rest at that placement reflow.
+
+To animate stack reflow (remaining snackbars sliding into place), include position transitions in your open pane styles, because snackbar stacking updates pane coordinates (`top`/`left`) during reposition:
+
+```css
+.app-snackbar.nxr-overlay-pane--open {
+  transition:
+    top 0.24s cubic-bezier(0.32, 0.72, 0, 1),
+    left 0.24s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.2s ease;
+}
+```
 
 **RTL**: Placements `top-start`, `top-end`, `bottom-start`, and `bottom-end` are RTL-aware: when the document (or host) has `dir="rtl"`, start/end flip so snackbars appear on the correct side.
 

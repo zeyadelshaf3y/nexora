@@ -25,6 +25,7 @@ import {
 } from '@nexora-ui/overlay/internal';
 
 import {
+  type SnackbarDefaultNotifyComponent,
   type SnackbarDefaultsConfig,
   type SnackbarNotifyOptions,
   SNACKBAR_DEFAULTS,
@@ -146,11 +147,8 @@ export class SnackbarService {
     return snackbarRef;
   }
 
-  notify(message: string, options?: Omit<SnackbarNotifyOptions, 'message'>): SnackbarRef<unknown>;
-  notify(options: SnackbarNotifyOptions): SnackbarRef<unknown>;
-  notify(
-    messageOrOptions: string | SnackbarNotifyOptions,
-    options: Omit<SnackbarNotifyOptions, 'message'> = {},
+  notify<TComponent = SnackbarDefaultNotifyComponent>(
+    options: SnackbarNotifyOptions<TComponent>,
   ): SnackbarRef<unknown> {
     const defaults = this.defaults;
     if (!defaults) {
@@ -158,27 +156,12 @@ export class SnackbarService {
         'SnackbarService.notify(): no defaults configured. Provide SNACKBAR_DEFAULTS via provideSnackbarDefaults(...).',
       );
     }
-
-    const notifyOptions: SnackbarNotifyOptions =
-      typeof messageOrOptions === 'string'
-        ? { ...options, message: messageOrOptions }
-        : messageOrOptions;
-    const refHolder: { current: SnackbarRef<unknown> | null } = { current: null };
-    const mappedInputs = defaults.mapInputs?.(notifyOptions);
-    const mappedOutputs = defaults.mapOutputs?.({
-      notify: notifyOptions,
-      close: (value?: unknown) => refHolder.current?.close(value),
-    });
     const mergedOptions: SnackbarOpenOptionsForComponent = {
       ...(defaults.defaultOpenOptions ?? {}),
-      ...this.getNotifyOpenOptions(notifyOptions),
-      ...(mappedInputs != null ? { inputs: mappedInputs } : {}),
-      ...(mappedOutputs != null ? { outputs: mappedOutputs } : {}),
+      ...options,
     };
 
-    refHolder.current = this.open(defaults.component, mergedOptions);
-
-    return refHolder.current;
+    return this.open(defaults.component, mergedOptions);
   }
 
   // ---------------------------------------------------------------------------
@@ -313,37 +296,6 @@ export class SnackbarService {
         subscribeOnceAfterClosed(ref, () => unsubscribeComponentOutputSubscriptions(subs));
       }
     }
-  }
-
-  private getNotifyOpenOptions(
-    options: SnackbarNotifyOptions,
-  ): Omit<SnackbarOpenOptionsForComponent, 'inputs' | 'outputs'> {
-    return {
-      ...(options.host !== undefined ? { host: options.host } : {}),
-      ...(options.placement !== undefined ? { placement: options.placement } : {}),
-      ...(options.duration !== undefined ? { duration: options.duration } : {}),
-      ...(options.viewContainerRef !== undefined
-        ? { viewContainerRef: options.viewContainerRef }
-        : {}),
-      ...(options.injector !== undefined ? { injector: options.injector } : {}),
-      ...(options.panelClass !== undefined ? { panelClass: options.panelClass } : {}),
-      ...(options.panelStyle !== undefined ? { panelStyle: options.panelStyle } : {}),
-      ...(options.width !== undefined ? { width: options.width } : {}),
-      ...(options.maxWidth !== undefined ? { maxWidth: options.maxWidth } : {}),
-      ...(options.stackGap !== undefined ? { stackGap: options.stackGap } : {}),
-      ...(options.padding !== undefined ? { padding: options.padding } : {}),
-      ...(options.closeAnimationDurationMs !== undefined
-        ? { closeAnimationDurationMs: options.closeAnimationDurationMs }
-        : {}),
-      ...(options.groupId !== undefined ? { groupId: options.groupId } : {}),
-      ...(options.ariaLabel !== undefined ? { ariaLabel: options.ariaLabel } : {}),
-      ...(options.ariaLabelledBy !== undefined ? { ariaLabelledBy: options.ariaLabelledBy } : {}),
-      ...(options.showProgress !== undefined ? { showProgress: options.showProgress } : {}),
-      ...(options.pauseOnHover !== undefined ? { pauseOnHover: options.pauseOnHover } : {}),
-      ...(options.maxVisibleSnackbars !== undefined
-        ? { maxVisibleSnackbars: options.maxVisibleSnackbars }
-        : {}),
-    };
   }
 
   private resolveMaxVisibleSnackbars(options: SnackbarOpenOptions): number | undefined {
