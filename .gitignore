@@ -51,3 +51,7 @@ __screenshots__/
 test-results/
 
 vitest.config.*.timestamp*
+
+# Generated declarations should not live in source folders
+libs/**/src/**/*.d.ts
+libs/**/src/**/*.d.ts.map

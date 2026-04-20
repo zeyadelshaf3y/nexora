@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../../dist/out-tsc",
+    "composite": false,
     "declaration": true,
     "declarationMap": true,
     "inlineSources": true,
@@ -14,5 +15,6 @@
     "src/**/*.spec.ts",
     "src/test-setup.ts",
     "vite.config.mts"
-  ]
+  ],
+  "references": []
 }

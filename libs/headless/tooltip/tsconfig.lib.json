@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../../dist/out-tsc",
+    "composite": false,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -9,5 +10,6 @@
     "types": []
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.spec-helpers.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+  "exclude": ["src/**/*.spec-helpers.ts", "src/**/*.spec.ts", "src/**/*.test.ts"],
+  "references": []
 }

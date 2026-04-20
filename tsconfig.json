@@ -2,5 +2,39 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./libs/headless/overlay"
+    },
+    {
+      "path": "./libs/headless/interactions"
+    },
+    {
+      "path": "./libs/headless/listbox-cdk"
+    },
+    {
+      "path": "./libs/headless/combobox"
+    },
+    {
+      "path": "./libs/headless/snackbar"
+    },
+    {
+      "path": "./libs/headless/listbox"
+    },
+    {
+      "path": "./libs/headless/mention"
+    },
+    {
+      "path": "./libs/headless/popover"
+    },
+    {
+      "path": "./libs/headless/tooltip"
+    },
+    {
+      "path": "./libs/headless/select"
+    },
+    {
+      "path": "./libs/headless/menu"
+    }
+  ]
 }
