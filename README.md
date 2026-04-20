@@ -54,8 +54,6 @@ npx nx run-many -t build
 npx nx run-many -t test
 ```
 
-**E2E** (Playwright): run `npx playwright install` once, then `npx nx run demo-e2e:e2e`. See [docs/HEADLESS.md](docs/HEADLESS.md).
-
 ## Docs
 
 - **[Headless libraries overview](docs/HEADLESS.md)** — How the headless libs fit together, conventions, RTL, accessibility, and public API stability.

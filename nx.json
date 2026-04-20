@@ -30,12 +30,6 @@
       }
     },
     {
-      "plugin": "@nx/playwright/plugin",
-      "options": {
-        "targetName": "e2e"
-      }
-    },
-    {
       "plugin": "@nx/eslint/plugin",
       "options": {
         "targetName": "eslint:lint"
@@ -126,7 +120,6 @@
       "prefix": "nxr"
     },
     "@nx/angular:application": {
-      "e2eTestRunner": "playwright",
       "linter": "eslint",
       "style": "scss",
       "unitTestRunner": "vitest-angular"

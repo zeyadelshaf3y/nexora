@@ -76,16 +76,6 @@ nx run-many -t test -p core,overlay,popover,tooltip,snackbar,interactions,dropdo
 nx run-many -t lint -p core,overlay,popover,tooltip,snackbar,interactions,dropdown,listbox,listbox-cdk,menu,select,combobox,mention
 ```
 
-E2E (demo app):
-
-```bash
-npx playwright install   # once: install browser binaries
-nx run demo-e2e:e2e
-```
-
-If you only have Chromium installed, run with one project:  
-`nx run demo-e2e:e2e --project=chromium`
-
 ## Documentation index
 
 Use these docs for consistent context when implementing features or fixing bugs:
@@ -104,7 +94,7 @@ Use these docs for consistent context when implementing features or fixing bugs:
 | [ACCESSIBILITY.md](ACCESSIBILITY.md)                                | Focus, ARIA, keyboard, reduced motion, RTL.                                                                                                                                     |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                            | Common issues: open/close, z-index, focus, nested overlays, snackbar value.                                                                                                     |
 | [GLOSSARY.md](GLOSSARY.md)                                          | Terms: overlay ref, placement, anchor, stack, close policy, etc.                                                                                                                |
-| [TESTING.md](TESTING.md)                                            | Unit and E2E approach, what to test, commands.                                                                                                                                  |
+| [TESTING.md](TESTING.md)                                            | Unit testing approach, what to test, commands.                                                                                                                                  |
 | [DEVELOPMENT.md](DEVELOPMENT.md)                                    | Setup, commands, where to find code, adding a new lib, doc list.                                                                                                                |
 | [API-CONTRACTS.md](API-CONTRACTS.md)                                | Root vs published `/internal` subpaths, import rules, select/dropdown display helpers, mention `getItems` typing.                                                               |
 | [MIGRATION.md](MIGRATION.md)                                        | Upgrade checklist and breaking-change notes.                                                                                                                                    |

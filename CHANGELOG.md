@@ -25,7 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **@nexora-ui/core**: `getResolvedDir(element?)` — SSR-safe helper to resolve text direction (`'ltr'` | `'rtl'`) from an element's nearest `[dir]` ancestor or the document. Used by overlay and listbox for RTL-aware positioning and keyboard navigation.
 - **Overlay README**: Stable vs Internal API table; documentation for `beforeOpen` / `beforeClose` (return `false` to cancel open or prevent close).
 - **Docs**: RTL native support and listbox keyboard behavior in ACCESSIBILITY.md and HEADLESS-BEHAVIOR.md; tree-shaking verification steps in ARCHITECTURE.md and DEVELOPMENT.md.
-- **CI**: Install Playwright browsers (`npx playwright install --with-deps`) before `e2e-ci` so Chromium, Firefox, and WebKit are available on Linux agents.
 - **Dropdown**: `vite.config.mts` and `passWithNoTests: true` so `nx run dropdown:test` runs even when no spec files exist yet.
 - **@nexora-ui/dropdown**: **`buildHeadlessDropdownRefOptions`** / **`HeadlessDropdownRefOptionsInput`** for select/combobox/menu `DropdownRef` wiring (optional **`configPreset`** / **`arrowSize`**); specs in **`build-headless-dropdown-ref-options.spec.ts`**.
 

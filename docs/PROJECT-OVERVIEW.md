@@ -47,8 +47,7 @@ Autocomplete, command palette, mega/tiered/context menus, menu bar, date/time/co
 | **Linting**         | ESLint (angular-eslint). Run via `nx run-many -t lint`.                                        |
 | **Formatting**      | Prettier. Config in `.prettierrc`.                                                             |
 | **Styles**          | Stylelint for CSS/SCSS.                                                                        |
-| **Testing**         | Vitest (per lib, with Angular test setup where configured). Playwright for E2E (`demo-e2e`).   |
-| **E2E**             | `nx run demo-e2e:e2e`. Run `npx playwright install` once for browsers.                         |
+| **Testing**         | Vitest (per lib, with Angular test setup where configured).                                    |
 
 ## Repository layout
 
@@ -56,7 +55,6 @@ Autocomplete, command palette, mega/tiered/context menus, menu bar, date/time/co
 nexora/
 ├── apps/
 │   ├── demo/           # Demo Angular app (headless primitives + pages)
-│   └── demo-e2e/       # Playwright E2E tests
 ├── libs/headless/
 │   ├── core/           # @nexora-ui/core
 │   ├── overlay/        # @nexora-ui/overlay — dialogs, drawers, overlay engine
@@ -79,7 +77,6 @@ nexora/
 - **Demo app**: `npm run serve` or `npx nx run demo:serve`.
 - **Unit tests**: `npx nx run-many -t test -p core,overlay,popover,tooltip,snackbar,interactions,dropdown,listbox,listbox-cdk,select,combobox,menu,mention` (or per project: `nx test overlay`).
 - **Lint**: `npx nx run-many -t lint` or per project.
-- **E2E**: `npx playwright install` once, then `npx nx run demo-e2e:e2e`.
 - **Build**: `npx nx run-many -t build` for all libs/apps.
 
 ## Docs index
@@ -94,7 +91,7 @@ nexora/
 - **[HEADLESS-BEHAVIOR.md](HEADLESS-BEHAVIOR.md)** — Required behavior for dialog, drawer, popover, tooltip, snackbar.
 - **[ACCESSIBILITY.md](ACCESSIBILITY.md)** — Focus, ARIA, keyboard, reduced motion, RTL.
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** — Common issues and fixes.
-- **[TESTING.md](TESTING.md)** — Unit (Vitest) and E2E (Playwright).
+- **[TESTING.md](TESTING.md)** — Unit testing approach and commands.
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** — Local setup and commands.
 - **[API-CONTRACTS.md](API-CONTRACTS.md)** — Stable vs internal APIs.
 - **[MIGRATION.md](MIGRATION.md)** — Upgrade and breaking-change notes.
