@@ -209,6 +209,7 @@ export class SnackbarPageComponent {
       duration: 8000,
       panelClass: ['demo-snackbar-pane', 'snackbar-info'],
       showProgress: true,
+      closeAnimationDurationMs: 200,
       pauseOnHover: true,
       inputs: {
         variant: 'info',
