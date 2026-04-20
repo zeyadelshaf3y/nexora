@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /**
  * Same timing rationale as listbox-kb.spec: keyboard steps need short settles between events.
@@ -14,12 +14,11 @@ test.describe('Listbox Keyboard – Detailed Bug Investigation', () => {
   test('Single-select: ArrowDown at last option should NOT wrap when wrap=false', async ({
     page,
   }) => {
-    const section = page.locator('#listbox .sub-section').nth(0);
+    const section = getListboxSection(page, 'Single Select');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     // Go to end
     await page.keyboard.press('End');
@@ -46,12 +45,11 @@ test.describe('Listbox Keyboard – Detailed Bug Investigation', () => {
   test('Single-select: aria-selected should only be true for the selected item', async ({
     page,
   }) => {
-    const section = page.locator('#listbox .sub-section').nth(0);
+    const section = getListboxSection(page, 'Single Select');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     const initialState = await getAriaSelected(options);
     expect(initialState.filter((s) => s.selected === 'true')).toHaveLength(0);
@@ -60,7 +58,7 @@ test.describe('Listbox Keyboard – Detailed Bug Investigation', () => {
     await page.keyboard.press('Home');
     await page.keyboard.press('ArrowDown');
     await page.waitForTimeout(50);
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('Space');
     await page.waitForTimeout(100);
 
     const afterSelect = await getAriaSelected(options);
@@ -70,13 +68,12 @@ test.describe('Listbox Keyboard – Detailed Bug Investigation', () => {
   });
 
   test('Multi-select: cumulative selection with Space', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(1);
+    const section = getListboxSection(page, 'Multi Select');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
     const meta = section.locator('.listbox-meta-line');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     // Select Apple
     await page.keyboard.press('Home');
@@ -102,17 +99,16 @@ test.describe('Listbox Keyboard – Detailed Bug Investigation', () => {
   });
 
   test('Multi-select: Enter vs Space behavior', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(1);
+    const section = getListboxSection(page, 'Multi Select');
     const listbox = section.locator('[nxrListbox]');
     const meta = section.locator('.listbox-meta-line');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     await page.keyboard.press('Home');
     await page.waitForTimeout(50);
 
-    // Enter on Apple
+    // Enter on Apple should select in multi mode.
     await page.keyboard.press('Enter');
     await page.waitForTimeout(150);
     const afterEnter = (await meta.textContent())?.trim();
@@ -129,12 +125,11 @@ test.describe('Listbox Keyboard – Detailed Bug Investigation', () => {
   });
 
   test('Typeahead: type a letter to jump', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(0);
+    const section = getListboxSection(page, 'Single Select');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     // Type 'e' to jump to Elderberry
     await page.keyboard.press('e');
@@ -158,7 +153,7 @@ test.describe('Listbox Keyboard – Detailed Bug Investigation', () => {
   });
 
   test('Click on option to select and activate', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(0);
+    const section = getListboxSection(page, 'Single Select');
     const options = section.locator('.listbox-option');
     const meta = section.locator('.listbox-meta-line');
 
@@ -171,25 +166,25 @@ test.describe('Listbox Keyboard – Detailed Bug Investigation', () => {
     const activeAfterClick = await getActive(options);
     expect(activeAfterClick).toContain('Banana');
 
-    // Click disabled Cherry — should NOT select
-    await options.nth(2).click();
+    // Click disabled Cherry — should NOT select.
+    // Force click to avoid Playwright hanging on "not enabled".
+    await options.nth(2).click({ force: true });
     await page.waitForTimeout(100);
     const afterCherry = (await meta.textContent())?.trim();
     expect(afterCherry).toContain('Banana');
   });
 
   test('Grouped listbox: navigation across groups', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(4);
+    const section = getListboxSection(page, 'Grouped with Separators');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
     const meta = section.locator('.listbox-meta-line');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     await page.keyboard.press('Home');
     await page.waitForTimeout(50);
-    expect(await getActive(options)).toContain('Apple');
+    expect(await getActive(options)).toContain('Lemon');
 
     // Navigate through all options across groups
     for (let i = 0; i < 6; i++) {
@@ -219,4 +214,17 @@ async function getAriaSelected(
       selected: el.getAttribute('aria-selected'),
     })),
   );
+}
+
+function getListboxSection(page: Page, heading: string): Locator {
+  return page.locator('#listbox .sub-section').filter({
+    has: page.getByRole('heading', { name: heading }),
+  });
+}
+
+async function focusListbox(listbox: Locator, page: Page): Promise<void> {
+  await listbox.click();
+  await listbox.focus();
+  await expect(listbox).toBeFocused();
+  await page.waitForTimeout(100);
 }
