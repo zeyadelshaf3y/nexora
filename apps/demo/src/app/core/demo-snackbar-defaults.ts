@@ -1,9 +1,5 @@
 import { Component, EventEmitter, inject, Input, Output, type Provider } from '@angular/core';
-import {
-  provideSnackbarDefaults,
-  type SnackbarNotifyOptions,
-  SNACKBAR_REF,
-} from '@nexora-ui/snackbar';
+import { provideSnackbarDefaults, SNACKBAR_REF } from '@nexora-ui/snackbar';
 
 @Component({
   selector: 'app-demo-default-snackbar',
@@ -59,14 +55,5 @@ export function provideDemoSnackbarDefaults(): Provider {
       maxWidth: '100vw',
     },
     maxVisibleSnackbars: 3,
-    mapInputs: (notify: SnackbarNotifyOptions) => ({
-      variant: notify.variant ?? 'info',
-      title: notify.title ?? '',
-      message: notify.message ?? '',
-      actionLabel: notify.actionLabel ?? '',
-    }),
-    mapOutputs: ({ notify }) => ({
-      actionClick: () => notify.onAction?.(),
-    }),
   });
 }

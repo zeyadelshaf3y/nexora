@@ -2,7 +2,9 @@ export { CloseSnackbarDirective } from './lib/directives/close-snackbar.directiv
 export type { SnackbarAutoCloseState, SnackbarRef } from './lib/ref/snackbar-ref';
 export type { SnackbarOpenOptions } from './lib/options/snackbar-open-options';
 export type {
+  SnackbarDefaultNotifyComponent,
   SnackbarDefaultsConfig,
+  SnackbarNotifyComponentMap,
   SnackbarNotifyOptions,
 } from './lib/options/snackbar-defaults.config';
 export { provideSnackbarDefaults, SNACKBAR_DEFAULTS } from './lib/options/snackbar-defaults.config';

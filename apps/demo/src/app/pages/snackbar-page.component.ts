@@ -71,7 +71,8 @@ class DemoCustomSnackbarComponent {
     <section class="page-section">
       <h2 class="page-section-title">Variants &amp; Grouping</h2>
       <p class="page-section-desc">
-        Variant is passed through <code>notify</code> and can be styled by your default component.
+        Pass component <code>inputs</code> directly through <code>notify</code> and style by
+        variant.
       </p>
       <div class="snackbar-page-variants">
         @for (v of variants; track v.id) {
@@ -163,34 +164,41 @@ export class SnackbarPageComponent {
   openSnackbar(placement: SnackbarPlacement): void {
     this.snackbarSvc.notify({
       placement,
-      title: 'Placement demo',
-      message: `Snackbar at ${placement}`,
-      actionLabel: 'Dismiss',
-      variant: 'info',
       pauseOnHover: true,
+      inputs: {
+        title: 'Placement demo',
+        message: `Snackbar at ${placement}`,
+        actionLabel: 'Dismiss',
+        variant: 'info',
+      },
     });
   }
 
   openVariant(v: { id: string; label: string; message: string }): void {
-    this.snackbarSvc.notify({
-      variant: v.id,
-      title: v.label,
-      message: v.message,
-      actionLabel: 'Dismiss',
+    this.snackbarSvc.notify<DemoCustomSnackbarComponent>({
       placement: 'bottom-end',
       groupId: v.id,
       pauseOnHover: true,
+      inputs: {
+        variant: v.id,
+        title: v.label,
+        message: v.message,
+        actionLabel: 'Dismiss',
+      },
     });
   }
 
   openStack(): void {
     [1, 2, 3, 4, 5].forEach((i) => {
       this.snackbarSvc.notify({
-        title: `Notification ${i}`,
-        message: `Stacked item ${i} of 5`,
-        actionLabel: 'Dismiss',
         placement: 'bottom-end',
         duration: 6000,
+        inputs: {
+          title: `Notification ${i}`,
+          message: `Stacked item ${i} of 5`,
+          actionLabel: 'Dismiss',
+          variant: 'info',
+        },
       });
     });
   }
@@ -211,11 +219,13 @@ export class SnackbarPageComponent {
       outputs: {
         action: () =>
           this.snackbarSvc.notify({
-            variant: 'success',
-            title: 'Output fired',
-            message: 'Custom snackbar output handler executed.',
-            actionLabel: 'Nice',
             duration: 2500,
+            inputs: {
+              variant: 'success',
+              title: 'Output fired',
+              message: 'Custom snackbar output handler executed.',
+              actionLabel: 'Nice',
+            },
           }),
       },
     });

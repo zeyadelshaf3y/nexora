@@ -21,6 +21,7 @@ export class SnackbarRefImpl<T = unknown> implements SnackbarRef<T> {
     paused: false,
   });
   private autoCloseControls: SnackbarAutoCloseControls | null = null;
+  private closeValue: T | undefined;
   private closed = false;
 
   constructor(private readonly overlayRef: OverlayRef) {
@@ -31,10 +32,8 @@ export class SnackbarRefImpl<T = unknown> implements SnackbarRef<T> {
     if (this.closed) return;
 
     this.closed = true;
+    this.closeValue = value;
     this.autoCloseControls = null;
-    this.closedSubject.next(value);
-    this.closedSubject.complete();
-    this.autoCloseStateSubject.complete();
     void this.overlayRef.close();
   }
 
@@ -86,9 +85,9 @@ export class SnackbarRefImpl<T = unknown> implements SnackbarRef<T> {
     if (!this.closed) {
       this.closed = true;
       this.autoCloseControls = null;
-      this.closedSubject.next(undefined);
-      this.closedSubject.complete();
-      this.autoCloseStateSubject.complete();
     }
+    this.closedSubject.next(this.closeValue);
+    this.closedSubject.complete();
+    this.autoCloseStateSubject.complete();
   }
 }
