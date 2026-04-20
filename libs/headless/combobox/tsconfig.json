@@ -3,7 +3,8 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "noPropertyAccessFromIndexSignature": true,
-    "module": "preserve"
+    "module": "preserve",
+    "composite": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
