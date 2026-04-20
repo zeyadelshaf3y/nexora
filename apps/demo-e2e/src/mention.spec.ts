@@ -38,12 +38,20 @@ test.describe('Mention page', () => {
       has: page.getByRole('heading', { name: 'Basic @ users' }),
     });
     const host = basicSection.locator('.demo-mention-input');
-    await expect(host).toBeVisible();
-    const box = await host.boundingBox();
-    expect(box).toBeTruthy();
-    expect(Number(box?.height)).toBeGreaterThan(4);
-    expect(Number(box?.width)).toBeGreaterThan(50);
-    await expect(basicSection.getByRole('textbox', { name: 'Mention users' })).toBeVisible();
+    await expect(host).toHaveCount(1);
+    const hostRect = await host.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    });
+    // Host is a structural wrapper; editor is the visible/non-zero element.
+    expect(hostRect.width).toBeGreaterThan(50);
+
+    const editor = basicSection.getByRole('textbox', { name: 'Mention users' });
+    await expect(editor).toBeVisible();
+    const editorBox = await editor.boundingBox();
+    expect(editorBox).toBeTruthy();
+    expect(Number(editorBox?.height)).toBeGreaterThan(8);
+    expect(Number(editorBox?.width)).toBeGreaterThan(50);
   });
 
   test('@ opens panel and Enter selects first user', async ({ page }) => {
@@ -58,7 +66,7 @@ test.describe('Mention page', () => {
     await expect(panel.locator('.mention-option').first()).toBeVisible();
     await editor.press('Enter');
     await expect(panel).toBeHidden({ timeout: 5000 });
-    await expect(basicSection.getByText(/^Text:/)).toContainText('@');
+    await expect(basicSection.getByText(/^Text:/)).toContainText('Alice Smith');
   });
 
   test('chip hover popover switches between mentions without leaving editor', async ({ page }) => {

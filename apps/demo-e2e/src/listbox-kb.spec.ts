@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /**
  * Short delays between key events let the listbox settle; replacing every step with a
@@ -13,14 +13,12 @@ test.describe('Listbox Keyboard Navigation', () => {
   });
 
   test('1. Single-select: arrow navigation, Home/End, Enter, disabled skip', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(0);
+    const section = getListboxSection(page, 'Single Select');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
     const meta = section.locator('.listbox-meta-line');
 
-    // Focus the listbox
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     // initialHighlight='selected', no value => first option active (listbox demo)
 
@@ -109,13 +107,12 @@ test.describe('Listbox Keyboard Navigation', () => {
   });
 
   test('2. Multi-select: Space toggles, multiple selections', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(1);
+    const section = getListboxSection(page, 'Multi Select');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
     const meta = section.locator('.listbox-meta-line');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     const results: string[] = [];
 
@@ -166,13 +163,12 @@ test.describe('Listbox Keyboard Navigation', () => {
   });
 
   test('3. Action mode (menu): Enter activates, no selection', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(2);
+    const section = getListboxSection(page, 'Action Mode');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
     const meta = section.locator('.listbox-meta-line');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     const results: string[] = [];
 
@@ -227,13 +223,12 @@ test.describe('Listbox Keyboard Navigation', () => {
   });
 
   test('4. Primitive options: string[] navigation and selection', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(3);
+    const section = getListboxSection(page, 'Primitive Options');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
     const meta = section.locator('.listbox-meta-line');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     const results: string[] = [];
 
@@ -274,13 +269,12 @@ test.describe('Listbox Keyboard Navigation', () => {
   });
 
   test('5. Horizontal + wrap: ArrowRight/Left, wrapping', async ({ page }) => {
-    const section = page.locator('#listbox .sub-section').nth(5);
+    const section = getListboxSection(page, 'Horizontal with Wrap');
     const listbox = section.locator('[nxrListbox]');
     const options = section.locator('.listbox-option');
     const meta = section.locator('.listbox-meta-line');
 
-    await listbox.click();
-    await page.waitForTimeout(100);
+    await focusListbox(listbox, page);
 
     const results: string[] = [];
 
@@ -363,4 +357,17 @@ async function getSectionClip(
     width: box.width + 20,
     height: box.height + 20,
   };
+}
+
+function getListboxSection(page: Page, heading: string): Locator {
+  return page.locator('#listbox .sub-section').filter({
+    has: page.getByRole('heading', { name: heading }),
+  });
+}
+
+async function focusListbox(listbox: Locator, page: Page): Promise<void> {
+  await listbox.click();
+  await listbox.focus();
+  await expect(listbox).toBeFocused();
+  await page.waitForTimeout(100);
 }
