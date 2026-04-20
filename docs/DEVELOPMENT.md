@@ -6,7 +6,6 @@ Quick reference for developing in the Nexora repo: setup, commands, and where to
 
 - **Node**: Use the version in `.nvmrc` (or project docs). `nvm use` if using nvm.
 - **Install**: `npm ci` in CI; locally `npm install` (see `package-lock.json`).
-- **Playwright** (for E2E): run `npm run playwright:install` once (or `npx playwright install`; use `--with-deps` on Linux — the npm script includes it). CI installs browsers before `e2e-ci`.
 
 ## Commands
 
@@ -17,7 +16,6 @@ Quick reference for developing in the Nexora repo: setup, commands, and where to
 | Unit tests (one lib)      | `nx test overlay` (or `tooltip`, `snackbar`, etc.)                                                                                    |
 | Lint (all)                | `nx run-many -t lint`                                                                                                                 |
 | Lint (one project)        | `nx run overlay:lint`                                                                                                                 |
-| E2E                       | `nx run demo-e2e:e2e`                                                                                                                 |
 | Build (all)               | `nx run-many -t build`                                                                                                                |
 | Format                    | `npm run format` (Prettier)                                                                                                           |
 

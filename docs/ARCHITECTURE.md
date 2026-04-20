@@ -4,7 +4,7 @@ Guidelines for how the Nexora monorepo and headless libraries are structured. Us
 
 ## Monorepo layout
 
-- **Apps** (`apps/`): Demo app (`demo`) and E2E tests (`demo-e2e`). No production apps in this repo.
+- **Apps** (`apps/`): Demo app (`demo`). No production apps in this repo.
 - **Libraries** (`libs/headless/`): Publishable headless UI packages. Each lib is a single Nx project with its own `src/`, `ng-package.json`, and public API via `src/index.ts`.
 - **Docs** (`docs/`): Markdown documentation for developers and AI agents. Keep architecture, behavior, and API design in docs; lib-specific details in each lib’s README.
 
