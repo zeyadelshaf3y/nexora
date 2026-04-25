@@ -27,21 +27,32 @@ interface Unsubscribable {
  * Sets inputs on a component ref using the public `setInput()` API (signal-based
  * and legacy-compatible) and triggers change detection once.
  */
-export function applyComponentInputs(compRef: ComponentRef<unknown>, inputs: OpenInputs): void {
+export function applyComponentInputs(
+  compRef: ComponentRef<unknown>,
+  componentType: Type<unknown>,
+  inputs: OpenInputs,
+): void {
   const keys = Object.keys(inputs);
 
   if (keys.length === 0) return;
 
   const useSetInput = typeof compRef.setInput === 'function';
+  const mirror = reflectComponentType(componentType);
+  const propToName: Record<string, string> = {};
+  for (const input of mirror?.inputs ?? []) {
+    propToName[input.propName] = input.templateName;
+    propToName[input.templateName] = input.templateName;
+  }
   const instance = compRef.instance as Record<string, unknown>;
 
   for (const key of keys) {
     const value = inputs[key];
+    const inputName = propToName[key] ?? key;
 
     if (useSetInput) {
-      compRef.setInput(key, value);
+      compRef.setInput(inputName, value);
     } else {
-      instance[key] = value;
+      instance[inputName] = value;
     }
   }
 
