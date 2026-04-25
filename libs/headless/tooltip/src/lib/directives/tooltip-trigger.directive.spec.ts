@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { OVERLAY_SELECTOR_PANE } from '@nexora-ui/overlay';
 
@@ -204,6 +204,15 @@ class ProviderNoInstantHandoffHost {
   readonly _brand = 'ProviderNoInstantHandoffHost';
 }
 
+@Component({
+  standalone: true,
+  imports: [TooltipTriggerDirective],
+  template: `<button [nxrTooltip]="content()" [nxrTooltipOpenDelay]="0">Hover me</button>`,
+})
+class ReactiveContentHost {
+  readonly content = signal('Initial content');
+}
+
 function flush(ms = 50): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -237,6 +246,22 @@ describe('TooltipTriggerDirective', () => {
     const pane = getPane();
     expect(pane).not.toBeNull();
     expect(pane?.textContent).toContain('Hello tooltip');
+  });
+
+  it('updates open tooltip content when bound value changes', async () => {
+    const fixture = TestBed.createComponent(ReactiveContentHost);
+    fixture.autoDetectChanges();
+    const btn: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+
+    btn.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    await flush();
+    expect(getPane()?.textContent).toContain('Initial content');
+
+    fixture.componentInstance.content.set('Updated content');
+    fixture.detectChanges();
+    await flush();
+
+    expect(getPane()?.textContent).toContain('Updated content');
   });
 
   it('opens tooltip on focus', async () => {

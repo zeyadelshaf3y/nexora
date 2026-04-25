@@ -2,6 +2,7 @@ import {
   DestroyRef,
   Directive,
   ElementRef,
+  effect,
   inject,
   Injector,
   input,
@@ -14,6 +15,7 @@ import {
   createAnchoredOverlayConfig,
   createOutsideClickListener,
   createTriggerDelay,
+  type ComponentPortal,
   DATA_ATTR_TOOLTIP_BRIDGE,
   getContainingOverlayRef,
   handleAnchoredHoverLeave,
@@ -38,6 +40,7 @@ import {
   resolveTooltipScrollStrategy,
   TOOLTIP_OVERLAY_CLOSE_POLICY,
 } from '../internal';
+import { TooltipContentHostComponent } from '../host/tooltip-content-host.component';
 import { TooltipWarmupService } from '../services/tooltip-warmup.service';
 
 import {
@@ -170,6 +173,7 @@ export class TooltipTriggerDirective implements OnDestroy {
   readonly paneId = signal<string | null>(null);
 
   private overlayRef: OverlayRef | null = null;
+  private tooltipContentPortal: ComponentPortal<TooltipContentHostComponent> | null = null;
   private opening = false;
   private cancelPendingOpen = false;
   private openedBy: TooltipTrigger | null = null;
@@ -182,6 +186,18 @@ export class TooltipTriggerDirective implements OnDestroy {
   private readonly tooltipInstanceId = this.warmup.createInstanceId();
   private openWithoutAnimation = false;
   private isInstantOpenActive = false;
+
+  constructor() {
+    effect(() => {
+      const isOpen = this.isOpen();
+      if (!isOpen) return;
+
+      // Only read live inputs while open so required input access is safe pre-init.
+      this.nxrTooltip();
+      this.nxrTooltipDisplayArrow();
+      this.syncOpenTooltipContent();
+    });
+  }
 
   // ---------------------------------------------------------------------------
   // Host event handlers
@@ -250,12 +266,8 @@ export class TooltipTriggerDirective implements OnDestroy {
     this.openedBy = trigger;
 
     const anchor = this.hostRef.nativeElement;
-    const portal = createTooltipContentHostPortal(
-      this.vcr,
-      this.injector,
-      this.nxrTooltip(),
-      this.nxrTooltipDisplayArrow(),
-    );
+    const portal = createTooltipContentHostPortal(this.vcr, this.injector);
+    this.tooltipContentPortal = portal;
     const config = createAnchoredOverlayConfig(this.buildOverlayConfig(anchor));
     const ref = this.overlay.create(config);
 
@@ -263,6 +275,7 @@ export class TooltipTriggerDirective implements OnDestroy {
       this.opening = false;
       if (!this.shouldKeepOpenedOverlay(opened)) {
         this.openedBy = null;
+        this.tooltipContentPortal = null;
         ref.dispose();
 
         return;
@@ -296,6 +309,7 @@ export class TooltipTriggerDirective implements OnDestroy {
     this.warmup.unregister(this.tooltipInstanceId);
     this.overlayRef?.dispose();
     this.overlayRef = null;
+    this.tooltipContentPortal = null;
     this.isOpen.set(false);
     this.paneId.set(null);
   }
@@ -425,6 +439,7 @@ export class TooltipTriggerDirective implements OnDestroy {
         this.hoverBridge = null;
         this.removeOutsideClickListener();
         this.overlayRef = null;
+        this.tooltipContentPortal = null;
         this.openedBy = null;
         this.isInstantOpenActive = false;
         this.isOpen.set(false);
@@ -479,5 +494,15 @@ export class TooltipTriggerDirective implements OnDestroy {
 
     clearTooltipPaneInstantAnimationStyles(this.overlayRef?.getPaneElement() ?? null);
     this.isInstantOpenActive = false;
+  }
+
+  private syncOpenTooltipContent(): void {
+    const compRef = this.tooltipContentPortal?.componentRef;
+    if (!compRef) return;
+
+    compRef.setInput('text', this.nxrTooltip());
+    compRef.setInput('showArrow', this.nxrTooltipDisplayArrow());
+    compRef.changeDetectorRef.detectChanges();
+    this.overlayRef?.reposition();
   }
 }
