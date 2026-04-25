@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  signal,
   ViewChild,
   ViewEncapsulation,
   type TemplateRef,
@@ -14,6 +15,7 @@ import {
   DrawerService,
   OverlayArrowDirective,
   OverlayTriggerDirective,
+  subscribeOnceAfterClosed,
   type DrawerPlacement,
   type OverlayRef,
 } from '@nexora-ui/overlay';
@@ -26,6 +28,7 @@ import { IconComponent } from '../core/icons';
 import { DemoDialogComponent } from '../demo-dialog.component';
 import { NestedDrawerContentComponent } from '../nested-drawer-content.component';
 import { NestedPopoverContentComponent } from '../nested-popover-content.component';
+import { ReactiveContextDialogComponent } from '../reactive-context-dialog.component';
 
 interface MenuAction {
   id: string;
@@ -69,6 +72,18 @@ interface MenuAction {
       </p>
       <button class="btn btn-primary" (click)="openComponentDialog($event)">
         Open component dialog
+      </button>
+    </section>
+
+    <!-- Reactive Context Dialog -->
+    <section class="page-section">
+      <h2 class="page-section-title">Reactive Context</h2>
+      <p class="page-section-desc">
+        Simulates a live parent signal sent as dialog input. Keep the dialog open to see the value
+        flip between true and false.
+      </p>
+      <button class="btn btn-primary" (click)="openReactiveContextDialog($event)">
+        Open reactive context dialog
       </button>
     </section>
 
@@ -286,7 +301,11 @@ export class DialogPageComponent {
   private componentDialogRef: OverlayRef | null = null;
   private scrollableDialogRef: OverlayRef | null = null;
   private mixedDialogRef: OverlayRef | null = null;
+  private reactiveDialogRef: OverlayRef | null = null;
   private nestedDrawerRef: OverlayRef | null = null;
+  private reactiveTimer: ReturnType<typeof setInterval> | null = null;
+
+  private readonly simulatedSubmitting = signal(false);
 
   readonly scrollSections = [1, 2, 3, 4, 5, 6, 7];
 
@@ -354,6 +373,28 @@ export class DialogPageComponent {
     );
   }
 
+  async openReactiveContextDialog(event?: MouseEvent): Promise<void> {
+    if (this.reactiveDialogRef) return;
+    const trigger = this.triggerFromEvent(event);
+    this.reactiveDialogRef = await this.dialogSvc.open(ReactiveContextDialogComponent, {
+      maxWidth: 'min(480px, 90vw)',
+      panelClass: 'demo-dialog-pane',
+      ...(trigger && { transformOriginElement: trigger }),
+      inputs: { submitting: this.simulatedSubmitting },
+    });
+
+    if (!this.reactiveDialogRef) return;
+
+    const openedRef = this.reactiveDialogRef;
+    this.startReactiveSimulation();
+    subscribeOnceAfterClosed(openedRef, () => {
+      if (this.reactiveDialogRef === openedRef) {
+        this.reactiveDialogRef = null;
+      }
+      this.stopReactiveSimulation();
+    });
+  }
+
   async openMixedDialog(event?: MouseEvent): Promise<void> {
     if (this.mixedDialogRef) return;
     const trigger = this.triggerFromEvent(event);
@@ -401,5 +442,26 @@ export class DialogPageComponent {
   onMenuAction(event: { option: MenuAction }): void {
     void event;
     this.openSnackbar('bottom-end');
+  }
+
+  private startReactiveSimulation(): void {
+    this.stopReactiveSimulation();
+    this.simulatedSubmitting.set(false);
+    this.reactiveTimer = setInterval(() => {
+      if (!this.reactiveDialogRef) {
+        this.stopReactiveSimulation();
+
+        return;
+      }
+      this.simulatedSubmitting.update((value) => !value);
+    }, 1200);
+  }
+
+  private stopReactiveSimulation(): void {
+    if (this.reactiveTimer) {
+      clearInterval(this.reactiveTimer);
+      this.reactiveTimer = null;
+    }
+    this.simulatedSubmitting.set(false);
   }
 }

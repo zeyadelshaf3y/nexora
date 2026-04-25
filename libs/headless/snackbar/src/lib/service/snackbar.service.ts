@@ -286,7 +286,7 @@ export class SnackbarService {
     if (!compRef) return;
 
     if (options.inputs) {
-      applyComponentInputs(compRef, options.inputs);
+      applyComponentInputs(compRef, content, options.inputs);
     }
 
     if (options.outputs) {

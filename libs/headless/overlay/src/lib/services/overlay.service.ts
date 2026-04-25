@@ -3,6 +3,7 @@
  * Resolves portal (template/component), attaches via OverlayRefImpl, ensures global events (Escape/outside-click) are registered.
  */
 import {
+  ApplicationRef,
   createComponent,
   type ComponentRef,
   EnvironmentInjector,
@@ -44,6 +45,7 @@ export type OverlayOpenConfig = OverlayConfig &
 
 @Injectable({ providedIn: 'root' })
 export class OverlayService {
+  private readonly appRef = inject(ApplicationRef);
   private readonly stack = inject(OverlayStackService);
   private readonly container = inject(OverlayContainerService);
   private readonly events = inject(OverlayEventsService);
@@ -105,6 +107,7 @@ export class OverlayService {
         hostElement: hostEl,
         environmentInjector: this.envInjector,
       });
+      this.appRef.attachView(this.viewHostRef.hostView);
 
       return this.viewHostRef.injector.get(ViewContainerRef);
     } catch {
@@ -168,11 +171,13 @@ export class OverlayService {
   ): void {
     if (!(portal instanceof ComponentPortal) || !portal.componentRef) return;
 
+    if (!isComponent(content)) return;
+
     const compRef = portal.componentRef;
     if (config.inputs) {
-      applyComponentInputs(compRef, config.inputs);
+      applyComponentInputs(compRef, content, config.inputs);
     }
-    if (!config.outputs || !isComponent(content)) return;
+    if (!config.outputs) return;
 
     const subs = subscribeComponentOutputs(compRef, content, config.outputs);
     if (subs.length === 0) return;
