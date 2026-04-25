@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import type { Placement } from '@nexora-ui/overlay';
 import {
   TOOLTIP_DEFAULTS_CONFIG,
@@ -138,6 +138,26 @@ export class TooltipProviderWarmupDemoComponent {}
           nxrTooltipPanelClass="demo-tooltip-pane"
         >
           Copy Link
+        </button>
+      </div>
+    </section>
+
+    <!-- Reactive Content Update -->
+    <section class="page-section">
+      <h2 class="page-section-title">Reactive Content Update</h2>
+      <p class="page-section-desc">
+        Hover this trigger, then click it to change the bound tooltip text while the tooltip is
+        still open.
+      </p>
+      <div class="btn-row">
+        <button
+          class="btn"
+          [nxrTooltip]="reactiveTooltipContent()"
+          nxrTooltipPanelClass="demo-tooltip-pane"
+          [nxrTooltipOpenDelay]="0"
+          (click)="updateReactiveTooltipContent()"
+        >
+          Click to update tooltip text
         </button>
       </div>
     </section>
@@ -446,6 +466,8 @@ export class TooltipProviderWarmupDemoComponent {}
   ],
 })
 export class TooltipPageComponent {
+  readonly reactiveTooltipContent = signal('Initial tooltip text. Click trigger to update.');
+
   readonly allPlacements: Placement[] = [
     'top-start',
     'top',
@@ -460,4 +482,14 @@ export class TooltipPageComponent {
     'bottom',
     'bottom-end',
   ];
+
+  updateReactiveTooltipContent(): void {
+    this.reactiveTooltipContent.set(
+      `Updated from click at ${new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })}`,
+    );
+  }
 }

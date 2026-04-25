@@ -11,7 +11,7 @@ describe('createTooltipContentHostPortal', () => {
   it('returns a ComponentPortal', () => {
     const vcr = {} as ViewContainerRef;
     const parent = Injector.NULL;
-    const portal = createTooltipContentHostPortal(vcr, parent, 'Hello', true);
+    const portal = createTooltipContentHostPortal(vcr, parent);
     expect(portal.constructor.name).toBe('ComponentPortal');
   });
 });
