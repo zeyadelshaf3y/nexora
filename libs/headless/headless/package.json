@@ -7,18 +7,18 @@
   "types": "index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@nexora-ui/combobox": "^0.0.1",
+    "@nexora-ui/combobox": "^0.1.1",
     "@nexora-ui/core": "^0.0.1",
-    "@nexora-ui/dropdown": "^0.0.1",
+    "@nexora-ui/dropdown": "^0.1.1",
     "@nexora-ui/interactions": "^0.0.1",
     "@nexora-ui/listbox": "^0.0.1",
-    "@nexora-ui/listbox-cdk": "^0.0.1",
-    "@nexora-ui/mention": "^0.0.1",
-    "@nexora-ui/menu": "^0.0.1",
-    "@nexora-ui/overlay": "^0.0.1",
-    "@nexora-ui/popover": "^0.0.1",
-    "@nexora-ui/select": "^0.0.1",
-    "@nexora-ui/snackbar": "^0.0.1",
-    "@nexora-ui/tooltip": "^0.0.1"
+    "@nexora-ui/listbox-cdk": "^0.1.1",
+    "@nexora-ui/mention": "^0.1.1",
+    "@nexora-ui/menu": "^0.1.1",
+    "@nexora-ui/overlay": "^0.1.1",
+    "@nexora-ui/popover": "^0.1.1",
+    "@nexora-ui/select": "^0.1.1",
+    "@nexora-ui/snackbar": "^0.1.2",
+    "@nexora-ui/tooltip": "^0.1.1"
   }
 }
