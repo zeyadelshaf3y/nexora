@@ -280,17 +280,19 @@ export class SnackbarService {
     ref: SnackbarInternalRef,
   ): void {
     if (!isComponent(content)) return;
-    if (!options.inputs && !options.outputs) return;
+    const hasInputs = options.inputs ? Object.keys(options.inputs).length > 0 : false;
+    const hasOutputs = options.outputs ? Object.keys(options.outputs).length > 0 : false;
+    if (!hasInputs && !hasOutputs) return;
 
     const compRef = portal.componentRef;
 
     if (!compRef) return;
 
-    if (options.inputs) {
+    if (hasInputs && options.inputs) {
       applyComponentInputs(compRef, content, options.inputs);
     }
 
-    if (options.outputs) {
+    if (hasOutputs && options.outputs) {
       const subs = subscribeComponentOutputs(compRef, content, options.outputs);
 
       if (subs.length > 0) {
