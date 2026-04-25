@@ -280,6 +280,7 @@ export class SnackbarService {
     ref: SnackbarInternalRef,
   ): void {
     if (!isComponent(content)) return;
+    if (!options.inputs && !options.outputs) return;
 
     const compRef = portal.componentRef;
 
