@@ -25,6 +25,12 @@ Headless tooltip directive: shows a tooltip overlay anchored to the host on hove
 </ng-template>
 ```
 
+## Close behavior (while open)
+
+- **Hover / focus**: Normal close is mouse leave (with optional content-hover and hover bridge) and blur for focus.
+- **Outside pointer**: A capture-phase `pointerdown` outside the trigger, tooltip pane, and other overlay panes/bridges closes the tooltip so a click elsewhere dismisses it (same stacking idea as popover).
+- **Hidden document**: If the host `document` becomes hidden (e.g. switching tabs), the tooltip closes immediately so pointer/hover state cannot desync; the user may need to move off and back onto the trigger to reopen without a fresh `mouseenter`.
+
 ## Accessibility
 
 - The trigger gets **aria-describedby** pointing to the tooltip pane id when open.
@@ -116,7 +122,7 @@ Exported defaults:
 
 ## Internal structure
 
-`src/lib/`: **directives/** (tooltip-trigger), **services/** (tooltip-warmup), **host/** (tooltip-content-host component). Depends on `@nexora-ui/overlay`.
+`src/lib/`: **directives/** (tooltip-trigger), **services/** (tooltip-warmup), **host/** (tooltip-content-host component). Depends on `@nexora-ui/overlay` (including `createOutsideClickListener` / `createDocumentHiddenCloseListener` for document-level dismiss while open).
 
 ## Running unit tests
 

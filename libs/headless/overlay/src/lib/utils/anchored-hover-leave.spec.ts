@@ -145,7 +145,7 @@ describe('handleAnchoredHoverLeave', () => {
       hoverBridge,
       close,
     });
-    expect(scheduleClose).toHaveBeenCalledWith(50);
+    expect(scheduleClose).toHaveBeenCalledWith(50, undefined);
     expect(close).not.toHaveBeenCalled();
   });
 
@@ -171,5 +171,75 @@ describe('handleAnchoredHoverLeave', () => {
     });
     expect(scheduleClose).not.toHaveBeenCalled();
     expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it('schedules close via hoverBridge when allowContentHover is true and delay is 0', () => {
+    const close = vi.fn();
+    const scheduleClose = vi.fn();
+    const openDelay = createTriggerDelay();
+    const trigger = document.createElement('button');
+    document.body.appendChild(trigger);
+    const pane = document.createElement('div');
+    const mockRef = { getPaneElement: () => pane };
+    const hoverBridge = { scheduleClose, cancelClose: () => {} } as never;
+    const doc = trigger.ownerDocument;
+    const orig = (doc as Document & { elementFromPoint?(x: number, y: number): Element | null })
+      .elementFromPoint;
+    Object.defineProperty(doc, 'elementFromPoint', {
+      value: () => document.body,
+      configurable: true,
+      writable: true,
+    });
+    handleAnchoredHoverLeave(
+      new MouseEvent('mouseleave', { clientX: 0, clientY: 0, bubbles: true }),
+      {
+        openDelay,
+        isHoverTrigger: () => true,
+        openedBy: 'hover',
+        overlayRef: mockRef as never,
+        getTriggerElement: () => trigger,
+        getPane: () => pane,
+        allowContentHover: true,
+        isNestedOverlay: false,
+        getCloseDelay: () => 0,
+        hoverBridge,
+        close,
+      },
+    );
+    if (orig) (doc as Document & { elementFromPoint: typeof orig }).elementFromPoint = orig;
+    else Reflect.deleteProperty(doc, 'elementFromPoint');
+    document.body.removeChild(trigger);
+    expect(scheduleClose).toHaveBeenCalledWith(0, expect.any(MouseEvent));
+    expect(close).not.toHaveBeenCalled();
+  });
+
+  it('returns without closing when allowContentHover and relatedTarget is inside the pane', () => {
+    const close = vi.fn();
+    const scheduleClose = vi.fn();
+    const openDelay = createTriggerDelay();
+    const trigger = document.createElement('button');
+    const pane = document.createElement('div');
+    const inner = document.createElement('span');
+    pane.appendChild(inner);
+    const mockRef = { getPaneElement: () => pane };
+    const hoverBridge = { scheduleClose, cancelClose: () => {} } as never;
+    handleAnchoredHoverLeave(
+      new MouseEvent('mouseleave', { relatedTarget: inner, bubbles: true }),
+      {
+        openDelay,
+        isHoverTrigger: () => true,
+        openedBy: 'hover',
+        overlayRef: mockRef as never,
+        getTriggerElement: () => trigger,
+        getPane: () => pane,
+        allowContentHover: true,
+        isNestedOverlay: false,
+        getCloseDelay: () => 0,
+        hoverBridge,
+        close,
+      },
+    );
+    expect(scheduleClose).not.toHaveBeenCalled();
+    expect(close).not.toHaveBeenCalled();
   });
 });

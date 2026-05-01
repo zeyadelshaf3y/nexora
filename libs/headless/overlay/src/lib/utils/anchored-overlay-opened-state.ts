@@ -45,6 +45,7 @@ export interface AnchoredOverlayOpenedStateOptions {
   readonly onClosed: (reason?: unknown) => void;
   /** Filled by this function; used by directive for hoverBridge?.cancelClose() etc. */
   readonly bridgeRef: { bridge: HoverBridge | null; cleanup: (() => void) | null };
+  /** Tooltip/popover: pointer-outside + (tooltip) document-hidden dismiss; only active while open. */
   readonly attachOutsideClick?: () => void;
   readonly attachFocusPaneListeners?: () => void;
   /** When set, afterClosed subscription is cleaned up automatically on destroy; returned unsubscribe is a no-op. */
@@ -100,6 +101,7 @@ export function setupAnchoredOverlayOpenedState(options: AnchoredOverlayOpenedSt
         onClose,
         bridgeAttr,
         treatAnyOverlayPaneAsInside: !isNestedOverlay,
+        pointerCloseGuard: allowContentHover,
       },
       allowContentHover,
     );

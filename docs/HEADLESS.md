@@ -56,7 +56,7 @@ Folder layout is grouped by domain, with ongoing hardening around API boundaries
 
 **Close directives**: Dialog, drawer, and popover extend overlay’s `BaseCloseOverlayDirective` and use `CloseReason`. Snackbar uses `closestCloseableRef` + `ref.close(value)` so `afterClosed()` can emit a value; that’s a different contract, so it does not extend the base. No duplicated logic.
 
-**Trigger directives**: Tooltip and popover share overlay utilities to avoid duplication: `triggerIncludes` (trigger input check), `setupAnchoredOverlayOpenedState` (pane id/role, hover bridge, outside-click/focus-pane attachment, afterClosed cleanup), plus existing `createAnchoredOverlayConfig`, `createTriggerDelay`, `handleAnchoredHoverLeave`, `createOutsideClickListener`. Each directive keeps its own inputs and open/close logic; shared setup lives in `overlay/utils`.
+**Trigger directives**: Tooltip and popover share overlay utilities to avoid duplication: `triggerIncludes` (trigger input check), `setupAnchoredOverlayOpenedState` (pane id/role, hover bridge, outside-click/focus-pane attachment, afterClosed cleanup), plus existing `createAnchoredOverlayConfig`, `createTriggerDelay`, `handleAnchoredHoverLeave`, `createOutsideClickListener`, `createDocumentHiddenCloseListener` (tooltip registers it; popover attaches it with outside-click for hover/focus). Each directive keeps its own inputs and open/close logic; shared setup lives in `overlay/utils`.
 
 **Ref implementations**: `OverlayRefImpl` is the full overlay lifecycle; `SnackbarRefImpl` wraps `OverlayRef` to add close-with-value semantics. No duplication.
 

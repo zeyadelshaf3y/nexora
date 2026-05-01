@@ -1,5 +1,9 @@
 import { listen } from '@nexora-ui/core';
-import { createOutsideClickListener, isInsideOverlayPaneOrBridge } from '@nexora-ui/overlay';
+import {
+  createDocumentHiddenCloseListener,
+  createOutsideClickListener,
+  isInsideOverlayPaneOrBridge,
+} from '@nexora-ui/overlay';
 
 import type { PopoverFocusCloseCoordinator } from '../internal';
 
@@ -22,10 +26,24 @@ export function attachPopoverOutsideClickListener(params: {
 }): (() => void) | null {
   if (params.openedBy === 'click') return null;
 
-  return createOutsideClickListener(params.anchor, params.getPane, params.close, {
+  const removeOutside = createOutsideClickListener(params.anchor, params.getPane, params.close, {
     considerInside: (target) => isInsideOverlayPaneOrBridge(target),
     onPointerDown: (element) => {
       params.focusClose.onPointerDown(element);
     },
   });
+
+  const doc = params.anchor.ownerDocument;
+  const removeHidden =
+    doc != null
+      ? createDocumentHiddenCloseListener(doc, () => {
+          params.focusClose.clearPointerDown();
+          params.close();
+        })
+      : () => {};
+
+  return () => {
+    removeOutside();
+    removeHidden();
+  };
 }

@@ -42,7 +42,7 @@ The **overlay** package is the single home for both the overlay engine (stack, p
 
 ## Shared utilities and reuse
 
-- **Overlay utils** (`libs/headless/overlay/src/lib/utils/`): Shared by popover and tooltip (e.g. `triggerIncludes`, `setupAnchoredOverlayOpenedState`, `createAnchoredOverlayConfig`, hover leave, outside click). When adding behavior used by both, add it here rather than duplicating in each directive.
+- **Overlay utils** (`libs/headless/overlay/src/lib/utils/`): Shared by popover and tooltip (e.g. `triggerIncludes`, `setupAnchoredOverlayOpenedState`, `createAnchoredOverlayConfig`, hover leave, `createOutsideClickListener`, `createDocumentHiddenCloseListener`). When adding behavior used by both, add it here rather than duplicating in each directive.
 - **Close directives**: Dialog, drawer, and popover extend overlay’s `BaseCloseOverlayDirective`. Snackbar does not (different close contract: value on close). Do not duplicate close logic.
 - **Ref implementations**: One ref implementation per overlay type (e.g. `OverlayRefImpl`, `SnackbarRefImpl`). Wrappers add type-specific behavior (e.g. `SnackbarRef.close(value)`); core lifecycle stays in overlay.
 

@@ -118,6 +118,7 @@ Chip attributes merged onto mention DOM are **allowlisted** for safety; see [SEC
 - **Delays**: Open delay and close delay (hover/focus) configurable. Close delay can differ for hover vs focus.
 - **Allow content hover**: When true, hovering the panel (and optional gap) keeps it open; when false, leaving the trigger closes it.
 - **Outside click / Escape**: Close popover when user clicks outside or presses Escape (when trigger is click or when open via click). Nested: only top overlay closes unless click is on parent backdrop.
+- **Hidden document**: For hover/focus opens (non-click), the host `document` going hidden also closes the popover so hover/focus intent cannot desync after a tab switch, same rationale as tooltip.
 - **ARIA**: Trigger gets `aria-expanded`, `aria-haspopup="true"`, `aria-controls` (pane id when open). Pane has stable id and `role="dialog"` (override via options if needed for listbox/combobox).
 - **Touch**: Hover is not meaningful on touch. Prefer click or focus for touch-friendly UX.
 - **State**: Directive exposes `isOpen` and `paneId` (signals) for template binding.
@@ -133,6 +134,7 @@ Chip attributes merged onto mention DOM are **allowlisted** for safety; see [SEC
 - **Leave without handoff**: Leaving a tooltip without entering another keeps normal close delay and close animation.
 - **Warmup window**: Optional post-close warmup window can allow instant open for the next tooltip if it opens within the configured window.
 - **Hover**: Open on mouse enter; close on mouse leave. Optional “allow content hover” so hovering the tooltip content keeps it open (e.g. for links inside).
+- **Dismiss while open**: Capture-phase `pointerdown` outside the trigger, pane, and overlay bridge/pane stack closes the tooltip (aligned with popover’s non-click outside handling). When the host `document` becomes hidden (tab switch, context suspended), the tooltip closes so hover / pointer-guard state cannot stick out of sync until the user returns.
 - **Focus**: Open on focus; close when focus leaves trigger (and optionally tooltip content). Ensures keyboard users get the same content.
 - **ARIA**: Trigger gets `aria-describedby` pointing to tooltip pane id when open. Pane has `role="tooltip"` and stable id. Content should be short and descriptive.
 - **No focus trap**: Tooltips are supplementary; focus stays on trigger. No modal behavior.
@@ -157,14 +159,14 @@ Chip attributes merged onto mention DOM are **allowlisted** for safety; see [SEC
 
 ## Summary table
 
-| Component              | Open API                        | Close (user)                            | Focus                   | ARIA (pane)                           | Special                                                                                           |
-| ---------------------- | ------------------------------- | --------------------------------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| **Dialog**             | `DialogService.open(...)`       | Escape, backdrop, outside               | Restore + optional trap | role=dialog, aria-modal               | 9 positions, block scroll                                                                         |
-| **Drawer**             | `DrawerService.open(...)`       | Same as dialog                          | Same                    | Same                                  | 4 positions, RTL start/end                                                                        |
-| **Popover**            | `[nxrPopover]="tpl"`            | Outside, Escape, (blur for focus)       | Restore                 | role=dialog, aria-controls on trigger | Click/focus/hover, 12 placements                                                                  |
-| **Tooltip**            | `nxrTooltip="text"`             | Leave / blur                            | No trap                 | role=tooltip, aria-describedby        | Hover/focus, delays, optional arrow                                                               |
-| **Snackbar**           | `SnackbarService.open(...)`     | Button/duration/group replace           | No trap                 | Consumer                              | Stack, groupId, close with value                                                                  |
-| **Listbox / dropdown** | Host components + `DropdownRef` | Escape/outside (via overlay), selection | Restore to trigger      | listbox/menu roles                    | See [Listbox and dropdown](#listbox-and-dropdown-shared-primitives); [DROPDOWNS.md](DROPDOWNS.md) |
-| **Mention**            | `nxrMention` + panel template   | Blur, outside, programmatic             | Editor focus            | Panel + editor                        | See [Mention](#mention); [MENTION.md](../libs/headless/mention/docs/MENTION.md)                   |
+| Component              | Open API                        | Close (user)                                | Focus                   | ARIA (pane)                           | Special                                                                                           |
+| ---------------------- | ------------------------------- | ------------------------------------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Dialog**             | `DialogService.open(...)`       | Escape, backdrop, outside                   | Restore + optional trap | role=dialog, aria-modal               | 9 positions, block scroll                                                                         |
+| **Drawer**             | `DrawerService.open(...)`       | Same as dialog                              | Same                    | Same                                  | 4 positions, RTL start/end                                                                        |
+| **Popover**            | `[nxrPopover]="tpl"`            | Outside, Escape, (blur for focus)           | Restore                 | role=dialog, aria-controls on trigger | Click/focus/hover, 12 placements                                                                  |
+| **Tooltip**            | `nxrTooltip="text"`             | Leave / blur / outside pointer / doc hidden | No trap                 | role=tooltip, aria-describedby        | Hover/focus, delays, optional arrow; dismiss listeners only while open                            |
+| **Snackbar**           | `SnackbarService.open(...)`     | Button/duration/group replace               | No trap                 | Consumer                              | Stack, groupId, close with value                                                                  |
+| **Listbox / dropdown** | Host components + `DropdownRef` | Escape/outside (via overlay), selection     | Restore to trigger      | listbox/menu roles                    | See [Listbox and dropdown](#listbox-and-dropdown-shared-primitives); [DROPDOWNS.md](DROPDOWNS.md) |
+| **Mention**            | `nxrMention` + panel template   | Blur, outside, programmatic                 | Editor focus            | Panel + editor                        | See [Mention](#mention); [MENTION.md](../libs/headless/mention/docs/MENTION.md)                   |
 
 When adding or changing behavior, align with this document and with the package READMEs (`overlay`, `popover`, `tooltip`, `snackbar`, `dropdown`, `listbox`, `select`, `menu`, `combobox`, `mention`) and **[MENTION.md](../libs/headless/mention/docs/MENTION.md)** as relevant.
