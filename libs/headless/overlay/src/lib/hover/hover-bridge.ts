@@ -31,6 +31,12 @@ export interface HoverBridgeConfig {
   readonly bridgeAttr?: string;
   /** When true, cursor over any overlay pane/bridge does not close this overlay (e.g. top-level). */
   readonly treatAnyOverlayPaneAsInside?: boolean;
+  /**
+   * When true, before firing `onClose` from a scheduled close, re-check hit-testing at the
+   * latest coordinates (capture pointer/mouse move + optional seed). Aborts if the stack still
+   * hits this pane or (when `treatAnyOverlayPaneAsInside`) another overlay pane/bridge.
+   */
+  readonly pointerCloseGuard?: boolean;
 }
 
 // ---------- Overlay / bridge visibility (public API) ----------
@@ -63,7 +69,19 @@ function isNodeInsideAny(node: Node | null, elements: readonly HTMLElement[]): b
   return false;
 }
 
-/** Whether to skip scheduling hover close; uses elementFromPoint (not relatedTarget). */
+/** Hit-test stack at a viewport point; prefers `elementsFromPoint` so a transparent top layer does not hide the pane below. */
+function collectElementsAtClientPoint(doc: Document, x: number, y: number): readonly Element[] {
+  if (typeof doc.elementsFromPoint === 'function') {
+    const stack = doc.elementsFromPoint(x, y);
+    if (stack.length > 0) return stack;
+  }
+
+  const top = doc.elementFromPoint(x, y);
+
+  return top ? [top] : [];
+}
+
+/** Whether to skip scheduling hover close from a `MouseEvent`’s `clientX`/`clientY` hit stack. */
 export function shouldSkipHoverClose(
   event: MouseEvent,
   options: { scope: readonly HTMLElement[]; treatAnyOverlayPaneAsInside?: boolean },
@@ -73,13 +91,16 @@ export function shouldSkipHoverClose(
 
   if (!doc) return false;
 
-  const el = doc.elementFromPoint(event.clientX, event.clientY);
+  const hits = collectElementsAtClientPoint(doc, event.clientX, event.clientY);
 
-  if (!el) return false;
+  if (hits.length === 0) return false;
 
-  if (isNodeInsideAny(el, scope)) return true;
+  for (const el of hits) {
+    if (isNodeInsideAny(el, scope)) return true;
+    if (treatAnyOverlayPaneAsInside === true && isInsideOverlayPaneOrBridge(el)) return true;
+  }
 
-  return treatAnyOverlayPaneAsInside === true && isInsideOverlayPaneOrBridge(el);
+  return false;
 }
 
 // ---------- Bridge DOM ----------
@@ -178,6 +199,9 @@ export class HoverBridge {
   private closeTimeout: ReturnType<typeof setTimeout> | null = null;
   private bridgeCleanup: (() => void) | null = null;
   private paneCleanup: (() => void) | null = null;
+  private pointerSamplerCleanup: (() => void) | null = null;
+  private lastClientX: number | null = null;
+  private lastClientY: number | null = null;
 
   constructor(private readonly config: HoverBridgeConfig) {}
 
@@ -189,12 +213,23 @@ export class HoverBridge {
     }
   }
 
-  scheduleClose(delayOverride?: number): void {
+  /** @param pointerSeed — seeds the close guard until the next move event (e.g. the scheduling `mouseleave`). */
+  scheduleClose(
+    delayOverride?: number,
+    pointerSeed?: Pick<PointerEvent, 'clientX' | 'clientY'>,
+  ): void {
     this.cancelClose();
+    if (this.config.pointerCloseGuard && pointerSeed) {
+      this.lastClientX = pointerSeed.clientX;
+      this.lastClientY = pointerSeed.clientY;
+    }
+
     const delay = delayOverride ?? this.config.getCloseDelay();
 
     this.closeTimeout = setTimeout(() => {
       this.closeTimeout = null;
+
+      if (!this.shouldCommitPointerClose()) return;
 
       this.config.onClose();
     }, delay);
@@ -207,19 +242,48 @@ export class HoverBridge {
 
     if (!pane.parentNode || !doc) return;
 
+    const win = doc.defaultView ?? getGlobal();
+
     const bridge = createBridgeElement({ doc, anchor, pane, bridgeAttr });
 
-    if (!bridge) return;
+    if (bridge) {
+      pane.parentNode.insertBefore(bridge, pane);
+    }
 
-    pane.parentNode.insertBefore(bridge, pane);
-    const scope = createBridgeScope(pane, anchor, bridge);
+    // No gap rect → no bridge DOM, but pane listeners still cancel a close scheduled from trigger leave.
+    const scope = bridge ? createBridgeScope(pane, anchor, bridge) : ([pane, anchor] as const);
     this.attachPaneListeners(pane, scope);
+
+    let unPointerSampler = () => {};
+    if (this.config.pointerCloseGuard) {
+      const record = (e: Event) => {
+        const m = e as MouseEvent;
+        this.lastClientX = m.clientX;
+        this.lastClientY = m.clientY;
+      };
+      const un1 = listen(win ?? null, 'pointermove', record, true);
+      const un2 = listen(win ?? null, 'mousemove', record, true);
+      unPointerSampler = () => {
+        un1();
+        un2();
+      };
+      this.pointerSamplerCleanup = () => {
+        unPointerSampler();
+        this.pointerSamplerCleanup = null;
+      };
+    }
+
+    if (!bridge) {
+      this.bridgeCleanup = () => {
+        this.pointerSamplerCleanup?.();
+        this.pointerSamplerCleanup = null;
+      };
+      return;
+    }
 
     const onEnter = () => this.cancelClose();
     const onLeave = this.createLeaveHandler(scope);
     const { unBridgeEnter, unBridgeLeave } = createBridgeMouseHandlers(bridge, onEnter, onLeave);
-
-    const win = getGlobal();
     let lastGap: GapRect | null = null;
 
     const { run: scheduleUpdate, cancel: cancelRaf } = createRafThrottled(() => {
@@ -244,15 +308,42 @@ export class HoverBridge {
       unBridgeEnter();
       unBridgeLeave();
       bridge.remove();
+      this.pointerSamplerCleanup?.();
+      this.pointerSamplerCleanup = null;
     };
   }
 
   detach(): void {
     this.cancelClose();
+    this.pointerSamplerCleanup?.();
+    this.pointerSamplerCleanup = null;
     this.bridgeCleanup?.();
     this.bridgeCleanup = null;
     this.paneCleanup?.();
     this.paneCleanup = null;
+  }
+
+  /** `false` → skip scheduled `onClose` (pointer still hits this pane or another overlay when treatAny). */
+  private shouldCommitPointerClose(): boolean {
+    if (!this.config.pointerCloseGuard) return true;
+
+    if (this.lastClientX == null || this.lastClientY == null) return true;
+
+    const doc = ownerDocument(this.config.anchor);
+    if (!doc) return true;
+
+    const hits = collectElementsAtClientPoint(doc, this.lastClientX, this.lastClientY);
+
+    if (hits.length === 0) return true;
+
+    const { pane, treatAnyOverlayPaneAsInside } = this.config;
+
+    for (const el of hits) {
+      if (pane.contains(el)) return false;
+      if (treatAnyOverlayPaneAsInside === true && isInsideOverlayPaneOrBridge(el)) return false;
+    }
+
+    return true;
   }
 
   private createLeaveHandler(scope: readonly HTMLElement[]): (e: Event) => void {
@@ -263,12 +354,11 @@ export class HoverBridge {
 
       if (shouldSkipHoverClose(ev, opts)) return;
 
-      // Double check after paint: at leave time elementFromPoint may not yet reflect the cursor over the pane;
-      // re-checking avoids closing when the user moved from trigger to pane in the same frame.
+      // Re-check after paint: hit stack can lag one frame when moving onto the pane.
       runAfterPaint(() => {
         if (shouldSkipHoverClose(ev, opts)) return;
 
-        this.scheduleClose();
+        this.scheduleClose(undefined, ev);
       });
     };
   }

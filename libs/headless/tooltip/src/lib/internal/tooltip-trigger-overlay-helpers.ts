@@ -26,7 +26,10 @@ export function resolveTooltipScrollStrategy(
     : new NoopScrollStrategy();
 }
 
-/** Default anchored overlay close policy for tooltips (Escape bubbles; no outside/backdrop close). */
+/**
+ * Default anchored overlay close policy for tooltips (Escape bubbles; no overlay-engine outside/backdrop).
+ * Outside dismiss is handled in the directive via `createOutsideClickListener` while open, not via this policy.
+ */
 export const TOOLTIP_OVERLAY_CLOSE_POLICY = {
   escape: 'top',
   outside: 'none',

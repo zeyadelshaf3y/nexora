@@ -386,6 +386,45 @@ describe('TooltipTriggerDirective', () => {
     expect(getPane()?.parentElement).toBeFalsy();
   });
 
+  it('closes on pointerdown outside when opened by hover', async () => {
+    const fixture = TestBed.createComponent(InstantHost);
+    fixture.autoDetectChanges();
+    const btn: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+
+    btn.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    await flush();
+    expect(getPane()).not.toBeNull();
+
+    const outside = document.createElement('div');
+    fixture.nativeElement.appendChild(outside);
+    outside.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+
+    await flush(200);
+    expect(getPane()?.parentElement).toBeFalsy();
+  });
+
+  it('closes when document becomes hidden (e.g. tab switch)', async () => {
+    const fixture = TestBed.createComponent(InstantHost);
+    fixture.autoDetectChanges();
+    const btn: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+    const doc = btn.ownerDocument;
+
+    btn.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    await flush();
+    expect(getPane()).not.toBeNull();
+
+    const prev = Object.getOwnPropertyDescriptor(doc, 'hidden');
+    try {
+      Object.defineProperty(doc, 'hidden', { configurable: true, value: true });
+      doc.dispatchEvent(new Event('visibilitychange'));
+      await flush(200);
+      expect(getPane()?.parentElement).toBeFalsy();
+    } finally {
+      if (prev) Object.defineProperty(doc, 'hidden', prev);
+      else delete (doc as { hidden?: boolean }).hidden;
+    }
+  });
+
   it('keeps tooltip open when allowContentHover is true and cursor moves to pane', async () => {
     const fixture = TestBed.createComponent(AllowContentHoverHost);
     fixture.autoDetectChanges();
@@ -395,6 +434,7 @@ describe('TooltipTriggerDirective', () => {
     await flush();
     const pane = getPane();
     expect(pane).not.toBeNull();
+    expect(pane?.style.pointerEvents).toBe('auto');
 
     const doc = btn.ownerDocument ?? document;
     const orig = (doc as Document & { elementFromPoint?(x: number, y: number): Element | null })

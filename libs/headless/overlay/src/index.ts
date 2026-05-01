@@ -175,6 +175,7 @@ export {
   createOutsideClickListener,
   type OutsideClickOptions,
 } from './lib/utils/outside-click-listener';
+export { createDocumentHiddenCloseListener } from './lib/utils/document-hidden-close-listener';
 export { triggerIncludes } from './lib/utils/trigger-includes';
 /** Type guard for component vs template content; public surface for popover/tooltip-style APIs. */
 export { isComponent } from './lib/utils/apply-component-bindings';

@@ -1,6 +1,6 @@
 # @nexora-ui/popover
 
-Directive that opens a popover overlay anchored to the host element. Pass the panel content as a TemplateRef. Close behavior aligns with the open trigger: click → outside/escape, focus → blur, hover → leave. Click trigger does not cancel default browser behavior or stop event propagation.
+Directive that opens a popover overlay anchored to the host element. Pass the panel content as a TemplateRef. Close behavior aligns with the open trigger: click → outside/escape, focus → blur, hover → leave. For hover/focus, the popover also closes when the host `document` becomes hidden (e.g. tab switch) so state stays consistent. Click trigger does not cancel default browser behavior or stop event propagation.
 
 **Public API:** Exports from `src/index.ts` are the supported surface ([PUBLIC-API-DESIGN.md](../../../docs/PUBLIC-API-DESIGN.md)).
 

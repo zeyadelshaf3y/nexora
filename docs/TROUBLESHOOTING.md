@@ -31,6 +31,11 @@ Common issues when using or developing Nexora headless components, and what to c
 - **Focus**: With focus trigger, closing on blur is correct. If the panel contains focusable elements, ensure focus can move into the panel (and that “outside” isn’t considered the panel). The overlay utils attach focus listeners so that focus inside the pane doesn’t close the overlay.
 - **Touch**: Hover doesn’t apply on touch devices. Use click or focus trigger for touch-friendly UX.
 
+## Tooltip stays open after switching tabs or doesn’t close on outside click
+
+- **Tab / hidden document**: The tooltip directive closes when the host `document` becomes hidden. If you still see a stale tip in an iframe-only scenario, ensure you are not relying on the parent tab’s visibility for a child frame without switching that frame’s document.
+- **Outside click**: Dismiss uses capture-phase `pointerdown` on the document. Clicks on the trigger, tooltip pane, or other overlay panes/bridges are ignored; if a transparent overlay sits above the page, it may receive the event first—adjust stacking or `pointer-events` in your theme.
+
 ## Snackbar: close with value not emitted
 
 - **Close method**: Use the ref’s `close(value)` or `dismiss(value)` so that `afterClosed()` emits that value. Buttons in the template should use `nxrSnackbarClose` with optional value (e.g. `[nxrSnackbarClose]="'undo'"`). If the snackbar is closed by duration or another path without a value, `afterClosed()` may emit `undefined`.
@@ -70,16 +75,17 @@ Common issues when using or developing Nexora headless components, and what to c
 
 ## Summary table
 
-| Symptom                                  | Likely cause                          | Check                                                         |
-| ---------------------------------------- | ------------------------------------- | ------------------------------------------------------------- |
-| Overlay doesn’t open                     | No view container; beforeOpen cancels | `nxrOverlayViewContainer` or options; beforeOpen return value |
-| Doesn’t close on Escape/outside          | Close policy; wrong target            | closePolicy; nested vs top overlay; backdrop vs pane click    |
-| Behind header/sidebar                    | Low z-index                           | OVERLAY_BASE_Z_INDEX; or zIndex in options                    |
-| Focus not restored                       | Noop focus strategy; trigger gone     | focusStrategy; lifecycle of trigger                           |
-| Popover/tooltip closes on hover to panel | Gap or no content-hover               | allowContentHover; hover bridge/gap                           |
-| Snackbar afterClosed no value            | Close path doesn’t pass value         | close(value) / nxrSnackbarClose with value                    |
-| Snackbar open throws                     | No ViewContainerRef                   | Pass viewContainerRef / injector; see snackbar README         |
-| Snackbar message replaced                | groupId                               | Same groupId closes previous; omit or use distinct groups     |
-| Listbox wrong selected row               | Duplicate values / compareWith        | First registry match; fix accessors or compareWith            |
-| Mention option not chosen                | blur before click                     | mousedown on options; see MENTION.md                          |
-| Dropdown second open no-op               | Close still in flight                 | await close; DropdownRef serializes open                      |
+| Symptom                                  | Likely cause                          | Check                                                             |
+| ---------------------------------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| Overlay doesn’t open                     | No view container; beforeOpen cancels | `nxrOverlayViewContainer` or options; beforeOpen return value     |
+| Doesn’t close on Escape/outside          | Close policy; wrong target            | closePolicy; nested vs top overlay; backdrop vs pane click        |
+| Behind header/sidebar                    | Low z-index                           | OVERLAY_BASE_Z_INDEX; or zIndex in options                        |
+| Focus not restored                       | Noop focus strategy; trigger gone     | focusStrategy; lifecycle of trigger                               |
+| Popover/tooltip closes on hover to panel | Gap or no content-hover               | allowContentHover; hover bridge/gap                               |
+| Tooltip open after tab switch            | Stale hover without hidden handler    | Current directive closes on `document` hidden; see tooltip README |
+| Snackbar afterClosed no value            | Close path doesn’t pass value         | close(value) / nxrSnackbarClose with value                        |
+| Snackbar open throws                     | No ViewContainerRef                   | Pass viewContainerRef / injector; see snackbar README             |
+| Snackbar message replaced                | groupId                               | Same groupId closes previous; omit or use distinct groups         |
+| Listbox wrong selected row               | Duplicate values / compareWith        | First registry match; fix accessors or compareWith                |
+| Mention option not chosen                | blur before click                     | mousedown on options; see MENTION.md                              |
+| Dropdown second open no-op               | Close still in flight                 | await close; DropdownRef serializes open                          |

@@ -162,6 +162,7 @@ export class TooltipProviderWarmupDemoComponent {}
         <button
           class="btn"
           [nxrTooltip]="demoRichTooltipTpl"
+          [nxrTooltipAllowContentHover]="true"
           nxrTooltipPanelClass="demo-tooltip-pane demo-tooltip-pane--rich"
           nxrTooltipPlacement="bottom"
           [nxrTooltipOpenDelay]="0"

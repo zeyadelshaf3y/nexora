@@ -1,12 +1,16 @@
 /**
  * Shared hover-leave handler for anchored overlay triggers (tooltip, popover).
- * Centralizes: cancel open delay, optional "opening" early-exit, allowContentHover + shouldSkipHoverClose,
+ * Centralizes: cancel open delay, optional opening early-exit, allowContentHover hit-test skip,
  * and scheduling close via HoverBridge or direct close.
  *
  * @internal
  */
 
-import { shouldSkipHoverClose, type HoverBridge } from '../hover/hover-bridge';
+import {
+  isInsideOverlayPaneOrBridge,
+  shouldSkipHoverClose,
+  type HoverBridge,
+} from '../hover/hover-bridge';
 import type { OverlayRef } from '../ref/overlay-ref';
 
 import type { TriggerDelay } from './trigger-delay';
@@ -34,7 +38,7 @@ export interface AnchoredHoverLeaveContext {
   isNestedOverlay: boolean;
   /** Delay in ms before close; 0 = close immediately. */
   getCloseDelay: () => number;
-  /** When set, use bridge.scheduleClose(delay) when delay > 0; otherwise call close(). */
+  /** When set, prefer `scheduleClose` (async when allowContentHover or delay > 0); else `close()`. */
   hoverBridge: HoverBridge | null;
   /** Called to close the overlay. */
   close: () => void;
@@ -68,6 +72,22 @@ export function handleAnchoredHoverLeave(event: MouseEvent, ctx: AnchoredHoverLe
   if (ctx.allowContentHover) {
     const trigger = ctx.getTriggerElement();
     const pane = ctx.getPane();
+    const related = event.relatedTarget;
+
+    // `relatedTarget` often resolves before the hit stack catches up to the pane/bridge.
+    if (related instanceof Node) {
+      if (trigger.contains(related) || (pane != null && pane.contains(related))) {
+        return;
+      }
+      if (
+        !ctx.isNestedOverlay &&
+        related instanceof Element &&
+        isInsideOverlayPaneOrBridge(related)
+      ) {
+        return;
+      }
+    }
+
     const scope = pane ? [trigger, pane] : [trigger];
     if (
       shouldSkipHoverClose(event, {
@@ -81,8 +101,12 @@ export function handleAnchoredHoverLeave(event: MouseEvent, ctx: AnchoredHoverLe
 
   if (ctx.hoverBridge) {
     const delay = ctx.getCloseDelay();
-    if (delay > 0) {
-      ctx.hoverBridge.scheduleClose(delay);
+    // Defer delay 0 so pane `mouseenter` / pointer guard can cancel before `close()`.
+    if (ctx.allowContentHover || delay > 0) {
+      ctx.hoverBridge.scheduleClose(
+        delay,
+        ctx.allowContentHover ? (event as PointerEvent) : undefined,
+      );
     } else {
       ctx.close();
     }

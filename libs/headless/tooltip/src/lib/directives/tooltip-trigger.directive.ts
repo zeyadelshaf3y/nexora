@@ -15,6 +15,7 @@ import {
 import {
   CLOSE_REASON_PROGRAMMATIC,
   createAnchoredOverlayConfig,
+  createDocumentHiddenCloseListener,
   createOutsideClickListener,
   createTriggerDelay,
   type ComponentPortal,
@@ -63,6 +64,11 @@ export type TooltipContent = string | TemplateRef<unknown>;
  * No focus trap — tooltips are supplementary; prefer non-interactive content unless
  * `nxrTooltipAllowContentHover` is used for pointer access to rich template bodies.
  *
+ * While open, the directive registers capture-phase `pointerdown` outside the trigger, pane,
+ * and overlay bridge/pane stack (same idea as popover) so clicks elsewhere dismiss the tip.
+ * It also closes when the host `document` becomes hidden (tab switch / context hidden) so
+ * hover and pointer-guard state cannot stick after the user leaves the page.
+ *
  * @example
  * ```html
  * <button nxrTooltip="Save changes">💾</button>
@@ -84,7 +90,7 @@ export type TooltipContent = string | TemplateRef<unknown>;
   exportAs: 'nxrTooltip',
   host: {
     '(focus)': 'onHostFocus()',
-    '(blur)': 'onHostBlur()',
+    '(blur)': 'onHostBlur($event)',
     '(mouseenter)': 'onHostMouseEnter()',
     '(mouseleave)': 'onHostMouseLeave($event)',
     '[attr.aria-describedby]': 'paneId()',
@@ -191,7 +197,8 @@ export class TooltipTriggerDirective implements OnDestroy {
   private hoverBridge: HoverBridge | null = null;
   private hoverBridgeCleanup: (() => void) | null = null;
   private isNestedOverlay = false;
-  private outsideClickCleanup: (() => void) | null = null;
+  /** Teardown for `pointerdown` (outside) + `visibilitychange` while the overlay is open. */
+  private openDocumentListenersCleanup: (() => void) | null = null;
   private readonly tooltipInstanceId = this.warmup.createInstanceId();
   private openWithoutAnimation = false;
   private isInstantOpenActive = false;
@@ -219,7 +226,7 @@ export class TooltipTriggerDirective implements OnDestroy {
     this.scheduleOpen('focus', this.consumeInstantHandoff());
   }
 
-  onHostBlur(): void {
+  onHostBlur(event: FocusEvent): void {
     if (!this.triggerIncludes('focus')) return;
 
     this.openDelay.cancel();
@@ -233,12 +240,25 @@ export class TooltipTriggerDirective implements OnDestroy {
 
     if (this.openedBy !== 'focus' || !this.overlayRef) return;
 
+    if (this.nxrTooltipAllowContentHover()) {
+      const pane = this.overlayRef.getPaneElement();
+      const rt = event.relatedTarget;
+      if (pane && rt instanceof Node && pane.contains(rt)) {
+        return;
+      }
+    }
+
     this.restoreInstantOpenStyles();
     this.scheduleFocusClose();
   }
 
   onHostMouseEnter(): void {
     if (!this.triggerIncludes('hover') || this.nxrTooltipDisabled()) return;
+
+    // Focus may have opened the tip (`openedBy === 'focus'`); hover-leave would no-op until promoted.
+    if (this.overlayRef && this.openedBy === 'focus') {
+      this.openedBy = 'hover';
+    }
 
     this.prepareOpenAttempt();
     this.scheduleOpen('hover', this.consumeInstantHandoff());
@@ -314,7 +334,7 @@ export class TooltipTriggerDirective implements OnDestroy {
     this.hoverBridgeCleanup?.();
     this.hoverBridgeCleanup = null;
     this.hoverBridge = null;
-    this.removeOutsideClickListener();
+    this.unregisterOpenDocumentListeners();
     this.warmup.unregister(this.tooltipInstanceId);
     this.overlayRef?.dispose();
     this.overlayRef = null;
@@ -348,7 +368,12 @@ export class TooltipTriggerDirective implements OnDestroy {
   }
 
   private buildOverlayConfig(anchor: HTMLElement) {
-    const panelStyle = this.nxrTooltipPanelStyle();
+    const panelStyle: Record<string, string> = { ...(this.nxrTooltipPanelStyle() ?? {}) };
+    // Content-hover needs hit-testing on the pane; themes often use `pointer-events: none` on panes.
+    if (this.nxrTooltipAllowContentHover()) {
+      panelStyle['pointerEvents'] = 'auto';
+    }
+
     const instantPanelStyle = this.openWithoutAnimation
       ? ({ transition: 'none', animation: 'none' } as Record<string, string>)
       : undefined;
@@ -367,7 +392,7 @@ export class TooltipTriggerDirective implements OnDestroy {
       closeAnimationDurationMs: this.nxrTooltipCloseAnimationDurationMs(),
       parentRef: getContainingOverlayRef(anchor) ?? undefined,
       panelClass: this.nxrTooltipPanelClass(),
-      panelStyle: instantPanelStyle ? { ...(panelStyle ?? {}), ...instantPanelStyle } : panelStyle,
+      panelStyle: instantPanelStyle ? { ...panelStyle, ...instantPanelStyle } : panelStyle,
       arrowSize: this.nxrTooltipArrowSize(),
     };
   }
@@ -392,8 +417,11 @@ export class TooltipTriggerDirective implements OnDestroy {
   private scheduleFocusClose(): void {
     const delay = this.getFocusCloseDelay();
     if (this.hoverBridge) {
-      if (delay > 0) this.hoverBridge.scheduleClose(delay);
-      else this.close();
+      if (this.nxrTooltipAllowContentHover() || delay > 0) {
+        this.hoverBridge.scheduleClose(delay);
+      } else {
+        this.close();
+      }
 
       return;
     }
@@ -446,7 +474,7 @@ export class TooltipTriggerDirective implements OnDestroy {
         this.hoverBridgeCleanup?.();
         this.hoverBridgeCleanup = null;
         this.hoverBridge = null;
-        this.removeOutsideClickListener();
+        this.unregisterOpenDocumentListeners();
         this.overlayRef = null;
         this.tooltipContentPortal = null;
         this.openedBy = null;
@@ -455,7 +483,7 @@ export class TooltipTriggerDirective implements OnDestroy {
         this.paneId.set(null);
       },
       bridgeRef,
-      attachOutsideClick: () => this.attachOutsideClickListener(),
+      attachOutsideClick: () => this.registerOpenDocumentListeners(),
       destroyRef: this.destroyRef,
     });
 
@@ -465,25 +493,46 @@ export class TooltipTriggerDirective implements OnDestroy {
   }
 
   // ---------------------------------------------------------------------------
-  // Private: outside click for focus-triggered tooltips
+  // Private: document-level dismiss while open (outside pointer + tab hidden)
   // ---------------------------------------------------------------------------
 
-  private attachOutsideClickListener(): void {
-    this.removeOutsideClickListener();
+  /** Outside `pointerdown` + document `visibilitychange` (tab hidden); only while open. */
+  private registerOpenDocumentListeners(): void {
+    this.unregisterOpenDocumentListeners();
 
-    if (this.openedBy !== 'focus') return;
+    if (!this.overlayRef) return;
 
-    this.outsideClickCleanup = createOutsideClickListener(
-      this.hostRef.nativeElement,
+    const anchor = this.hostRef.nativeElement;
+    const doc = anchor.ownerDocument;
+
+    const removeOutside = createOutsideClickListener(
+      anchor,
       () => this.overlayRef?.getPaneElement(),
       () => this.close(),
       { considerInside: (target) => isInsideOverlayPaneOrBridge(target) },
     );
+
+    const removeHidden =
+      doc != null
+        ? createDocumentHiddenCloseListener(doc, () => {
+            if (!this.overlayRef) return;
+
+            this.hoverBridge?.cancelClose();
+            this.openDelay.cancel();
+            this.focusCloseDelay.cancel();
+            this.close();
+          })
+        : () => {};
+
+    this.openDocumentListenersCleanup = () => {
+      removeOutside();
+      removeHidden();
+    };
   }
 
-  private removeOutsideClickListener(): void {
-    this.outsideClickCleanup?.();
-    this.outsideClickCleanup = null;
+  private unregisterOpenDocumentListeners(): void {
+    this.openDocumentListenersCleanup?.();
+    this.openDocumentListenersCleanup = null;
   }
 
   private forceImmediateCloseForHandoff(): void {
