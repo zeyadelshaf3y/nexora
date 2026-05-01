@@ -15,10 +15,10 @@
     "@nexora-ui/listbox-cdk": "^0.1.1",
     "@nexora-ui/mention": "^0.1.1",
     "@nexora-ui/menu": "^0.1.1",
-    "@nexora-ui/overlay": "^0.1.1",
-    "@nexora-ui/popover": "^0.1.1",
+    "@nexora-ui/overlay": "^0.1.2",
+    "@nexora-ui/popover": "^0.1.2",
     "@nexora-ui/select": "^0.1.1",
     "@nexora-ui/snackbar": "^0.1.2",
-    "@nexora-ui/tooltip": "^0.1.1"
+    "@nexora-ui/tooltip": "^0.2.1"
   }
 }
