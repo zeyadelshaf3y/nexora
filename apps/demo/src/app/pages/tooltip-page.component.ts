@@ -113,6 +113,14 @@ export class TooltipProviderWarmupDemoComponent {}
           <code>nxrTooltipMaintainInViewport</code>, <code>nxrTooltipBoundaries</code>
           <span>Global: matching fields in <code>TOOLTIP_DEFAULTS_CONFIG</code></span>
         </div>
+        <div class="tooltip-cheat-sheet-item">
+          <strong>Rich content</strong>
+          <code>[nxrTooltip]="templateRef"</code>
+          <span
+            >Bind an <code>&lt;ng-template #ref&gt;</code> for markup; strings still use
+            <code>nxrTooltip="…"</code></span
+          >
+        </div>
       </div>
     </section>
 
@@ -140,6 +148,34 @@ export class TooltipProviderWarmupDemoComponent {}
           Copy Link
         </button>
       </div>
+    </section>
+
+    <!-- Template (rich) content -->
+    <section class="page-section">
+      <h2 class="page-section-title">Template content</h2>
+      <p class="page-section-desc">
+        Pass a <code>TemplateRef</code> with <code>[nxrTooltip]="…"</code> and an
+        <code>&lt;ng-template #…&gt;</code> for formatted copy (line breaks, emphasis, small
+        layout).
+      </p>
+      <div class="btn-row">
+        <button
+          class="btn"
+          [nxrTooltip]="demoRichTooltipTpl"
+          nxrTooltipPanelClass="demo-tooltip-pane demo-tooltip-pane--rich"
+          nxrTooltipPlacement="bottom"
+          [nxrTooltipOpenDelay]="0"
+        >
+          Rich tooltip
+        </button>
+      </div>
+      <ng-template #demoRichTooltipTpl>
+        <div class="demo-tooltip-rich">
+          <strong class="demo-tooltip-rich-title">Keyboard shortcut</strong>
+          <p class="demo-tooltip-rich-line">Save file: <kbd>Ctrl</kbd> + <kbd>S</kbd></p>
+          <p class="demo-tooltip-rich-hint">Works in most editors.</p>
+        </div>
+      </ng-template>
     </section>
 
     <!-- Reactive Content Update -->

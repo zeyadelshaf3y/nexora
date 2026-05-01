@@ -41,7 +41,7 @@ ref?.afterClosed().subscribe(() => this.cleanup());
 
 ### Inputs
 
-- **One main input** for the primary concern: e.g. `[nxrPopover]="templateRef"`, `nxrTooltip="text"`. Required.
+- **One main input** for the primary concern: e.g. `[nxrPopover]="templateRef"`, `nxrTooltip="text"` or `[nxrTooltip]="templateRef"`. Required.
 - **Configuration via named inputs**: `nxrPopoverPlacement`, `nxrPopoverTrigger`, `nxrTooltipOpenDelay`, etc. All optional with documented defaults.
 - **Naming**: Prefix with the directive name (`nxrPopover*`, `nxrTooltip*`) so it’s clear which directive they belong to.
 

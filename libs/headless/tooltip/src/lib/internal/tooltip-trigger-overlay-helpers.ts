@@ -8,6 +8,7 @@
 
 import type { Injector, ViewContainerRef } from '@angular/core';
 import { ComponentPortal, NoopScrollStrategy, RepositionScrollStrategy } from '@nexora-ui/overlay';
+
 import { TooltipContentHostComponent } from '../host/tooltip-content-host.component';
 
 export function createTooltipContentHostPortal(

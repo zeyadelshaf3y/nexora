@@ -300,6 +300,49 @@
   cursor: default;
 }
 
+.demo-tooltip-pane--rich {
+  max-width: 280px;
+}
+
+.demo-tooltip-rich {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.demo-tooltip-rich-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.demo-tooltip-rich-line {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.demo-tooltip-rich-line kbd {
+  display: inline-block;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+
+  /* Fallback for no color-mix (demo tooltips use dark panes + light text). */
+  border: 1px solid rgb(255 255 255 / 22%);
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+}
+
+@supports (color: color-mix(in srgb, white, black)) {
+  .demo-tooltip-rich-line kbd {
+    border-color: color-mix(in srgb, var(--nxr-tooltip-text) 35%, transparent);
+  }
+}
+
+.demo-tooltip-rich-hint {
+  margin: 0;
+  font-size: 0.72rem;
+  opacity: 0.85;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 /* MENU (dropdown-style)                                                      */

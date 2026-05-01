@@ -1,4 +1,5 @@
 export type {
+  TooltipContent,
   TooltipTrigger,
   TooltipTriggerInput,
 } from './lib/directives/tooltip-trigger.directive';

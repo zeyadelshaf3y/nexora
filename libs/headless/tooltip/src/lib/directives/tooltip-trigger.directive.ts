@@ -1,4 +1,5 @@
 import {
+  type ComponentRef,
   DestroyRef,
   Directive,
   ElementRef,
@@ -8,6 +9,7 @@ import {
   input,
   type OnDestroy,
   signal,
+  TemplateRef,
   ViewContainerRef,
 } from '@angular/core';
 import {
@@ -33,6 +35,7 @@ import {
   type ViewportBoundaries,
 } from '@nexora-ui/overlay';
 
+import type { TooltipContentHostComponent } from '../host/tooltip-content-host.component';
 import {
   clearTooltipPaneInstantAnimationStyles,
   createTooltipContentHostPortal,
@@ -40,7 +43,6 @@ import {
   resolveTooltipScrollStrategy,
   TOOLTIP_OVERLAY_CLOSE_POLICY,
 } from '../internal';
-import { TooltipContentHostComponent } from '../host/tooltip-content-host.component';
 import { TooltipWarmupService } from '../services/tooltip-warmup.service';
 
 import {
@@ -51,11 +53,15 @@ import {
 export type TooltipTrigger = 'hover' | 'focus';
 export type TooltipTriggerInput = TooltipTrigger | TooltipTrigger[];
 
+/** Primary tooltip body: plain string or an `<ng-template #ref>` bound as `TemplateRef`. */
+export type TooltipContent = string | TemplateRef<unknown>;
+
 /**
  * Directive that shows a tooltip anchored to the host element on hover/focus.
  *
  * Uses the overlay system for positioning, viewport flipping/clamping, and arrow placement.
- * No focus trap — tooltips are supplementary, non-interactive by default.
+ * No focus trap — tooltips are supplementary; prefer non-interactive content unless
+ * `nxrTooltipAllowContentHover` is used for pointer access to rich template bodies.
  *
  * @example
  * ```html
@@ -67,6 +73,9 @@ export type TooltipTriggerInput = TooltipTrigger | TooltipTrigger[];
  *   [nxrTooltipDisplayArrow]="true"
  *   [nxrTooltipOpenDelay]="300"
  * >🗑️</button>
+ *
+ * <button [nxrTooltip]="richTpl" nxrTooltipPlacement="bottom">ℹ️</button>
+ * <ng-template #richTpl><span class="my-tip">Rich <strong>HTML</strong></span></ng-template>
  * ```
  */
 @Directive({
@@ -93,8 +102,8 @@ export class TooltipTriggerDirective implements OnDestroy {
     ...(inject(TOOLTIP_DEFAULTS_CONFIG, { optional: true }) ?? {}),
   };
 
-  /** Tooltip text. */
-  readonly nxrTooltip = input.required<string>();
+  /** Tooltip body: plain string or `TemplateRef` from `<ng-template #x>`. */
+  readonly nxrTooltip = input.required<TooltipContent>();
 
   /** Preferred placement. Default: `'top'`. */
   readonly nxrTooltipPlacement = input<Placement>(this.defaults.placement ?? 'top');
@@ -260,7 +269,7 @@ export class TooltipTriggerDirective implements OnDestroy {
 
   open(trigger: TooltipTrigger = 'hover'): void {
     if (this.overlayRef || this.opening) return;
-    if (!this.nxrTooltip()) return;
+    if (isTooltipContentEmpty(this.nxrTooltip())) return;
 
     this.opening = true;
     this.openedBy = trigger;
@@ -500,9 +509,27 @@ export class TooltipTriggerDirective implements OnDestroy {
     const compRef = this.tooltipContentPortal?.componentRef;
     if (!compRef) return;
 
-    compRef.setInput('text', this.nxrTooltip());
+    patchTooltipContentHostBody(compRef, this.nxrTooltip());
     compRef.setInput('showArrow', this.nxrTooltipDisplayArrow());
     compRef.changeDetectorRef.detectChanges();
     this.overlayRef?.reposition();
+  }
+}
+
+/** True when `open()` should no-op (empty string still has no tooltip). */
+function isTooltipContentEmpty(content: TooltipContent): boolean {
+  return typeof content === 'string' && content.length === 0;
+}
+
+function patchTooltipContentHostBody(
+  compRef: ComponentRef<TooltipContentHostComponent>,
+  content: TooltipContent,
+): void {
+  if (content instanceof TemplateRef) {
+    compRef.setInput('contentTemplate', content);
+    compRef.setInput('text', '');
+  } else {
+    compRef.setInput('contentTemplate', null);
+    compRef.setInput('text', content);
   }
 }
