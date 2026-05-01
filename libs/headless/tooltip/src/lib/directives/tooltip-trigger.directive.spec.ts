@@ -213,6 +213,22 @@ class ReactiveContentHost {
   readonly content = signal('Initial content');
 }
 
+@Component({
+  standalone: true,
+  imports: [TooltipTriggerDirective],
+  template: `
+    <button [nxrTooltip]="tpl" [nxrTooltipOpenDelay]="0" [nxrTooltipHoverCloseDelay]="0">
+      Hover
+    </button>
+    <ng-template #tpl
+      ><span class="nxr-tooltip-template-test">Rich <em>tip</em></span></ng-template
+    >
+  `,
+})
+class TemplateContentHost {
+  readonly _brand = 'TemplateContentHost';
+}
+
 function flush(ms = 50): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -262,6 +278,21 @@ describe('TooltipTriggerDirective', () => {
     await flush();
 
     expect(getPane()?.textContent).toContain('Updated content');
+  });
+
+  it('renders ng-template content when nxrTooltip is a TemplateRef', async () => {
+    const fixture = TestBed.createComponent(TemplateContentHost);
+    fixture.autoDetectChanges();
+    const btn: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+
+    btn.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    await flush();
+
+    const pane = getPane();
+    expect(pane).not.toBeNull();
+    expect(pane?.querySelector('.nxr-tooltip-template-test')).not.toBeNull();
+    expect(pane?.textContent).toContain('Rich');
+    expect(pane?.querySelector('em')).not.toBeNull();
   });
 
   it('opens tooltip on focus', async () => {

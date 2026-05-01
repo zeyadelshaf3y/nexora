@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@angular/core';
 import { ARROW_HOST_STYLES, OverlayArrowDirective } from '@nexora-ui/overlay';
 
 /**
  * Internal host component rendered inside the tooltip overlay pane.
- * Displays the tooltip text and an optional arrow element.
+ * Displays plain text or a `TemplateRef` and an optional arrow element.
  *
  * Style the tooltip body via the pane's `panelClass` or by targeting
  * `.nxr-tooltip-body` and `.nxr-tooltip-arrow` in your CSS.
@@ -16,13 +17,19 @@ import { ARROW_HOST_STYLES, OverlayArrowDirective } from '@nexora-ui/overlay';
 @Component({
   selector: 'nxr-tooltip-content-host',
   standalone: true,
-  imports: [OverlayArrowDirective],
+  imports: [NgTemplateOutlet, OverlayArrowDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (showArrow()) {
       <span class="nxr-tooltip-arrow nxr-overlay-arrow-host" nxrOverlayArrow></span>
     }
-    <span class="nxr-tooltip-body">{{ text() }}</span>
+    @if (contentTemplate(); as tpl) {
+      <div class="nxr-tooltip-body">
+        <ng-container [ngTemplateOutlet]="tpl" />
+      </div>
+    } @else {
+      <div class="nxr-tooltip-body">{{ text() }}</div>
+    }
   `,
   styles: [
     ARROW_HOST_STYLES,
@@ -42,5 +49,7 @@ import { ARROW_HOST_STYLES, OverlayArrowDirective } from '@nexora-ui/overlay';
 })
 export class TooltipContentHostComponent {
   readonly text = input<string>('');
+  /** When set, template content is shown instead of plain `text`. */
+  readonly contentTemplate = input<TemplateRef<unknown> | null>(null);
   readonly showArrow = input<boolean>(true);
 }
