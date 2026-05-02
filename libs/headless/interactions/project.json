@@ -12,6 +12,7 @@
     }
   },
   "tags": ["scope:headless", "layer:interactions"],
+  "implicitDependencies": ["core"],
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
