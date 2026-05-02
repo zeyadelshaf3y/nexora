@@ -7,7 +7,7 @@
     "@angular/cdk": "^21.1.0",
     "@nexora-ui/core": "~0.0.1",
     "@nexora-ui/listbox": "~0.0.1",
-    "@nexora-ui/overlay": "~0.0.1"
+    "@nexora-ui/overlay": "~0.1.2"
   },
   "sideEffects": false
 }
