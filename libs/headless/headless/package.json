@@ -1,6 +1,6 @@
 {
   "name": "@nexora-ui/headless",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Meta package that installs all @nexora-ui headless libraries.",
   "license": "MIT",
   "main": "index.js",
@@ -8,10 +8,10 @@
   "sideEffects": false,
   "dependencies": {
     "@nexora-ui/combobox": "^0.1.1",
-    "@nexora-ui/core": "^0.0.1",
+    "@nexora-ui/core": "^0.1.0",
     "@nexora-ui/dropdown": "^0.1.1",
-    "@nexora-ui/interactions": "^0.0.1",
-    "@nexora-ui/listbox": "^0.0.1",
+    "@nexora-ui/interactions": "^0.1.0",
+    "@nexora-ui/listbox": "^0.1.0",
     "@nexora-ui/listbox-cdk": "^0.1.1",
     "@nexora-ui/mention": "^0.1.1",
     "@nexora-ui/menu": "^0.1.1",
