@@ -75,6 +75,7 @@
     }
   },
   "release": {
+    "versionPlans": true,
     "groups": {
       "headless": {
         "projects": [
