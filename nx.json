@@ -77,7 +77,7 @@
   "release": {
     "versionPlans": true,
     "groups": {
-      "headless": {
+      "nexora-headless": {
         "projects": [
           "core",
           "overlay",
