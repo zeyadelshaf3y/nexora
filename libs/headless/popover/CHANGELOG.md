@@ -1,3 +1,7 @@
+## 0.1.3 (2026-05-02)
+
+This was a version bump only for popover to align it with other projects, there were no code changes.
+
 ## 0.1.2 (2026-05-01)
 
 ### 🧱 Updated Dependencies
