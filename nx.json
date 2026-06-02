@@ -109,6 +109,12 @@
       "preserveMatchingDependencyRanges": false,
       "preVersionCommand": "npx nx run-many -t build",
       "updateDependents": "always"
+    },
+    "git": {
+      "commit": true,
+      "commitMessage": "chore(release): publish",
+      "tag": true,
+      "push": true
     }
   },
   "generators": {
