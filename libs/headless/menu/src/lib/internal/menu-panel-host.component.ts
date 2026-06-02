@@ -32,7 +32,6 @@ import { NXR_MENU_CONTEXT, type MenuContext } from './menu-context';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'nxr-menu-panel-host',
-    style: 'display: block; max-height: inherit; position: relative',
     '[class.nxr-menu-panel-host--with-arrow]': 'menuContext.showArrow',
     '[style.overflow]': 'menuContext.showArrow ? "visible" : "hidden"',
   },
@@ -42,7 +41,7 @@ import { NXR_MENU_CONTEXT, type MenuContext } from './menu-context';
     }
     <div
       nxrListbox
-      style="max-height: inherit; overflow: auto"
+      class="nxr-menu-panel-host__listbox"
       nxrListboxRole="menu"
       nxrListboxMode="action"
       nxrListboxInitialHighlight="first"
@@ -59,6 +58,25 @@ import { NXR_MENU_CONTEXT, type MenuContext } from './menu-context';
   styles: [
     ARROW_HOST_STYLES,
     `
+      .nxr-menu-panel-host {
+        display: block;
+        max-height: inherit;
+        min-height: 0;
+        position: relative;
+        border-radius: inherit;
+      }
+
+      /*
+       * Pane uses overflow: visible so the arrow can extend outside. Clip menu item
+       * backgrounds to the pane's border radius on the scroll container instead.
+       */
+      .nxr-menu-panel-host__listbox {
+        max-height: inherit;
+        min-height: 0;
+        overflow: auto;
+        border-radius: inherit;
+      }
+
       .nxr-menu-panel-host-arrow {
         width: var(--nxr-arrow-width, 12px);
         height: var(--nxr-arrow-height, 6px);
