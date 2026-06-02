@@ -574,7 +574,7 @@ function getGroups(): { label: string; actions: GroupedAction[] }[] {
       }
 
       /* ─── Panel ───────────────────────────────────────────────────── */
-      .nxr-menu-panel-host > [role='menu'] {
+      .nxr-menu-panel-host__listbox {
         padding: 0.25rem 0;
         // min-width: 180px;
       }
