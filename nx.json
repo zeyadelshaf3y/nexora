@@ -100,21 +100,25 @@
         }
       }
     },
-    "changelog": {
-      "automaticFromRef": true,
-      "projectChangelogs": true,
-      "workspaceChangelog": false
-    },
     "version": {
       "preserveMatchingDependencyRanges": false,
       "preVersionCommand": "npx nx run-many -t build",
-      "updateDependents": "always"
+      "updateDependents": "always",
+      "git": {
+        "commit": true,
+        "commitMessage": "chore(release): publish",
+        "tag": true,
+        "push": true
+      }
     },
-    "git": {
-      "commit": true,
-      "commitMessage": "chore(release): publish",
-      "tag": true,
-      "push": true
+    "changelog": {
+      "automaticFromRef": true,
+      "projectChangelogs": true,
+      "workspaceChangelog": false,
+      "git": {
+        "commit": true,
+        "push": true
+      }
     }
   },
   "generators": {
