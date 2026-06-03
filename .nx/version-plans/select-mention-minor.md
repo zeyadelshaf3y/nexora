@@ -1,0 +1,4 @@
+---
+select: minor
+mention: minor
+---
