@@ -5,7 +5,7 @@
     "@angular/common": "^21.1.0",
     "@angular/core": "^21.1.0",
     "@nexora-ui/core": "^0.1.0",
-    "@nexora-ui/overlay": "~0.1.2"
+    "@nexora-ui/overlay": "^0.1.2"
   },
   "sideEffects": false
 }
