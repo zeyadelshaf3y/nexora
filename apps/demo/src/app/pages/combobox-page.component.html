@@ -619,11 +619,29 @@
             <app-icon name="chevron-down" [size]="14" />
           </button>
         </div>
+        <ng-template nxrComboboxVirtualHeader>
+          <div class="combobox-virtual-panel-header">
+            <span class="combobox-virtual-panel-title">Countries</span>
+            <span class="combobox-virtual-panel-meta"
+              >{{ virtualSingleFiltered().length }} items</span
+            >
+          </div>
+        </ng-template>
         <ng-template nxrComboboxVirtualOption let-c>
           <span class="combobox-virtual-option-text">
             <span class="combobox-virtual-option-main">{{ c.name }}</span>
             <span class="combobox-virtual-option-sub">{{ c.continent }}</span>
           </span>
+        </ng-template>
+        <ng-template nxrComboboxVirtualFooter>
+          <div class="combobox-virtual-panel-footer">
+            @if (virtualScrollValue()) {
+              <span class="combobox-virtual-panel-meta">{{ virtualScrollValue()?.name }}</span>
+            } @else {
+              <span class="combobox-virtual-panel-meta">No selection</span>
+            }
+            <button class="btn btn-sm btn-ghost" (click)="virtual.close()">Close</button>
+          </div>
         </ng-template>
       </nxr-combobox>
       <span class="combobox-meta"
@@ -795,6 +813,81 @@
         </ng-template>
       </nxr-combobox>
       <span class="combobox-meta">Value: {{ groupedValue()?.name ?? '—' }}</span>
+    </div>
+  </section>
+
+  <!-- 11. Panel header & footer (non-virtual) -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Panel Header &amp; Footer</h2>
+    <p class="page-section-desc">
+      Use <code>nxrComboboxHeader</code> and <code>nxrComboboxFooter</code> to add fixed chrome
+      above and below the scrollable option list. Both are optional.
+    </p>
+    <div class="combobox-demo-row">
+      <nxr-combobox
+        [value]="chromeValue()"
+        (valueChange)="setChromeValue($event)"
+        (searchChange)="chromeSearch.set($event)"
+        [accessors]="countryAccessors"
+        [compareWith]="compareByCode"
+        [multi]="true"
+        placeholder="Search countries…"
+        #chromeCombobox="nxrCombobox"
+      >
+        <div class="combobox-control">
+          <input
+            class="combobox-input"
+            nxrComboboxInput
+            placeholder="Search countries…"
+            autocomplete="off"
+            aria-label="Search countries"
+          />
+          @if (chromeCombobox.hasValue()) {
+            <button
+              type="button"
+              class="combobox-clear"
+              nxrComboboxClear
+              [clearSearch]="true"
+              aria-label="Clear"
+            >
+              ×
+            </button>
+          }
+          <button type="button" class="combobox-toggle" nxrComboboxToggle aria-label="Open list">
+            <app-icon name="chevron-down" [size]="14" />
+          </button>
+        </div>
+        <ng-template nxrComboboxPanel>
+          @for (country of filteredCountriesChrome(); track country.code) {
+            <div class="combobox-option combobox-option--check" nxrComboboxOption [value]="country">
+              <span class="combobox-checkbox" [class.checked]="chromeCombobox.isSelected(country)">
+                @if (chromeCombobox.isSelected(country)) {
+                  <app-icon name="check" [size]="12" />
+                }
+              </span>
+              {{ country.name }}
+            </div>
+          }
+          @if (filteredCountriesChrome().length === 0) {
+            <div class="combobox-empty">No results for "{{ chromeSearch() }}"</div>
+          }
+        </ng-template>
+        <ng-template nxrComboboxHeader>
+          <div class="combobox-panel-header">
+            <span class="combobox-panel-title">Countries</span>
+            <span class="combobox-panel-count"
+              >{{ chromeCombobox.selectedValues().length }} selected</span
+            >
+          </div>
+        </ng-template>
+        <ng-template nxrComboboxFooter>
+          <div class="combobox-panel-footer">
+            <button class="btn btn-sm btn-ghost" nxrComboboxClear>Clear all</button>
+            <button class="btn btn-sm btn-primary" (click)="chromeCombobox.close()">Done</button>
+          </div>
+        </ng-template>
+      </nxr-combobox>
+      <span class="combobox-meta">{{ chromeCombobox.selectedValues().length }} selected</span>
     </div>
   </section>
 </div>

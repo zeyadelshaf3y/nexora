@@ -46,6 +46,7 @@ export function buildMentionControllerWire<T>(params: {
   movePanelWithCaret: Signal<boolean>;
   panelClass: Signal<string | string[] | undefined>;
   panelStyle: Signal<Record<string, string> | undefined>;
+  maxHeight: Signal<string | undefined>;
   closeAnimationDurationMs: Signal<number>;
   beforeOpen: Signal<BeforeOpenCallback | undefined>;
   beforeClose: Signal<BeforeCloseCallback | undefined>;
@@ -64,6 +65,7 @@ export function buildMentionControllerWire<T>(params: {
     moveCaret: params.movePanelWithCaret(),
     panelClass: params.panelClass(),
     panelStyle: params.panelStyle(),
+    maxHeight: params.maxHeight(),
     closeMs: params.closeAnimationDurationMs(),
     beforeOpen: params.beforeOpen(),
     beforeClose: params.beforeClose(),

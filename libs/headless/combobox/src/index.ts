@@ -16,6 +16,10 @@ export {
 export { ComboboxInputDirective } from './lib/directives/combobox-input.directive';
 export { ComboboxToggleDirective } from './lib/directives/combobox-toggle.directive';
 export { ComboboxPanelDirective } from './lib/directives/combobox-panel.directive';
+export {
+  ComboboxHeaderDirective,
+  ComboboxFooterDirective,
+} from './lib/directives/combobox-panel-chrome.directive';
 export { ComboboxOptionDirective } from './lib/directives/combobox-option.directive';
 export { ComboboxGroupDirective } from './lib/directives/combobox-group.directive';
 export { ComboboxGroupLabelDirective } from './lib/directives/combobox-group-label.directive';

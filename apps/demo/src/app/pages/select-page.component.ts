@@ -13,11 +13,14 @@ import {
   SelectTriggerDirective,
   SelectClearDirective,
   SelectPanelDirective,
+  SelectHeaderDirective,
+  SelectFooterDirective,
   SelectOptionDirective,
   SelectGroupDirective,
   SelectGroupLabelDirective,
   SelectSeparatorDirective,
   SelectVirtualHeaderTemplateDirective,
+  SelectVirtualFooterTemplateDirective,
   SelectVirtualOptionTemplateDirective,
 } from '@nexora-ui/select';
 
@@ -105,11 +108,14 @@ function groupByContinent(): { continent: string; countries: Country[] }[] {
     SelectTriggerDirective,
     SelectClearDirective,
     SelectPanelDirective,
+    SelectHeaderDirective,
+    SelectFooterDirective,
     SelectOptionDirective,
     SelectGroupDirective,
     SelectGroupLabelDirective,
     SelectSeparatorDirective,
     SelectVirtualHeaderTemplateDirective,
+    SelectVirtualFooterTemplateDirective,
     SelectVirtualOptionTemplateDirective,
     IconComponent,
   ],
@@ -632,10 +638,6 @@ function groupByContinent(): { continent: string; countries: Country[] }[] {
               <app-icon name="chevron-down" [size]="14" class="select-trigger-icon" />
             </button>
             <ng-template nxrSelectPanel>
-              <div class="select-panel-header">
-                <span class="select-panel-title">Countries</span>
-                <span class="select-panel-count">{{ hfSel.selectedValues().length }} selected</span>
-              </div>
               @for (country of countries; track country.code) {
                 <div class="select-option select-option--check" [nxrSelectOption]="country">
                   <span class="select-checkbox" [class.checked]="hfSel.isSelected(country)">
@@ -646,6 +648,14 @@ function groupByContinent(): { continent: string; countries: Country[] }[] {
                   {{ country.name }}
                 </div>
               }
+            </ng-template>
+            <ng-template nxrSelectHeader>
+              <div class="select-panel-header">
+                <span class="select-panel-title">Countries</span>
+                <span class="select-panel-count">{{ hfSel.selectedValues().length }} selected</span>
+              </div>
+            </ng-template>
+            <ng-template nxrSelectFooter>
               <div class="select-panel-footer">
                 <button class="btn btn-sm btn-ghost" nxrSelectClear>Clear all</button>
                 <button class="btn btn-sm btn-primary" (click)="hfSel.close()">Done</button>
@@ -798,6 +808,18 @@ function groupByContinent(): { continent: string; countries: Country[] }[] {
                 <span class="select-virtual-option-sub">{{ c.continent }}</span>
               </span>
             </ng-template>
+            <ng-template nxrSelectVirtualFooter>
+              <div class="select-virtual-panel-footer">
+                @if (virtualScrollValue()) {
+                  <span class="select-virtual-panel-selected">{{
+                    virtualScrollValue()?.name
+                  }}</span>
+                } @else {
+                  <span class="select-virtual-panel-hint">No selection</span>
+                }
+                <button class="btn btn-sm btn-ghost" (click)="virtualSel.close()">Close</button>
+              </div>
+            </ng-template>
           </nxr-select>
           <span class="select-meta">Value: {{ virtualScrollValue()?.name ?? '—' }}</span>
         </div>
@@ -849,6 +871,25 @@ function groupByContinent(): { continent: string; countries: Country[] }[] {
               }
               <app-icon name="chevron-down" [size]="14" class="select-trigger-icon" />
             </button>
+            <ng-template nxrSelectVirtualHeader>
+              <div class="select-virtual-panel-header">
+                <span class="select-virtual-panel-title">Countries</span>
+                <span class="select-virtual-panel-meta">{{ virtualScrollItems.length }} items</span>
+              </div>
+            </ng-template>
+            <ng-template nxrSelectVirtualFooter>
+              <div class="select-virtual-panel-footer">
+                <span class="select-virtual-panel-selected">
+                  {{ virtualMultiSel.selectedValues().length }} selected
+                </span>
+                <div class="select-virtual-panel-footer-actions">
+                  <button class="btn btn-sm btn-ghost" nxrSelectClear>Clear all</button>
+                  <button class="btn btn-sm btn-primary" (click)="virtualMultiSel.close()">
+                    Done
+                  </button>
+                </div>
+              </div>
+            </ng-template>
           </nxr-select>
           <span class="select-meta">{{ virtualMultiSel.selectedValues().length }} selected</span>
         </div>

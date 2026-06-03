@@ -23,6 +23,18 @@ export interface NxrListboxOverlayPanelContext<T = unknown> {
    * or you may see **two scrollbars** (listbox + viewport).
    */
   readonly childOwnsScroll?: boolean;
+  /**
+   * Optional fixed header rendered above the scrollable listbox, outside the scroll container.
+   * Only used on the **non-virtual** path. For the built-in virtual panel use
+   * `nxrSelectVirtualHeader` / `nxrComboboxVirtualHeader` instead.
+   */
+  readonly headerTemplate?: TemplateRef<unknown> | null;
+  /**
+   * Optional fixed footer rendered below the scrollable listbox, outside the scroll container.
+   * Only used on the **non-virtual** path. For the built-in virtual panel use
+   * `nxrSelectVirtualFooter` / `nxrComboboxVirtualFooter` instead.
+   */
+  readonly footerTemplate?: TemplateRef<unknown> | null;
   readonly value: Signal<T | null | readonly T[]>;
   readonly multi: Signal<boolean>;
   readonly accessors: Signal<ListboxAccessors<T> | undefined>;

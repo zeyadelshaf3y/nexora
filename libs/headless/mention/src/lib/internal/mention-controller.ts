@@ -117,6 +117,8 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
   private readonly overlay: OverlayService;
   private readonly viewContainerRef: ViewContainerRef;
   private readonly panelTemplateRef: TemplateRef<MentionPanelContext<T>>;
+  private readonly headerTemplateRef: TemplateRef<unknown> | null | undefined;
+  private readonly footerTemplateRef: TemplateRef<unknown> | null | undefined;
   private readonly parentInjector: Injector;
   private readonly placement: Placement;
   private readonly offset: number;
@@ -126,6 +128,7 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
   private readonly movePanelWithCaret: boolean;
   private readonly overlayPanelExtraClasses: readonly string[];
   private readonly overlayPanelExtraStyle: Readonly<Record<string, string>> | undefined;
+  private readonly maxHeight: string | undefined;
   private readonly closeAnimationDurationMs: number;
   private readonly beforeOpen: MentionControllerInit<T>['beforeOpen'];
   private readonly beforeClose: MentionControllerInit<T>['beforeClose'];
@@ -197,6 +200,8 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
     this.overlay = params.overlay;
     this.viewContainerRef = params.viewContainerRef;
     this.panelTemplateRef = params.panelTemplateRef;
+    this.headerTemplateRef = params.headerTemplateRef;
+    this.footerTemplateRef = params.footerTemplateRef;
     this.parentInjector = params.parentInjector;
     this.placement = params.placement ?? 'bottom-start';
     this.offset = params.offset ?? 8;
@@ -206,6 +211,7 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
     this.movePanelWithCaret = params.movePanelWithCaret ?? false;
     this.overlayPanelExtraClasses = params.overlayPanelExtraClasses ?? [];
     this.overlayPanelExtraStyle = params.overlayPanelExtraStyle;
+    this.maxHeight = params.maxHeight;
     this.closeAnimationDurationMs =
       params.closeAnimationDurationMs ?? DEFAULT_MENTION_CLOSE_ANIMATION_MS;
     this.beforeOpen = params.beforeOpen;
@@ -377,6 +383,7 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
         beforeClose: this.beforeClose,
         overlayPanelExtraClasses: this.overlayPanelExtraClasses,
         overlayPanelExtraStyle: this.overlayPanelExtraStyle,
+        maxHeight: this.maxHeight,
       },
     });
 
@@ -386,6 +393,8 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
       this.parentInjector,
       this as MentionController<unknown>,
       this.panelTemplateRef,
+      this.headerTemplateRef,
+      this.footerTemplateRef,
     );
     const portal = createMentionPanelPortal(this.viewContainerRef, injector);
 

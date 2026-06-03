@@ -15,6 +15,8 @@ export {
 } from './lib/component/menu-defaults.config';
 export { MenuTriggerDirective } from './lib/directives/menu-trigger.directive';
 export { MenuPanelDirective } from './lib/directives/menu-panel.directive';
+export { MenuHeaderDirective } from './lib/directives/menu-header.directive';
+export { MenuFooterDirective } from './lib/directives/menu-footer.directive';
 export { MenuItemDirective } from './lib/directives/menu-item.directive';
 export { MenuGroupDirective } from './lib/directives/menu-group.directive';
 export { MenuGroupLabelDirective } from './lib/directives/menu-group-label.directive';

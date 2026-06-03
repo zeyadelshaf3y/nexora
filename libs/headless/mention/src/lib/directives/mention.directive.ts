@@ -103,6 +103,8 @@ import {
   disposeMentionController,
   resetSessionScheduler,
 } from './mention-directive-teardown';
+import { MentionFooterDirective } from './mention-footer.directive';
+import { MentionHeaderDirective } from './mention-header.directive';
 import { MentionPanelDirective } from './mention-panel.directive';
 import type { MentionSessionCheckScheduler } from './mention-session-check-scheduler';
 
@@ -121,6 +123,8 @@ export class MentionDirective<T = unknown> implements OnDestroy {
   private readonly overlay = inject(OverlayService);
 
   private readonly panelDir = contentChild(MentionPanelDirective<T>);
+  private readonly headerDir = contentChild(MentionHeaderDirective);
+  private readonly footerDir = contentChild(MentionFooterDirective);
 
   // ── Inputs ──────────────────────────────────────────────────────────
 
@@ -138,6 +142,13 @@ export class MentionDirective<T = unknown> implements OnDestroy {
   readonly nxrMentionPanelClass = input<string | string[] | undefined>(undefined);
   /** Default inline pane styles merged with per-trigger `panel.panelStyle` (trigger keys win). */
   readonly nxrMentionPanelStyle = input<Record<string, string> | undefined>(undefined);
+  /**
+   * Default max-height for the panel pane (e.g. `'240px'` or `'15rem'`).
+   * Per-trigger `panel.maxHeight` overrides this value.
+   * Prefer this over putting `max-height` in `nxrMentionPanelStyle` — the overlay
+   * position engine uses this value to constrain the pane within viewport space.
+   */
+  readonly nxrMentionMaxHeight = input<string | undefined>(undefined);
   readonly nxrMentionCloseAnimationDurationMs = input<number>(150);
   readonly nxrMentionAriaLabel = input<string>(NXR_MENTION_DEFAULT_ARIA_LABEL);
   /** Optional id of your list panel for `aria-controls` on the editor (accessibility). */
@@ -416,6 +427,7 @@ export class MentionDirective<T = unknown> implements OnDestroy {
       movePanelWithCaret: this.nxrMentionMovePanelWithCaret,
       panelClass: this.nxrMentionPanelClass,
       panelStyle: this.nxrMentionPanelStyle,
+      maxHeight: this.nxrMentionMaxHeight,
       closeAnimationDurationMs: this.nxrMentionCloseAnimationDurationMs,
       beforeOpen: this.nxrMentionBeforeOpen,
       beforeClose: this.nxrMentionBeforeClose,
@@ -447,6 +459,8 @@ export class MentionDirective<T = unknown> implements OnDestroy {
       editableRef,
       triggerConfigs,
       panelTemplateRef,
+      headerTemplateRef: this.headerDir()?.templateRef,
+      footerTemplateRef: this.footerDir()?.templateRef,
       wire,
       ngZone: this.ngZone,
       overlay: this.overlay,

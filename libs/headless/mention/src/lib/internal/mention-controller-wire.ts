@@ -21,6 +21,7 @@ export interface MentionControllerWire<T = unknown> {
   readonly moveCaret: boolean;
   readonly panelClass: PanelClassInput;
   readonly panelStyle: PanelStyleInput;
+  readonly maxHeight: string | undefined;
   readonly closeMs: number;
   readonly beforeOpen: BeforeOpenCallback | undefined;
   readonly beforeClose: BeforeCloseCallback | undefined;
@@ -100,6 +101,7 @@ export function isSameMentionControllerWire<T>(
     prev.moveCaret === next.moveCaret &&
     arePanelClassInputsEqual(prev.panelClass, next.panelClass) &&
     areStyleRecordsShallowEqual(prev.panelStyle, next.panelStyle) &&
+    prev.maxHeight === next.maxHeight &&
     prev.closeMs === next.closeMs &&
     prev.beforeOpen === next.beforeOpen &&
     prev.beforeClose === next.beforeClose &&

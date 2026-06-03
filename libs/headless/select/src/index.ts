@@ -16,6 +16,10 @@ export {
 export { SelectTriggerDirective } from './lib/directives/select-trigger.directive';
 export { SelectClearDirective } from './lib/directives/select-clear.directive';
 export { SelectPanelDirective } from './lib/directives/select-panel.directive';
+export {
+  SelectHeaderDirective,
+  SelectFooterDirective,
+} from './lib/directives/select-panel-chrome.directive';
 export { SelectOptionDirective } from './lib/directives/select-option.directive';
 export { SelectGroupDirective } from './lib/directives/select-group.directive';
 export { SelectGroupLabelDirective } from './lib/directives/select-group-label.directive';

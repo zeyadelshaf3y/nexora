@@ -13,6 +13,8 @@ import {
   ComboboxInputDirective,
   ComboboxToggleDirective,
   ComboboxPanelDirective,
+  ComboboxHeaderDirective,
+  ComboboxFooterDirective,
   ComboboxOptionDirective,
   ComboboxGroupDirective,
   ComboboxGroupLabelDirective,
@@ -92,6 +94,8 @@ function groupByContinent(): { continent: string; countries: Country[] }[] {
     ComboboxInputDirective,
     ComboboxToggleDirective,
     ComboboxPanelDirective,
+    ComboboxHeaderDirective,
+    ComboboxFooterDirective,
     ComboboxOptionDirective,
     ComboboxGroupDirective,
     ComboboxGroupLabelDirective,
@@ -217,6 +221,15 @@ export class ComboboxPageComponent {
   readonly apiFiltered = computed(() =>
     filterByQuery(COUNTRIES, this.apiSearch(), (c) => c.name, this.countryFilterOpts),
   );
+
+  readonly chromeValue = signal<readonly Country[]>([]);
+  readonly chromeSearch = signal('');
+  readonly filteredCountriesChrome = computed(() =>
+    filterByQuery(COUNTRIES, this.chromeSearch(), (c) => c.name, this.countryFilterOpts),
+  );
+  setChromeValue(v: Country | null | readonly Country[]): void {
+    this.chromeValue.set(asCountryMulti(v));
+  }
 
   readonly groupedValue = signal<Country | null>(null);
   readonly groupedSearch = signal('');

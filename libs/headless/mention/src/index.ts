@@ -10,6 +10,9 @@
 
 export { MentionDirective } from './lib/directives/mention.directive';
 export { MentionPanelDirective } from './lib/directives/mention-panel.directive';
+export { MentionHeaderDirective } from './lib/directives/mention-header.directive';
+export { MentionFooterDirective } from './lib/directives/mention-footer.directive';
+export { MentionScrollIntoViewDirective } from './lib/directives/mention-scroll-into-view.directive';
 export type { ArrowSize } from '@nexora-ui/overlay';
 export type {
   MentionMatch,

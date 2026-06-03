@@ -5,7 +5,13 @@ import type {
   MentionPasteEvent,
   MentionTriggerConfig,
 } from '@nexora-ui/mention';
-import { MentionDirective, MentionPanelDirective } from '@nexora-ui/mention';
+import {
+  MentionDirective,
+  MentionFooterDirective,
+  MentionHeaderDirective,
+  MentionPanelDirective,
+  MentionScrollIntoViewDirective,
+} from '@nexora-ui/mention';
 import { PopoverTriggerDirective } from '@nexora-ui/popover';
 
 interface User {
@@ -35,6 +41,32 @@ const DEMO_USERS: readonly User[] = [
   { id: '3', username: 'charlie', displayName: 'Charlie Brown', role: 'user' },
   { id: '4', username: 'diana', displayName: 'Diana Prince', role: 'mod' },
   { id: '5', username: 'eve', displayName: 'Eve Wilson', role: 'user' },
+  { id: '6', username: 'frank', displayName: 'Frank Smith', role: 'admin' },
+  { id: '7', username: 'george', displayName: 'George Jones', role: 'user' },
+  { id: '8', username: 'harry', displayName: 'Harry Potter', role: 'mod' },
+  { id: '9', username: 'isaac', displayName: 'Isaac Wilson', role: 'user' },
+  { id: '10', username: 'james', displayName: 'James Smith', role: 'admin' },
+  { id: '11', username: 'karen', displayName: 'Karen Jones', role: 'user' },
+  { id: '12', username: 'larry', displayName: 'Larry Potter', role: 'mod' },
+  { id: '13', username: 'mike', displayName: 'Mike Wilson', role: 'user' },
+  { id: '14', username: 'nancy', displayName: 'Nancy Smith', role: 'admin' },
+  { id: '15', username: 'oliver', displayName: 'Oliver Jones', role: 'user' },
+  { id: '16', username: 'paul', displayName: 'Paul Potter', role: 'mod' },
+  { id: '17', username: 'quinn', displayName: 'Quinn Wilson', role: 'user' },
+  { id: '18', username: 'ryan', displayName: 'Ryan Smith', role: 'admin' },
+  { id: '19', username: 'sara', displayName: 'Sara Jones', role: 'user' },
+  { id: '20', username: 'taylor', displayName: 'Taylor Potter', role: 'mod' },
+  { id: '21', username: 'uwe', displayName: 'Uwe Wilson', role: 'user' },
+  { id: '22', username: 'victor', displayName: 'Victor Smith', role: 'admin' },
+  { id: '23', username: 'wendy', displayName: 'Wendy Jones', role: 'user' },
+  { id: '24', username: 'xavier', displayName: 'Xavier Potter', role: 'mod' },
+  { id: '25', username: 'yasmine', displayName: 'Yasmine Wilson', role: 'user' },
+  { id: '26', username: 'zach', displayName: 'Zach Smith', role: 'admin' },
+  { id: '27', username: 'alice', displayName: 'Alice Smith', role: 'admin' },
+  { id: '28', username: 'bob', displayName: 'Bob Jones', role: 'user' },
+  { id: '29', username: 'charlie', displayName: 'Charlie Brown', role: 'user' },
+  { id: '30', username: 'diana', displayName: 'Diana Prince', role: 'mod' },
+  { id: '31', username: 'eve', displayName: 'Eve Wilson', role: 'user' },
 ];
 
 const DEMO_TAGS: readonly Tag[] = [
@@ -110,10 +142,19 @@ function cloneMentionDocument(d: MentionDocument): MentionDocument {
   selector: 'app-mention-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MentionDirective, MentionPanelDirective, PopoverTriggerDirective],
+  imports: [
+    MentionDirective,
+    MentionPanelDirective,
+    MentionHeaderDirective,
+    MentionFooterDirective,
+    MentionScrollIntoViewDirective,
+    PopoverTriggerDirective,
+  ],
   templateUrl: './mention-page.component.html',
 })
 export class MentionPageComponent {
+  readonly DEMO_USERS = DEMO_USERS;
+
   readonly basicValue = signal('');
   readonly multiTriggerValue = signal('');
   readonly asyncValue = signal('');
@@ -186,6 +227,24 @@ export class MentionPageComponent {
     this.chipHoverUser.set(null);
     this.chipHoverAnchor.set(null);
   }
+
+  readonly chromeTriggers: readonly MentionTriggerConfig<User>[] = [
+    {
+      trigger: '@',
+      openOnTrigger: true,
+      selectOnTab: true,
+      getItems: (query) => filterUsers(query),
+      displayWith: (u) => u.displayName,
+      insertWith: (u) => ({
+        replacementText: `${u.displayName} `,
+        caretPlacement: 'end' as const,
+        mentionId: u.id,
+        mentionLabel: u.displayName,
+      }),
+      getMentionClass: () => 'demo-chip-user',
+      selectOnEnter: true,
+    },
+  ];
 
   readonly multiTriggers: readonly MentionTriggerConfig<MentionItem>[] = [
     {
