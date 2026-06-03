@@ -595,9 +595,6 @@ function getGroups(): { label: string; actions: GroupedAction[] }[] {
         text-align: left;
         transition: background 0.1s;
       }
-      .menu-option:hover {
-        background: var(--nxr-bg-subtle);
-      }
       .menu-option[data-active] {
         background: var(--nxr-primary-subtle);
         color: var(--nxr-primary);

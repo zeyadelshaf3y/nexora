@@ -18,6 +18,7 @@ export {
   type ListboxRole,
   type ListboxOrientation,
   type ListboxInitialHighlight,
+  type ListboxPointerHighlight,
   type ListboxBoundary,
   type ListboxScrollAlignment,
   type ListboxAccessors,

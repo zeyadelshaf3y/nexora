@@ -84,6 +84,7 @@ export class ListboxOptionDirective<T = unknown> implements OnDestroy {
 
   onMousedown(event: Event): void {
     const item = this.nxrListboxOption();
+    if (this.controller?.usesHoverPointerHighlight()) return;
     this.runOptionInteraction(item, event, (ctrl) => ctrl.setActiveOption(item));
   }
 

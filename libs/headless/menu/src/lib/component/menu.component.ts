@@ -32,6 +32,7 @@ import {
   DEFAULT_MAX_HEIGHT,
   DEFAULT_OFFSET,
   DropdownRef,
+  OPEN_KEYS,
   routeHeadlessDropdownTriggerKeydown,
   teardownAnchoredDropdownHostState,
   type DropdownRefOptions,
@@ -65,9 +66,10 @@ import {
   handleMenuDropdownClosed,
   handleMenuDropdownOpened,
 } from '../internal';
-import { DEFAULT_MENU_DEFAULTS_CONFIG, MENU_DEFAULTS_CONFIG } from './menu-defaults.config';
 import { NXR_MENU, type MenuController } from '../tokens/menu-tokens';
 import type { MenuOptionActivatedEvent } from '../types/menu-types';
+
+import { DEFAULT_MENU_DEFAULTS_CONFIG, MENU_DEFAULTS_CONFIG } from './menu-defaults.config';
 
 @Component({
   selector: 'nxr-menu',
@@ -153,6 +155,7 @@ export class MenuComponent<T = unknown> implements MenuController {
   private readonly isOpenSignal = signal(false);
   private readonly listboxRef = signal<ListboxDirective<T> | null>(null);
   private readonly programmaticDisabled = signal(false);
+  private readonly lastOpenViaKeyboard = signal(false);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dropdownRef: DropdownRef;
   private isDestroying = false;
@@ -265,6 +268,7 @@ export class MenuComponent<T = unknown> implements MenuController {
     const panel = this.panelRef();
     if (!panel || !this.canOpenMenu(panel)) return false;
 
+    this.lastOpenViaKeyboard.set(true);
     const portal = this.createPanelPortal(panel);
 
     return this.dropdownRef.open(portal);
@@ -278,7 +282,8 @@ export class MenuComponent<T = unknown> implements MenuController {
     if (this.isOpen()) {
       this.close();
     } else {
-      void this.open();
+      this.lastOpenViaKeyboard.set(false);
+      void this.openViaPointer();
     }
   }
 
@@ -303,6 +308,10 @@ export class MenuComponent<T = unknown> implements MenuController {
   }
 
   handleTriggerKeydown(event: KeyboardEvent): void {
+    if (!this.isDisabled() && !this.isOpenSignal() && OPEN_KEYS.has(event.key)) {
+      this.lastOpenViaKeyboard.set(true);
+    }
+
     routeHeadlessDropdownTriggerKeydown({
       event,
       isDisabled: this.isDisabled(),
@@ -317,6 +326,27 @@ export class MenuComponent<T = unknown> implements MenuController {
     this.listboxRef()?.handleKeydown(event);
   }
 
+  private async openViaPointer(): Promise<boolean> {
+    const panel = this.panelRef();
+    if (!panel || !this.canOpenMenu(panel)) return false;
+
+    const portal = this.createPanelPortal(panel);
+
+    return this.dropdownRef.open(portal);
+  }
+
+  private handleListboxReady(listbox: ListboxDirective<T>): void {
+    this.listboxRef.set(listbox);
+
+    if (this.lastOpenViaKeyboard()) {
+      listbox.applyInitialHighlight('first');
+      listbox.scrollActiveIntoView();
+      return;
+    }
+
+    listbox.clearActiveOption();
+  }
+
   private createPanelPortal(panel: MenuPanelDirective) {
     return createMenuPanelPortal<T>({
       vcr: this.vcr,
@@ -327,7 +357,7 @@ export class MenuComponent<T = unknown> implements MenuController {
         this.optionActivated.emit(event);
         this.close(CLOSE_REASON_SELECTION);
       },
-      setListboxRef: (listbox) => this.listboxRef.set(listbox),
+      onListboxReady: (listbox) => this.handleListboxReady(listbox),
     });
   }
 

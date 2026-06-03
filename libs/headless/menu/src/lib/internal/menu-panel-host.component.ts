@@ -44,7 +44,8 @@ import { NXR_MENU_CONTEXT, type MenuContext } from './menu-context';
       class="nxr-menu-panel-host__listbox"
       nxrListboxRole="menu"
       nxrListboxMode="action"
-      nxrListboxInitialHighlight="first"
+      nxrListboxInitialHighlight="none"
+      nxrListboxPointerHighlight="hover"
       (nxrListboxOptionActivated)="menuContext.onOptionActivated($event)"
       #listbox="nxrListbox"
       #listboxEl
@@ -109,7 +110,7 @@ export class MenuPanelHostComponent implements AfterViewInit {
     el.nativeElement.tabIndex = -1;
     /* Plain field + portaled host: OnPush needs an explicit pass so the outlet sees `optionInjector`. */
     this.cdr.detectChanges();
-    this.menuContext.onListboxReady(listbox);
-    queueMicrotask(() => listbox.scrollActiveIntoView());
+    /* Defer until portaled options register (same timing as select/combobox overlay panel host). */
+    queueMicrotask(() => this.menuContext.onListboxReady(listbox));
   }
 }

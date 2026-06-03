@@ -24,6 +24,12 @@ export interface NxrListboxController<T = unknown> {
   activeOption(): T | null;
   /** Sets the option as active (highlighted) without triggering selection. */
   setActiveOption(item: T): void;
+  /** Clears the active (highlighted) option without triggering selection. */
+  clearActiveOption(): void;
+  /** Re-applies {@link ListboxInitialHighlight} (e.g. after deferring highlight until panel open). */
+  applyInitialHighlight(strategyOverride?: ListboxInitialHighlight): void;
+  /** When true, pointer hover drives active state; mousedown on options does not set active. */
+  usesHoverPointerHighlight(): boolean;
   /** Activates the option: selects it (selection mode) or fires optionActivated (action mode). */
   activateOption(item: T): void;
 }
@@ -80,6 +86,9 @@ export type ListboxOrientation = 'vertical' | 'horizontal';
 
 /** Which option is active when the listbox gains relevance (e.g. on open/focus). */
 export type ListboxInitialHighlight = 'selected' | 'first' | 'last' | 'none';
+
+/** How pointer interaction updates the active (highlighted) option. Default `'off'`. */
+export type ListboxPointerHighlight = 'off' | 'hover';
 
 /**
  * Accessors for option items when T is an object.
