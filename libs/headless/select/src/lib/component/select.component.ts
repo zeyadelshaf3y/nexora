@@ -86,6 +86,10 @@ import {
   type ViewportBoundaries,
 } from '@nexora-ui/overlay';
 
+import {
+  SelectFooterDirective,
+  SelectHeaderDirective,
+} from '../directives/select-panel-chrome.directive';
 import { SelectPanelDirective } from '../directives/select-panel.directive';
 import { SelectTriggerDirective } from '../directives/select-trigger.directive';
 import {
@@ -167,6 +171,9 @@ export class SelectComponent<T = unknown> implements SelectController, ControlVa
   readonly virtualOptionTpl = contentChild(SelectVirtualOptionTemplateDirective);
   readonly virtualHeaderTpl = contentChild(SelectVirtualHeaderTemplateDirective);
   readonly virtualFooterTpl = contentChild(SelectVirtualFooterTemplateDirective);
+
+  private readonly headerRef = contentChild(SelectHeaderDirective);
+  private readonly footerRef = contentChild(SelectFooterDirective);
 
   // ---------------------------------------------------------------------------
   // Inputs
@@ -585,11 +592,14 @@ export class SelectComponent<T = unknown> implements SelectController, ControlVa
   }
 
   private createPanelPortal(panel: SelectPanelDirective) {
+    const isVirtual = this.useVirtualPanel();
     return createSelectListboxOverlayPortal({
       vcr: this.vcr,
       injector: this.injector,
       panel,
-      childOwnsScroll: this.useVirtualPanel(),
+      childOwnsScroll: isVirtual,
+      header: isVirtual ? undefined : this.headerRef(),
+      footer: isVirtual ? undefined : this.footerRef(),
       value: this.value,
       multi: this.multi,
       accessors: this.accessors,

@@ -49,6 +49,7 @@ export interface BuildMentionPanelOverlayConfigParams {
     readonly beforeClose: BeforeCloseCallback | undefined;
     readonly overlayPanelExtraClasses: readonly string[];
     readonly overlayPanelExtraStyle: Readonly<Record<string, string>> | undefined;
+    readonly maxHeight: string | undefined;
   };
 }
 
@@ -108,7 +109,9 @@ export function buildMentionPanelOverlayConfig(
     ...(panelOpt?.minWidth != null && { minWidth: panelOpt.minWidth }),
     ...(panelOpt?.minHeight != null && { minHeight: panelOpt.minHeight }),
     ...(panelOpt?.maxWidth != null && { maxWidth: panelOpt.maxWidth }),
-    ...(panelOpt?.maxHeight != null && { maxHeight: panelOpt.maxHeight }),
+    ...((panelOpt?.maxHeight ?? defaults.maxHeight) != null && {
+      maxHeight: panelOpt?.maxHeight ?? defaults.maxHeight,
+    }),
     ...(panelStyle != null && { panelStyle }),
 
     ...(panelOpt?.arrowSize != null && { arrowSize: panelOpt.arrowSize }),

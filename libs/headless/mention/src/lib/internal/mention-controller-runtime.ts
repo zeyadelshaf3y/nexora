@@ -24,6 +24,10 @@ export interface CreateMentionControllerRuntimeParams<T = unknown> {
   readonly editableRef: { readonly nativeElement: HTMLElement };
   readonly triggerConfigs: readonly MentionTriggerConfig<T>[];
   readonly panelTemplateRef: TemplateRef<MentionPanelContext<T>>;
+  /** Optional fixed header rendered above the scrollable panel area. */
+  readonly headerTemplateRef?: TemplateRef<unknown> | null;
+  /** Optional fixed footer rendered below the scrollable panel area. */
+  readonly footerTemplateRef?: TemplateRef<unknown> | null;
   readonly wire: MentionControllerWire<T>;
   readonly ngZone: NgZone;
   readonly overlay: OverlayService;
@@ -54,6 +58,8 @@ export function createMentionControllerRuntime<T = unknown>(
     editableRef,
     triggerConfigs,
     panelTemplateRef,
+    headerTemplateRef,
+    footerTemplateRef,
     wire,
     ngZone,
     overlay,
@@ -72,6 +78,8 @@ export function createMentionControllerRuntime<T = unknown>(
     overlay,
     viewContainerRef,
     panelTemplateRef,
+    headerTemplateRef,
+    footerTemplateRef,
     parentInjector: injector,
     placement: wire.placement,
     offset: wire.offset,
@@ -81,6 +89,7 @@ export function createMentionControllerRuntime<T = unknown>(
     movePanelWithCaret: wire.moveCaret,
     overlayPanelExtraClasses: normalizePanelClasses(wire.panelClass),
     overlayPanelExtraStyle: wire.panelStyle,
+    maxHeight: wire.maxHeight,
     closeAnimationDurationMs: wire.closeMs,
     beforeOpen: wire.beforeOpen,
     beforeClose: wire.beforeClose,

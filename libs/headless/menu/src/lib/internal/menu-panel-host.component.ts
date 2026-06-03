@@ -5,6 +5,10 @@
  * role="menu" and mode="action", and provides NXR_LISTBOX_CONTROLLER so
  * portaled nxrMenuItem directives register correctly. When showArrow is true,
  * renders an arrow element (nxrOverlayArrow) styled as part of the panel.
+ *
+ * When headerTemplate or footerTemplate are present the host switches to a
+ * flex-column layout so the header and footer remain fixed while the listbox
+ * scrolls independently.
  */
 
 import { NgTemplateOutlet } from '@angular/common';
@@ -33,11 +37,18 @@ import { NXR_MENU_CONTEXT, type MenuContext } from './menu-context';
   host: {
     class: 'nxr-menu-panel-host',
     '[class.nxr-menu-panel-host--with-arrow]': 'menuContext.showArrow',
+    '[class.nxr-menu-panel-host--with-chrome]':
+      'menuContext.headerTemplate || menuContext.footerTemplate',
     '[style.overflow]': 'menuContext.showArrow ? "visible" : "hidden"',
   },
   template: `
     @if (menuContext.showArrow) {
       <span class="nxr-menu-panel-host-arrow nxr-overlay-arrow-host" nxrOverlayArrow></span>
+    }
+    @if (menuContext.headerTemplate) {
+      <div class="nxr-menu-panel-host__header">
+        <ng-container [ngTemplateOutlet]="menuContext.headerTemplate" />
+      </div>
     }
     <div
       nxrListbox
@@ -55,6 +66,11 @@ import { NXR_MENU_CONTEXT, type MenuContext } from './menu-context';
         [ngTemplateOutletInjector]="optionInjector"
       />
     </div>
+    @if (menuContext.footerTemplate) {
+      <div class="nxr-menu-panel-host__footer">
+        <ng-container [ngTemplateOutlet]="menuContext.footerTemplate" />
+      </div>
+    }
   `,
   styles: [
     ARROW_HOST_STYLES,
@@ -76,6 +92,26 @@ import { NXR_MENU_CONTEXT, type MenuContext } from './menu-context';
         min-height: 0;
         overflow: auto;
         border-radius: inherit;
+      }
+
+      /*
+       * When header or footer are present, switch to flex-column so the listbox
+       * scrolls independently while header/footer remain fixed.
+       */
+      .nxr-menu-panel-host--with-chrome {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .nxr-menu-panel-host--with-chrome .nxr-menu-panel-host__listbox {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
+      }
+
+      .nxr-menu-panel-host__header,
+      .nxr-menu-panel-host__footer {
+        flex: none;
       }
 
       .nxr-menu-panel-host-arrow {

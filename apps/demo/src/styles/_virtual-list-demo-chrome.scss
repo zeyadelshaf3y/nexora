@@ -25,9 +25,26 @@
   border-top: 1px solid var(--nxr-border-subtle);
 }
 
-.combobox-virtual-panel-footer--split {
+.combobox-virtual-panel-footer--split,
+.select-virtual-panel-footer {
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+.select-virtual-panel-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.select-virtual-panel-selected,
+.select-virtual-panel-hint {
+  font-size: 0.75rem;
+}
+
+.select-virtual-panel-hint {
+  color: var(--nxr-text-faint);
+  font-style: italic;
 }
 
 .combobox-virtual-panel-title,

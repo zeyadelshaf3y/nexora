@@ -5,6 +5,8 @@
 import { Injector, type ViewContainerRef } from '@angular/core';
 import { ComponentPortal } from '@nexora-ui/overlay';
 
+import type { MenuFooterDirective } from '../directives/menu-footer.directive';
+import type { MenuHeaderDirective } from '../directives/menu-header.directive';
 import type { MenuPanelDirective } from '../directives/menu-panel.directive';
 
 import { NXR_MENU_CONTEXT, type MenuContext } from './menu-context';
@@ -14,12 +16,16 @@ export function createMenuPanelPortal<T>(args: {
   readonly vcr: ViewContainerRef;
   readonly parentInjector: Injector;
   readonly panel: MenuPanelDirective;
+  readonly header: MenuHeaderDirective | undefined;
+  readonly footer: MenuFooterDirective | undefined;
   readonly showArrow: boolean;
   readonly onOptionActivated: MenuContext<T>['onOptionActivated'];
   readonly onListboxReady: MenuContext<T>['onListboxReady'];
 }): ComponentPortal<MenuPanelHostComponent> {
   const context: MenuContext<T> = {
     template: args.panel.templateRef,
+    headerTemplate: args.header?.templateRef ?? null,
+    footerTemplate: args.footer?.templateRef ?? null,
     showArrow: args.showArrow,
     onOptionActivated: args.onOptionActivated,
     onListboxReady: args.onListboxReady,

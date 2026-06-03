@@ -8,6 +8,8 @@ import type { ListboxDirective } from '@nexora-ui/listbox';
 
 export interface MenuContext<T = unknown> {
   readonly template: TemplateRef<unknown>;
+  readonly headerTemplate: TemplateRef<unknown> | null;
+  readonly footerTemplate: TemplateRef<unknown> | null;
   readonly showArrow: boolean;
   readonly onOptionActivated: (event: { option: T }) => void;
   readonly onListboxReady: (listbox: ListboxDirective<T>) => void;

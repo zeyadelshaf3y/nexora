@@ -38,6 +38,16 @@ export interface MentionControllerInit<T = unknown> {
   readonly overlay: OverlayService;
   readonly viewContainerRef: ViewContainerRef;
   readonly panelTemplateRef: TemplateRef<MentionPanelContext<T>>;
+  /**
+   * Optional fixed header rendered above the scrollable panel area, outside the scroll container.
+   * Provided via `nxrMentionHeader` on `<ng-template>` inside the host element.
+   */
+  readonly headerTemplateRef?: TemplateRef<unknown> | null;
+  /**
+   * Optional fixed footer rendered below the scrollable panel area, outside the scroll container.
+   * Provided via `nxrMentionFooter` on `<ng-template>` inside the host element.
+   */
+  readonly footerTemplateRef?: TemplateRef<unknown> | null;
   readonly parentInjector: Injector;
   readonly placement?: Placement;
   readonly offset?: number;
@@ -47,6 +57,8 @@ export interface MentionControllerInit<T = unknown> {
   readonly movePanelWithCaret?: boolean;
   readonly overlayPanelExtraClasses?: readonly string[];
   readonly overlayPanelExtraStyle?: Record<string, string>;
+  /** Default max-height for the panel pane. Per-trigger `panel.maxHeight` overrides this. */
+  readonly maxHeight?: string;
   readonly closeAnimationDurationMs?: number;
   readonly beforeOpen?: BeforeOpenCallback;
   readonly beforeClose?: BeforeCloseCallback;

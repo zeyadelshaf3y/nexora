@@ -6,6 +6,10 @@ import type { Signal, TemplateRef } from '@angular/core';
 import type { ListboxAccessors, ListboxInitialHighlight } from '@nexora-ui/listbox';
 import type { ListboxDirective } from '@nexora-ui/listbox/internal';
 
+import type {
+  SelectFooterDirective,
+  SelectHeaderDirective,
+} from '../directives/select-panel-chrome.directive';
 import type { SelectPanelDirective } from '../directives/select-panel.directive';
 import type { SelectAccessors } from '../types/select-types';
 
@@ -16,6 +20,8 @@ import type { SelectAccessors } from '../types/select-types';
 interface SelectOverlayPanelContext<T = unknown> {
   readonly template: TemplateRef<unknown>;
   readonly childOwnsScroll?: boolean;
+  readonly headerTemplate?: TemplateRef<unknown> | null;
+  readonly footerTemplate?: TemplateRef<unknown> | null;
   readonly value: Signal<T | null | readonly T[]>;
   readonly multi: Signal<boolean>;
   readonly accessors: Signal<ListboxAccessors<T> | undefined>;
@@ -28,6 +34,8 @@ interface SelectOverlayPanelContext<T = unknown> {
 export function buildSelectOverlayPanelContext<T>(args: {
   readonly panel: SelectPanelDirective;
   readonly childOwnsScroll: boolean;
+  readonly header?: SelectHeaderDirective;
+  readonly footer?: SelectFooterDirective;
   readonly value: Signal<T | null | readonly T[]>;
   readonly multi: Signal<boolean>;
   readonly accessors: Signal<SelectAccessors<T> | undefined>;
@@ -39,6 +47,8 @@ export function buildSelectOverlayPanelContext<T>(args: {
   return {
     template: args.panel.templateRef,
     childOwnsScroll: args.childOwnsScroll,
+    headerTemplate: args.header?.templateRef ?? null,
+    footerTemplate: args.footer?.templateRef ?? null,
     value: args.value,
     multi: args.multi,
     accessors: args.accessors,

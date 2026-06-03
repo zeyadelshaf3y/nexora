@@ -56,6 +56,8 @@ import {
 } from '@nexora-ui/overlay';
 
 import { MENU_DEFAULT_ARROW } from '../constants/menu-constants';
+import { MenuFooterDirective } from '../directives/menu-footer.directive';
+import { MenuHeaderDirective } from '../directives/menu-header.directive';
 import { MenuPanelDirective } from '../directives/menu-panel.directive';
 import { MenuTriggerDirective } from '../directives/menu-trigger.directive';
 import {
@@ -109,6 +111,8 @@ export class MenuComponent<T = unknown> implements MenuController {
 
   private readonly triggerRef = contentChild(MenuTriggerDirective);
   private readonly panelRef = contentChild(MenuPanelDirective);
+  private readonly headerRef = contentChild(MenuHeaderDirective);
+  private readonly footerRef = contentChild(MenuFooterDirective);
 
   readonly disabled = input(false);
   readonly placement = input<Placement>(this.defaults.placement ?? 'bottom-start');
@@ -352,6 +356,8 @@ export class MenuComponent<T = unknown> implements MenuController {
       vcr: this.vcr,
       parentInjector: this.injector,
       panel,
+      header: this.headerRef(),
+      footer: this.footerRef(),
       showArrow: this.displayArrow(),
       onOptionActivated: (event) => {
         this.optionActivated.emit(event);

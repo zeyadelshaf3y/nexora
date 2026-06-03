@@ -336,6 +336,65 @@ app-mention-page .mention-submit-json {
   background: var(--nxr-bg-elevated, #fff);
 }
 
+/* ─── Chrome demo: pane carries the visual box; host+template are plain ─── */
+
+/*
+ * The pane itself is the visual container for the chrome demo.
+ * This way header, items, and footer are all inside the bordered/shadowed box,
+ * with header and footer outside the scrollable items area.
+ */
+.mention-chrome-pane {
+  background: var(--nxr-bg-elevated, #fff);
+  border: 1px solid var(--nxr-border, #e2e8f0);
+  border-radius: var(--nxr-radius, 8px);
+  box-shadow: var(--nxr-shadow-md, 0 4px 12px rgb(0 0 0 / 7%));
+  min-width: 14rem;
+  overflow: hidden;
+}
+
+/* Items inside the chrome panel — padding only, no border/bg/overflow */
+.mention-chrome-items {
+  padding: 0.25rem 0;
+}
+
+.mention-option-sub {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--nxr-text-muted, #64748b);
+}
+
+.mention-chrome-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem 0.375rem;
+  border-bottom: 1px solid var(--nxr-border-subtle, #f1f5f9);
+}
+
+.mention-chrome-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--nxr-text-muted, #64748b);
+}
+
+.mention-chrome-count {
+  font-size: 0.75rem;
+  color: var(--nxr-text-faint, #94a3b8);
+}
+
+.mention-chrome-footer {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.375rem 0.75rem 0.5rem;
+  border-top: 1px solid var(--nxr-border-subtle, #f1f5f9);
+  font-size: 0.6875rem;
+  color: var(--nxr-text-faint, #94a3b8);
+}
+
 /* ─── Chip hover card (Slack-like popover) ─── */
 
 /* Portaled popover pane animation (uses nxrOverlay pane state classes). */
@@ -395,20 +454,8 @@ app-mention-page .mention-submit-json {
   transform: scale(0.96) translateX(-8px);
 }
 
-app-mention-page .chip-hover-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  padding: 0.625rem 0.875rem;
-  background: var(--nxr-bg-elevated, #fff);
-  border: 1px solid var(--nxr-border, #e2e8f0);
-  border-radius: var(--nxr-radius-sm, 6px);
-  box-shadow: var(--nxr-shadow-md, 0 4px 12px rgb(0 0 0 / 7%));
-  font-size: 0.8125rem;
-  max-width: 14rem;
-}
-
-/* Same card styling when rendered inside a portaled overlay pane. */
+/* Card is rendered both inline (inside app-mention-page) and portal-portaled (inside .chip-hover-overlay-pane). */
+app-mention-page .chip-hover-card,
 .chip-hover-overlay-pane .chip-hover-card {
   display: flex;
   flex-direction: column;
@@ -422,24 +469,13 @@ app-mention-page .chip-hover-card {
   max-width: 14rem;
 }
 
-app-mention-page .chip-hover-card strong {
-  color: var(--nxr-text, #0f172a);
-  font-size: 0.875rem;
-}
-
+app-mention-page .chip-hover-card strong,
 .chip-hover-overlay-pane .chip-hover-card strong {
   color: var(--nxr-text, #0f172a);
   font-size: 0.875rem;
 }
 
-app-mention-page .chip-hover-role {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--nxr-primary, #6366f1);
-}
-
+app-mention-page .chip-hover-role,
 .chip-hover-overlay-pane .chip-hover-role {
   font-size: 0.6875rem;
   font-weight: 600;
@@ -448,11 +484,7 @@ app-mention-page .chip-hover-role {
   color: var(--nxr-primary, #6366f1);
 }
 
-app-mention-page .chip-hover-username {
-  color: var(--nxr-text-muted, #64748b);
-  font-size: 0.75rem;
-}
-
+app-mention-page .chip-hover-username,
 .chip-hover-overlay-pane .chip-hover-username {
   color: var(--nxr-text-muted, #64748b);
   font-size: 0.75rem;

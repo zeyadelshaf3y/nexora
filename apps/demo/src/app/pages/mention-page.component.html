@@ -42,6 +42,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -88,6 +89,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -133,6 +135,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -177,6 +180,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -227,6 +231,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -282,6 +287,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -337,6 +343,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -383,6 +390,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -431,6 +439,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -483,6 +492,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -550,6 +560,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}
@@ -571,7 +582,66 @@
     </ng-template>
   </section>
 
-  <!-- 12. Programmatic API -->
+  <!-- 12. Panel Header & Footer -->
+  <section class="page-section sub-section">
+    <h2 class="page-section-title">Panel Header &amp; Footer</h2>
+    <p class="page-section-desc">
+      Use <code>nxrMentionHeader</code> and <code>nxrMentionFooter</code> to add fixed chrome above
+      and below the scrollable suggestion list. Both are optional and rendered outside the scroll
+      container.
+    </p>
+    <div class="mention-demo-wrapper">
+      <div
+        nxrMention
+        #chromeEditor="nxrMention"
+        [nxrMentionTriggers]="chromeTriggers"
+        nxrMentionEditorClass="demo-editor"
+        nxrMentionChipClass="demo-chip"
+        nxrMentionAriaLabel="Mention users with chrome"
+        [nxrMentionMovePanelWithCaret]="true"
+        class="demo-mention-input"
+        nxrMentionPanelClass="mention-chrome-pane"
+        nxrMentionMaxHeight="240px"
+      >
+        @if (chromeEditor.isEmpty()) {
+          <div class="demo-placeholder">Type &#64; to mention with header / footer…</div>
+        }
+        <ng-template nxrMentionPanel let-state="state" let-select="select">
+          <div class="mention-chrome-items">
+            @for (item of state.items; track item.id) {
+              <div
+                class="mention-option"
+                [attr.data-active]="state.activeIndex === $index ? '' : null"
+                [nxrMentionScrollIntoView]="state.activeIndex === $index"
+                (mousedown)="select(item)"
+              >
+                <strong>{{ item.displayName }}</strong>
+                <span class="mention-option-sub">&#64;{{ item.username }}</span>
+              </div>
+            }
+            @if (state.items.length === 0 && !state.loading) {
+              <div class="mention-panel-empty">No results</div>
+            }
+          </div>
+        </ng-template>
+        <ng-template nxrMentionHeader>
+          <div class="mention-chrome-header">
+            <span class="mention-chrome-title">Team Members</span>
+            <span class="mention-chrome-count">{{ DEMO_USERS.length }} members</span>
+          </div>
+        </ng-template>
+        <ng-template nxrMentionFooter>
+          <div class="mention-chrome-footer">
+            <span>↑↓ navigate</span>
+            <span>↵ select</span>
+            <span>Esc dismiss</span>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13. Programmatic API -->
   <section class="page-section sub-section">
     <h2 class="page-section-title">Programmatic API</h2>
     <p class="page-section-desc">
@@ -605,6 +675,7 @@
                 <div
                   class="mention-option"
                   [attr.data-active]="state.activeIndex === $index ? '' : null"
+                  [nxrMentionScrollIntoView]="state.activeIndex === $index"
                   (mousedown)="select(item)"
                 >
                   {{ state.session?.triggerConfig?.displayWith(item) }}

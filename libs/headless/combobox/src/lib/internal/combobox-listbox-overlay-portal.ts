@@ -11,6 +11,10 @@ import type {
 import { createListboxOverlayPanelPortal } from '@nexora-ui/listbox-cdk/internal';
 import type { ComponentPortal } from '@nexora-ui/overlay';
 
+import type {
+  ComboboxFooterDirective,
+  ComboboxHeaderDirective,
+} from '../directives/combobox-panel-chrome.directive';
 import type { ComboboxPanelDirective } from '../directives/combobox-panel.directive';
 import type { ComboboxAccessors } from '../types/combobox-types';
 
@@ -21,6 +25,8 @@ export function createComboboxListboxOverlayPortal<T>(args: {
   readonly injector: Injector;
   readonly panel: ComboboxPanelDirective;
   readonly childOwnsScroll: boolean;
+  readonly header?: ComboboxHeaderDirective;
+  readonly footer?: ComboboxFooterDirective;
   readonly value: ModelSignal<T | null | readonly T[]>;
   readonly multi: InputSignal<boolean>;
   readonly accessors: InputSignal<ComboboxAccessors<T> | undefined>;
@@ -35,6 +41,8 @@ export function createComboboxListboxOverlayPortal<T>(args: {
     buildComboboxOverlayPanelContext({
       panel: args.panel,
       childOwnsScroll: args.childOwnsScroll,
+      header: args.header,
+      footer: args.footer,
       value: args.value,
       multi: args.multi,
       accessors: args.accessors,

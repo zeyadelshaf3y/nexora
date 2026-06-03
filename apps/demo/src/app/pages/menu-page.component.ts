@@ -2,6 +2,8 @@ import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import {
   MenuComponent,
+  MenuFooterDirective,
+  MenuHeaderDirective,
   MenuTriggerDirective,
   MenuPanelDirective,
   MenuItemDirective,
@@ -58,6 +60,21 @@ function getGroups(): { label: string; actions: GroupedAction[] }[] {
   }));
 }
 
+const CHROME_ACTIONS: ActionItem[] = [
+  { id: 'cut', label: 'Cut', icon: 'scissors' },
+  { id: 'copy', label: 'Copy', icon: 'copy' },
+  { id: 'paste', label: 'Paste', icon: 'clipboard' },
+  { id: 'delete', label: 'Delete', icon: 'trash' },
+  { id: 'rename', label: 'Rename', icon: 'edit' },
+  { id: 'move', label: 'Move to…', icon: 'move' },
+  { id: 'share', label: 'Share', icon: 'share' },
+  { id: 'export', label: 'Export', icon: 'download' },
+  { id: 'import', label: 'Import', icon: 'upload' },
+  { id: 'duplicate', label: 'Duplicate', icon: 'copy' },
+  { id: 'archive', label: 'Archive', icon: 'archive' },
+  { id: 'pin', label: 'Pin to top', icon: 'pin' },
+];
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -72,6 +89,8 @@ function getGroups(): { label: string; actions: GroupedAction[] }[] {
     MenuComponent,
     MenuTriggerDirective,
     MenuPanelDirective,
+    MenuHeaderDirective,
+    MenuFooterDirective,
     MenuItemDirective,
     MenuGroupDirective,
     MenuGroupLabelDirective,
@@ -511,6 +530,52 @@ function getGroups(): { label: string; actions: GroupedAction[] }[] {
           <span class="menu-meta"> Last activated: {{ lastPrimitiveActivated() ?? '—' }} </span>
         </div>
       </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- 13. Panel header & footer                                           -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <section class="page-section sub-section">
+        <h2 class="page-section-title">Panel Header &amp; Footer</h2>
+        <p class="page-section-desc">
+          Optional <code>nxrMenuHeader</code> and <code>nxrMenuFooter</code> templates sit outside
+          the scrollable list — header is pinned at the top, footer at the bottom. The list scrolls
+          independently when it overflows.
+        </p>
+        <div class="menu-demo-row">
+          <nxr-menu
+            (optionActivated)="onChromeActivated($event)"
+            panelClass="demo-menu-pane"
+            #chromeMenu="nxrMenu"
+          >
+            <button class="menu-trigger" nxrMenuTrigger aria-label="File operations">
+              <app-icon name="menu" [size]="16" class="menu-trigger-icon" />
+              <span class="menu-trigger-label">File operations</span>
+            </button>
+            <ng-template nxrMenuPanel>
+              @for (action of chromeActions; track action.id) {
+                <button class="menu-option" [nxrMenuItem]="action">
+                  @if (action.icon) {
+                    <app-icon [name]="action.icon" [size]="14" class="menu-option-icon" />
+                  }
+                  <span>{{ action.label }}</span>
+                </button>
+              }
+            </ng-template>
+            <ng-template nxrMenuHeader>
+              <div class="menu-chrome-header">
+                <span class="menu-chrome-header__title">File operations</span>
+                <span class="menu-chrome-header__count">{{ chromeActions.length }} actions</span>
+              </div>
+            </ng-template>
+            <ng-template nxrMenuFooter>
+              <div class="menu-chrome-footer">
+                <button class="menu-chrome-footer__btn" (click)="chromeMenu.close()">Close</button>
+              </div>
+            </ng-template>
+          </nxr-menu>
+          <span class="menu-meta"> Last activated: {{ lastChromeActivated() ?? '—' }} </span>
+        </div>
+      </section>
     </div>
   `,
   styles: [
@@ -680,11 +745,55 @@ function getGroups(): { label: string; actions: GroupedAction[] }[] {
         border-radius: 50%;
         flex-shrink: 0;
       }
+
+      /* ─── Panel chrome (header / footer) ──────────────────────────── */
+      .menu-chrome-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--nxr-border-subtle);
+        gap: 0.5rem;
+      }
+      .menu-chrome-header__title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--nxr-text);
+        white-space: nowrap;
+      }
+      .menu-chrome-header__count {
+        font-size: 0.75rem;
+        color: var(--nxr-text-muted);
+        white-space: nowrap;
+      }
+      .menu-chrome-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0.375rem 0.5rem;
+        border-top: 1px solid var(--nxr-border-subtle);
+      }
+      .menu-chrome-footer__btn {
+        padding: 0.25rem 0.625rem;
+        font-size: 0.8125rem;
+        font-family: inherit;
+        border: 1px solid var(--nxr-border);
+        border-radius: var(--nxr-radius-sm);
+        background: var(--nxr-bg-elevated);
+        color: var(--nxr-text-muted);
+        cursor: pointer;
+        transition: border-color var(--nxr-duration-fast) ease;
+      }
+      .menu-chrome-footer__btn:hover {
+        border-color: var(--nxr-primary-subtle);
+        color: var(--nxr-text);
+      }
     `,
   ],
 })
 export class MenuPageComponent {
   readonly basicActions = BASIC_ACTIONS;
+  readonly chromeActions = CHROME_ACTIONS;
   /** Demo insets for overlay max-size math (see menu `boundaries` input). */
   readonly menuBoundariesDemo: ViewportBoundaries = { top: 72, bottom: 72 };
   readonly actionGroups = signal(getGroups());
@@ -694,6 +803,7 @@ export class MenuPageComponent {
   readonly lastGroupedActivated = signal<GroupedAction | null>(null);
   readonly lastProgActivated = signal<string | null>(null);
   readonly lastPrimitiveActivated = signal<string | null>(null);
+  readonly lastChromeActivated = signal<string | null>(null);
 
   readonly menuDisabled = signal(false);
   readonly disabledDemoItem = { id: 'demo', label: 'Single option' };
@@ -747,5 +857,9 @@ export class MenuPageComponent {
 
   onPrimitiveActivated(event: MenuOptionActivatedEvent<unknown>): void {
     this.lastPrimitiveActivated.set(event.option as string);
+  }
+
+  onChromeActivated(event: MenuOptionActivatedEvent<unknown>): void {
+    this.lastChromeActivated.set((event.option as ActionItem).label);
   }
 }

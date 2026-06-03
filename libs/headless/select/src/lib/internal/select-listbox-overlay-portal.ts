@@ -11,6 +11,10 @@ import type {
 import { createListboxOverlayPanelPortal } from '@nexora-ui/listbox-cdk/internal';
 import type { ComponentPortal } from '@nexora-ui/overlay';
 
+import type {
+  SelectFooterDirective,
+  SelectHeaderDirective,
+} from '../directives/select-panel-chrome.directive';
 import type { SelectPanelDirective } from '../directives/select-panel.directive';
 import type { SelectAccessors } from '../types/select-types';
 
@@ -21,6 +25,8 @@ export function createSelectListboxOverlayPortal<T>(args: {
   readonly injector: Injector;
   readonly panel: SelectPanelDirective;
   readonly childOwnsScroll: boolean;
+  readonly header?: SelectHeaderDirective;
+  readonly footer?: SelectFooterDirective;
   readonly value: ModelSignal<T | null | readonly T[]>;
   readonly multi: InputSignal<boolean>;
   readonly accessors: InputSignal<SelectAccessors<T> | undefined>;
@@ -35,6 +41,8 @@ export function createSelectListboxOverlayPortal<T>(args: {
     buildSelectOverlayPanelContext({
       panel: args.panel,
       childOwnsScroll: args.childOwnsScroll,
+      header: args.header,
+      footer: args.footer,
       value: args.value,
       multi: args.multi,
       accessors: args.accessors,

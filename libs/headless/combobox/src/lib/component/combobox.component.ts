@@ -88,6 +88,10 @@ import {
 import { COMBOBOX_HOST_CLASS } from '../constants/combobox-constants';
 import { ComboboxAnchorDirective } from '../directives/combobox-anchor.directive';
 import { ComboboxInputDirective } from '../directives/combobox-input.directive';
+import {
+  ComboboxFooterDirective,
+  ComboboxHeaderDirective,
+} from '../directives/combobox-panel-chrome.directive';
 import { ComboboxPanelDirective } from '../directives/combobox-panel.directive';
 import {
   ComboboxVirtualFooterTemplateDirective,
@@ -175,6 +179,9 @@ export class ComboboxComponent<T = unknown> implements ComboboxController, Contr
   readonly virtualOptionTpl = contentChild(ComboboxVirtualOptionTemplateDirective);
   readonly virtualHeaderTpl = contentChild(ComboboxVirtualHeaderTemplateDirective);
   readonly virtualFooterTpl = contentChild(ComboboxVirtualFooterTemplateDirective);
+
+  private readonly headerRef = contentChild(ComboboxHeaderDirective);
+  private readonly footerRef = contentChild(ComboboxFooterDirective);
 
   /* ═══ Value and selection inputs ═══ */
   readonly value = model<T | null | readonly T[]>(null);
@@ -644,11 +651,14 @@ export class ComboboxComponent<T = unknown> implements ComboboxController, Contr
   }
 
   private createPanelPortal(panel: ComboboxPanelDirective) {
+    const isVirtual = this.useVirtualPanel();
     return createComboboxListboxOverlayPortal({
       vcr: this.vcr,
       injector: this.injector,
       panel,
-      childOwnsScroll: this.useVirtualPanel(),
+      childOwnsScroll: isVirtual,
+      header: isVirtual ? undefined : this.headerRef(),
+      footer: isVirtual ? undefined : this.footerRef(),
       value: this.value,
       multi: this.multi,
       accessors: this.accessors,

@@ -6,6 +6,10 @@ import type { Signal } from '@angular/core';
 import type { ListboxInitialHighlight } from '@nexora-ui/listbox';
 import type { ListboxDirective } from '@nexora-ui/listbox/internal';
 
+import type {
+  ComboboxFooterDirective,
+  ComboboxHeaderDirective,
+} from '../directives/combobox-panel-chrome.directive';
 import type { ComboboxPanelDirective } from '../directives/combobox-panel.directive';
 import type { ComboboxAccessors } from '../types/combobox-types';
 
@@ -14,6 +18,8 @@ import type { ComboboxContext } from './combobox-context';
 export function buildComboboxOverlayPanelContext<T>(args: {
   readonly panel: ComboboxPanelDirective;
   readonly childOwnsScroll: boolean;
+  readonly header?: ComboboxHeaderDirective;
+  readonly footer?: ComboboxFooterDirective;
   readonly value: Signal<T | null | readonly T[]>;
   readonly multi: Signal<boolean>;
   readonly accessors: Signal<ComboboxAccessors<T> | undefined>;
@@ -25,6 +31,8 @@ export function buildComboboxOverlayPanelContext<T>(args: {
   return {
     template: args.panel.templateRef,
     childOwnsScroll: args.childOwnsScroll,
+    headerTemplate: args.header?.templateRef ?? null,
+    footerTemplate: args.footer?.templateRef ?? null,
     value: args.value,
     multi: args.multi,
     accessors: args.accessors,

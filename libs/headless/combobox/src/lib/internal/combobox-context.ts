@@ -10,6 +10,10 @@ import type { ListboxDirective } from '@nexora-ui/listbox/internal';
 export interface ComboboxContext<T = unknown> {
   readonly template: TemplateRef<unknown>;
   readonly childOwnsScroll?: boolean;
+  /** Optional fixed header rendered above the scrollable listbox. */
+  readonly headerTemplate?: TemplateRef<unknown> | null;
+  /** Optional fixed footer rendered below the scrollable listbox. */
+  readonly footerTemplate?: TemplateRef<unknown> | null;
   readonly value: Signal<T | null | readonly T[]>;
   readonly multi: Signal<boolean>;
   readonly accessors: Signal<ListboxAccessors<T> | undefined>;

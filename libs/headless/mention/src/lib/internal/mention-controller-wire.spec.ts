@@ -16,6 +16,7 @@ function baseWire(): MentionControllerWire {
     moveCaret: false,
     panelClass: undefined,
     panelStyle: undefined,
+    maxHeight: undefined,
     closeMs: 150,
     beforeOpen: undefined,
     beforeClose: undefined,
@@ -99,6 +100,20 @@ describe('isSameMentionControllerWire', () => {
       ...prev,
       panelStyle: { maxWidth: '24rem', borderRadius: '4px' },
     };
+
+    expect(isSameMentionControllerWire(prev, next, true, true)).toBe(false);
+  });
+
+  it('treats same maxHeight string as equivalent', () => {
+    const prev: MentionControllerWire = { ...baseWire(), maxHeight: '240px' };
+    const next: MentionControllerWire = { ...prev };
+
+    expect(isSameMentionControllerWire(prev, next, true, true)).toBe(true);
+  });
+
+  it('detects maxHeight changes', () => {
+    const prev: MentionControllerWire = { ...baseWire(), maxHeight: '240px' };
+    const next: MentionControllerWire = { ...prev, maxHeight: '360px' };
 
     expect(isSameMentionControllerWire(prev, next, true, true)).toBe(false);
   });
