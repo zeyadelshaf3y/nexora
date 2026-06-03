@@ -95,9 +95,7 @@
           "headless"
         ],
         "projectsRelationship": "independent",
-        "version": {
-          "conventionalCommits": true
-        }
+        "versionPlans": true
       }
     },
     "version": {
