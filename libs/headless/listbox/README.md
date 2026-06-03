@@ -99,6 +99,7 @@ When `T` is a primitive (e.g. `string[]`), omit accessors; the item itself is us
 | `nxrListboxOrientation`      | `'vertical' \| 'horizontal'`                | `'vertical'`  | Navigation axis and `aria-orientation`.             |
 | `nxrListboxWrap`             | `boolean`                                   | `false`       | Wrap navigation at boundaries.                      |
 | `nxrListboxInitialHighlight` | `'selected' \| 'first' \| 'last' \| 'none'` | `'none'`      | Which option is active on init.                     |
+| `nxrListboxPointerHighlight` | `'off' \| 'hover'`                          | `'off'`       | Pointer-driven active highlight (see below).        |
 | `nxrListboxMode`             | `'selection' \| 'action'`                   | `'selection'` | Selection mode or action-only mode.                 |
 
 ### Outputs
@@ -305,6 +306,21 @@ Controlled by `nxrListboxInitialHighlight`:
 | `'selected'`       | Active = selected option if registered; else first enabled.                         |
 | `'first'`          | First enabled option.                                                               |
 | `'last'`           | Last enabled option.                                                                |
+
+Call **`applyInitialHighlight(strategy?)`** on the exported listbox ref to re-apply a strategy later (e.g. defer `'first'` until a keyboard-open menu panel is ready). Use **`clearActiveOption()`** to clear highlight without activating.
+
+---
+
+## 12.1 Pointer highlight (`nxrListboxPointerHighlight`)
+
+When set to `'hover'` (opt-in; default `'off'`):
+
+- **`pointermove`** on the listbox host sets the active option under the cursor (enabled options only); moving over non-option areas clears active.
+- **`pointerleave`** clears active when the pointer exits the listbox.
+- **`pointerdown`** on non-option areas clears active (e.g. panel padding).
+- Option **`mousedown`** no longer sets active (hover drives highlight); **`click`** still activates.
+
+Used by **`@nexora-ui/menu`** for Radix-style menu highlight. Select/combobox can opt in later; default `'off'` preserves mousedown-to-highlight.
 
 ---
 

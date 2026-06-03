@@ -3,7 +3,6 @@
  */
 
 import { Injector, type ViewContainerRef } from '@angular/core';
-import type { ListboxDirective } from '@nexora-ui/listbox';
 import { ComponentPortal } from '@nexora-ui/overlay';
 
 import type { MenuPanelDirective } from '../directives/menu-panel.directive';
@@ -17,13 +16,13 @@ export function createMenuPanelPortal<T>(args: {
   readonly panel: MenuPanelDirective;
   readonly showArrow: boolean;
   readonly onOptionActivated: MenuContext<T>['onOptionActivated'];
-  readonly setListboxRef: (listbox: ListboxDirective<T>) => void;
+  readonly onListboxReady: MenuContext<T>['onListboxReady'];
 }): ComponentPortal<MenuPanelHostComponent> {
   const context: MenuContext<T> = {
     template: args.panel.templateRef,
     showArrow: args.showArrow,
     onOptionActivated: args.onOptionActivated,
-    onListboxReady: args.setListboxRef,
+    onListboxReady: args.onListboxReady,
   };
 
   const contextInjector = Injector.create({

@@ -9,8 +9,8 @@ import { MenuPanelDirective } from '../directives/menu-panel.directive';
 import { MenuSeparatorDirective } from '../directives/menu-separator.directive';
 import { MenuTriggerDirective } from '../directives/menu-trigger.directive';
 
-import { MenuComponent } from './menu.component';
 import { provideMenuDefaults } from './menu-defaults.config';
+import { MenuComponent } from './menu.component';
 
 const MENU_IMPORTS = [
   MenuComponent,
@@ -43,6 +43,17 @@ function flushMicrotasks(): Promise<void> {
 
 async function openMenu(fixture: ComponentFixture<unknown>): Promise<void> {
   getTrigger(fixture).click();
+  fixture.detectChanges();
+  await flushMicrotasks();
+  fixture.detectChanges();
+  await fixture.whenStable();
+  fixture.detectChanges();
+}
+
+async function openMenuViaKeyboard(fixture: ComponentFixture<unknown>): Promise<void> {
+  getTrigger(fixture).dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+  );
   fixture.detectChanges();
   await flushMicrotasks();
   fixture.detectChanges();
@@ -176,15 +187,88 @@ describe('MenuComponent', () => {
 
       const fixture = TestBed.createComponent(BasicMenuHost);
       fixture.detectChanges();
-      await openMenu(fixture);
+      await openMenuViaKeyboard(fixture);
 
       const trigger = getTrigger(fixture);
-      trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      expect(trigger.getAttribute('aria-activedescendant')).toBeTruthy();
+      expect(getMenuItems()[0].hasAttribute('data-active')).toBe(true);
+    });
+
+    it('click-open does not highlight any item', async () => {
+      await TestBed.configureTestingModule({
+        imports: [BasicMenuHost],
+      }).compileComponents();
+
+      const fixture = TestBed.createComponent(BasicMenuHost);
       fixture.detectChanges();
-      await flushMicrotasks();
+      await openMenu(fixture);
+
+      expect(getTrigger(fixture).getAttribute('aria-activedescendant')).toBeNull();
+      getMenuItems().forEach((item) => {
+        expect(item.hasAttribute('data-active')).toBe(false);
+      });
+    });
+
+    it('keyboard-open highlights the first item', async () => {
+      await TestBed.configureTestingModule({
+        imports: [BasicMenuHost],
+      }).compileComponents();
+
+      const fixture = TestBed.createComponent(BasicMenuHost);
+      fixture.detectChanges();
+      await openMenuViaKeyboard(fixture);
+
+      expect(getMenuItems()[0].hasAttribute('data-active')).toBe(true);
+      expect(getMenuItems()[1].hasAttribute('data-active')).toBe(false);
+    });
+
+    it('pointerdown on the menu panel clears keyboard highlight', async () => {
+      await TestBed.configureTestingModule({
+        imports: [BasicMenuHost],
+      }).compileComponents();
+
+      const fixture = TestBed.createComponent(BasicMenuHost);
+      fixture.detectChanges();
+      await openMenuViaKeyboard(fixture);
+
+      const menu = getMenu();
+      expect(menu).toBeTruthy();
+      if (!menu) return;
+      menu.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
       fixture.detectChanges();
 
-      expect(trigger.getAttribute('aria-activedescendant')).toBeTruthy();
+      expect(getTrigger(fixture).getAttribute('aria-activedescendant')).toBeNull();
+      getMenuItems().forEach((item) => {
+        expect(item.hasAttribute('data-active')).toBe(false);
+      });
+    });
+
+    it('pointer hover sets and clears data-active on menu items', async () => {
+      await TestBed.configureTestingModule({
+        imports: [BasicMenuHost],
+      }).compileComponents();
+
+      const fixture = TestBed.createComponent(BasicMenuHost);
+      fixture.detectChanges();
+      await openMenu(fixture);
+
+      const second = getMenuItems()[1];
+      second.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      fixture.detectChanges();
+      expect(second.hasAttribute('data-active')).toBe(true);
+
+      const menu = getMenu();
+      expect(menu).toBeTruthy();
+      if (!menu) return;
+      menu.dispatchEvent(
+        new PointerEvent('pointerleave', { bubbles: true, relatedTarget: document.body }),
+      );
+      fixture.detectChanges();
+      expect(second.hasAttribute('data-active')).toBe(false);
     });
 
     it('emits "programmatic" when closed via API', async () => {

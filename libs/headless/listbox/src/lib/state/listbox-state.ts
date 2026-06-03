@@ -158,8 +158,11 @@ export class ListboxState<T> {
    * @param enabledHint - When supplied (e.g. from {@link reconcileAfterRegistryChange}), avoids a second
    * `getEnabledEntries()` read.
    */
-  applyInitialHighlight(enabledHint?: readonly OptionEntry<T>[]): void {
-    const strategy = this.config.getInitialHighlight();
+  applyInitialHighlight(
+    enabledHint?: readonly OptionEntry<T>[],
+    strategyOverride?: ListboxInitialHighlight,
+  ): void {
+    const strategy = strategyOverride ?? this.config.getInitialHighlight();
     const entries = enabledHint ?? this.config.registry.getEnabledEntries();
 
     if (entries.length === 0) {

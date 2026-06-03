@@ -199,6 +199,34 @@ class CompareWithEquivalentHost {
   readonly compareById = (a: Option, b: Option) => a.id === b.id;
 }
 
+@Component({
+  standalone: true,
+  imports: [ListboxDirective, ListboxOptionDirective],
+  template: `
+    <div
+      nxrListbox
+      nxrListboxMode="action"
+      nxrListboxInitialHighlight="none"
+      nxrListboxPointerHighlight="hover"
+      (nxrListboxOptionActivated)="onActivated($event)"
+      data-listbox
+    >
+      <div [nxrListboxOption]="item1" data-option>One</div>
+      <div [nxrListboxOption]="item2" data-option>Two</div>
+      <div data-padding style="height: 24px"></div>
+    </div>
+  `,
+})
+class PointerHighlightHost {
+  readonly item1 = { id: 1, label: 'One' };
+  readonly item2 = { id: 2, label: 'Two' };
+  activated: { id: number; label: string }[] = [];
+
+  onActivated(e: { option: { id: number; label: string } }): void {
+    this.activated.push(e.option);
+  }
+}
+
 function dispatchKey(el: HTMLElement, key: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
 }
@@ -345,6 +373,94 @@ describe('ListboxDirective', () => {
 
       expect(firstOption.getAttribute('id')).toBeTruthy();
       expect(listboxEl.getAttribute('aria-activedescendant')).toBe(firstOption.getAttribute('id'));
+    });
+  });
+
+  describe('pointer highlight mode', () => {
+    let fixture: ComponentFixture<PointerHighlightHost>;
+    let host: HTMLElement;
+    let listboxEl: HTMLElement;
+
+    beforeEach(() => {
+      TestBed.configureTestingModule({ imports: [PointerHighlightHost] });
+      fixture = TestBed.createComponent(PointerHighlightHost);
+      fixture.detectChanges();
+      host = fixture.nativeElement as HTMLElement;
+      listboxEl = host.querySelector('[data-listbox]') as HTMLElement;
+    });
+
+    it('pointermove over an option sets data-active', () => {
+      const second = host.querySelectorAll('[data-option]')[1] as HTMLElement;
+      listboxEl.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      second.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      fixture.detectChanges();
+
+      expect(second.hasAttribute('data-active')).toBe(true);
+    });
+
+    it('pointermove over non-option area clears data-active', () => {
+      const listbox = fixture.debugElement
+        .query(By.directive(ListboxDirective))
+        .injector.get(ListboxDirective);
+      listbox.setActiveOption(fixture.componentInstance.item1);
+      fixture.detectChanges();
+
+      const padding = host.querySelector('[data-padding]') as HTMLElement;
+      listboxEl.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      padding.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      fixture.detectChanges();
+
+      expect(host.querySelector('[data-option][data-active]')).toBeNull();
+    });
+
+    it('pointerleave the listbox clears data-active', () => {
+      const listbox = fixture.debugElement
+        .query(By.directive(ListboxDirective))
+        .injector.get(ListboxDirective);
+      listbox.setActiveOption(fixture.componentInstance.item1);
+      fixture.detectChanges();
+
+      listboxEl.dispatchEvent(
+        new PointerEvent('pointerleave', { bubbles: true, relatedTarget: document.body }),
+      );
+      fixture.detectChanges();
+
+      expect(host.querySelector('[data-option][data-active]')).toBeNull();
+    });
+
+    it('pointerdown on non-option area clears data-active', () => {
+      const listbox = fixture.debugElement
+        .query(By.directive(ListboxDirective))
+        .injector.get(ListboxDirective);
+      listbox.setActiveOption(fixture.componentInstance.item1);
+      fixture.detectChanges();
+
+      const padding = host.querySelector('[data-padding]') as HTMLElement;
+      padding.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      fixture.detectChanges();
+
+      expect(host.querySelector('[data-option][data-active]')).toBeNull();
+    });
+
+    it('mousedown on option does not set data-active; click still activates', () => {
+      const second = host.querySelectorAll('[data-option]')[1] as HTMLElement;
+      second.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      fixture.detectChanges();
+      expect(second.hasAttribute('data-active')).toBe(false);
+
+      second.click();
+      fixture.detectChanges();
+      expect(fixture.componentInstance.activated).toEqual([{ id: 2, label: 'Two' }]);
     });
   });
 });

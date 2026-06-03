@@ -8,6 +8,7 @@ Headless, accessible menu for Angular. Composes `@nexora-ui/listbox` (role=menu,
 
 - Action-based: emit which item was chosen, then close (no form value or CVA)
 - Full keyboard navigation (Enter, Space, Arrow keys, Escape, Tab)
+- **Active highlight:** keyboard-open (Arrow keys / Enter / Space on trigger, or `open()`) highlights the first item; click-open starts with no highlight. Pointer hover sets `data-active` on items; leaving the panel or clicking non-item areas clears it. Style with `[data-active]` on menu items.
 - ARIA: `aria-haspopup="menu"`, `aria-expanded`, `aria-controls`, `role="menu"`, `role="menuitem"`
 - Groups and separators (`nxrMenuGroup`, `nxrMenuGroupLabel`, `nxrMenuSeparator`)
 - Default placement bottom-start with full 12-position fallbacks (via DropdownRef `configPreset: 'menu'`)
