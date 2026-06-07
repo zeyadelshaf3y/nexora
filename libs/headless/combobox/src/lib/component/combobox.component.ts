@@ -64,8 +64,7 @@ import {
   toSelectedValuesArray,
   type DropdownRefOptions,
 } from '@nexora-ui/dropdown';
-import { type ListboxInitialHighlight } from '@nexora-ui/listbox';
-import type { ListboxDirective } from '@nexora-ui/listbox/internal';
+import { type ListboxDirective, type ListboxInitialHighlight } from '@nexora-ui/listbox';
 import { BuiltinVirtualDropdownPanelComponent } from '@nexora-ui/listbox-cdk';
 import { createBuiltinVirtualPanelSignals } from '@nexora-ui/listbox-cdk/internal';
 import {
@@ -78,6 +77,7 @@ import {
   resolveOverlayBackdropClassValue,
   resolveOverlayBackdropStyleValue,
   mergeOverlayStyleValue,
+  OverlayAnchorPopupRegistry,
   OverlayService,
   OVERLAY_DEFAULTS_CONFIG,
   type CloseReason,
@@ -144,6 +144,7 @@ import type { ComboboxAccessors, ComboboxScrollStrategy } from '../types/combobo
 export class ComboboxComponent<T = unknown> implements ComboboxController, ControlValueAccessor {
   /* ═══ Injections and content children ═══ */
   private readonly overlay = inject(OverlayService);
+  private readonly anchorPopupRegistry = inject(OverlayAnchorPopupRegistry);
   private readonly vcr = inject(ViewContainerRef);
   private readonly injector = inject(Injector);
   private readonly hostRef = inject(ElementRef<HTMLElement>);
@@ -364,6 +365,7 @@ export class ComboboxComponent<T = unknown> implements ComboboxController, Contr
       useVirtualPanel: () => this.useVirtualPanel(),
       onOpened: () => this.onDropdownOpened(),
       onClosed: (reason: CloseReason | undefined) => this.onDropdownClosed(reason),
+      anchorPopupRegistry: this.anchorPopupRegistry,
     });
   }
 
@@ -665,7 +667,7 @@ export class ComboboxComponent<T = unknown> implements ComboboxController, Contr
       compareWith: this.compareWith,
       initialHighlight: this.initialHighlight,
       onValueChange: (v) => this.applySelectionChange(v),
-      setListboxRef: (listbox) => this.listboxRef.set(listbox),
+      setListboxRef: (listbox) => this.listboxRef.set(listbox as ListboxDirective<T>),
     });
   }
 

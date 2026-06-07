@@ -116,6 +116,7 @@ export type {
 } from './lib/types/open-types';
 export type { OverlayOpenConfig } from './lib/services/overlay.service';
 export { OverlayService } from './lib/services/overlay.service';
+export { OverlayAnchorPopupRegistry } from './lib/services/overlay-anchor-popup-registry';
 export {
   DEFAULT_OVERLAY_DEFAULTS_CONFIG,
   OVERLAY_DEFAULTS_CONFIG,

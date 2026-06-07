@@ -89,26 +89,28 @@ When `T` is a primitive (e.g. `string[]`), omit accessors; the item itself is us
 
 ### Inputs (on `nxrListbox` host)
 
-| Input                        | Type                                        | Default       | Description                                         |
-| ---------------------------- | ------------------------------------------- | ------------- | --------------------------------------------------- |
-| `nxrListboxValue`            | `T \| null \| readonly T[]`                 | `null`        | Controlled value (single or multi).                 |
-| `nxrListboxMulti`            | `boolean`                                   | `false`       | Multi-select mode (listbox role only).              |
-| `nxrListboxAccessors`        | `ListboxAccessors<T>`                       | —             | Value/label/disabled extractors for object options. |
-| `nxrListboxCompareWith`      | `(a, b) => boolean`                         | `===`         | Custom equality for selection reconciliation.       |
-| `nxrListboxRole`             | `'listbox' \| 'menu'`                       | `'listbox'`   | ARIA role. `menu` for action-oriented lists.        |
-| `nxrListboxOrientation`      | `'vertical' \| 'horizontal'`                | `'vertical'`  | Navigation axis and `aria-orientation`.             |
-| `nxrListboxWrap`             | `boolean`                                   | `false`       | Wrap navigation at boundaries.                      |
-| `nxrListboxInitialHighlight` | `'selected' \| 'first' \| 'last' \| 'none'` | `'none'`      | Which option is active on init.                     |
-| `nxrListboxPointerHighlight` | `'off' \| 'hover'`                          | `'off'`       | Pointer-driven active highlight (see below).        |
-| `nxrListboxMode`             | `'selection' \| 'action'`                   | `'selection'` | Selection mode or action-only mode.                 |
+| Input                           | Type                                        | Default       | Description                                                             |
+| ------------------------------- | ------------------------------------------- | ------------- | ----------------------------------------------------------------------- |
+| `nxrListboxValue`               | `T \| null \| readonly T[]`                 | `null`        | Controlled value (single or multi).                                     |
+| `nxrListboxMulti`               | `boolean`                                   | `false`       | Multi-select mode (listbox role only).                                  |
+| `nxrListboxAccessors`           | `ListboxAccessors<T>`                       | —             | Value/label/disabled extractors for object options.                     |
+| `nxrListboxCompareWith`         | `(a, b) => boolean`                         | `===`         | Custom equality for selection reconciliation.                           |
+| `nxrListboxRole`                | `'listbox' \| 'menu'`                       | `'listbox'`   | ARIA role. `menu` for action-oriented lists.                            |
+| `nxrListboxOrientation`         | `'vertical' \| 'horizontal'`                | `'vertical'`  | Navigation axis and `aria-orientation`.                                 |
+| `nxrListboxWrap`                | `boolean`                                   | `false`       | Wrap navigation at boundaries.                                          |
+| `nxrListboxInitialHighlight`    | `'selected' \| 'first' \| 'last' \| 'none'` | `'none'`      | Which option is active on init.                                         |
+| `nxrListboxPointerHighlight`    | `'off' \| 'hover'`                          | `'off'`       | Pointer-driven active highlight (see below).                            |
+| `nxrListboxOptionHighlightedOn` | `ListboxOptionHighlightedOn`                | `'all'`       | Which highlight changes emit `nxrListboxOptionHighlighted` (see below). |
+| `nxrListboxMode`                | `'selection' \| 'action'`                   | `'selection'` | Selection mode or action-only mode.                                     |
 
 ### Outputs
 
-| Output                      | Payload                     | Description                                                                                                |
-| --------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `nxrListboxValueChange`     | `T \| null \| readonly T[]` | Emitted when value changes (selection mode).                                                               |
-| `nxrListboxOptionActivated` | `{ option: T }`             | Emitted on every activation (Enter, Space, click). Fires in both modes.                                    |
-| `nxrListboxBoundaryReached` | `'start' \| 'end'`          | Emitted when keyboard navigation hits the edge of the list with wrap disabled. Useful for infinite scroll. |
+| Output                        | Payload                     | Description                                                                                                |
+| ----------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `nxrListboxValueChange`       | `T \| null \| readonly T[]` | Emitted when value changes (selection mode).                                                               |
+| `nxrListboxOptionActivated`   | `{ option: T }`             | Emitted on every activation (Enter, Space, click). Fires in both modes.                                    |
+| `nxrListboxOptionHighlighted` | `{ option: T \| null }`     | Emitted when the active option changes and the source is allowed by `nxrListboxOptionHighlightedOn`.       |
+| `nxrListboxBoundaryReached`   | `'start' \| 'end'`          | Emitted when keyboard navigation hits the edge of the list with wrap disabled. Useful for infinite scroll. |
 
 ### Option directive (`[nxrListboxOption]`)
 
@@ -321,6 +323,32 @@ When set to `'hover'` (opt-in; default `'off'`):
 - Option **`mousedown`** no longer sets active (hover drives highlight); **`click`** still activates.
 
 Used by **`@nexora-ui/menu`** for Radix-style menu highlight. Select/combobox can opt in later; default `'off'` preserves mousedown-to-highlight.
+
+---
+
+## 12.2 Option highlighted emission (`nxrListboxOptionHighlightedOn`)
+
+Controls when **`nxrListboxOptionHighlighted`** fires. Highlight state (`aria-activedescendant`, `data-active`) always updates regardless of this input.
+
+| Value                     | Emits on                                                                    |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `'all'` (default)         | Every highlight change                                                      |
+| `'keyboard'`              | Arrow keys, Home/End, typeahead                                             |
+| `'pointer'`               | Hover highlight (`nxrListboxPointerHighlight="hover"`) and option mousedown |
+| `'programmatic'`          | `setActiveOption()`, `clearActiveOption()` from parent/wrapper code         |
+| `'initial'`               | Initial highlight and registry reconciliation                               |
+| `['keyboard', 'initial']` | Any combination of the above sources                                        |
+
+Example — keyboard navigation only (ignore hover and initial highlight):
+
+```html
+<div
+  nxrListbox
+  nxrListboxPointerHighlight="hover"
+  nxrListboxOptionHighlightedOn="keyboard"
+  (nxrListboxOptionHighlighted)="onHighlighted($event)"
+></div>
+```
 
 ---
 
@@ -570,6 +598,9 @@ export type {
   ListboxBoundary,
   ListboxAccessors,
   ListboxOptionActivatedEvent,
+  ListboxOptionHighlightedEvent,
+  ListboxOptionHighlightSource,
+  ListboxOptionHighlightedOn,
 } from './lib/types';
 ```
 
@@ -578,14 +609,12 @@ Internal types (`NxrListboxController`, `NXR_LISTBOX_CONTROLLER`, `NormalizedOpt
 Advanced overlay host symbols are intentionally separate:
 
 ```ts
-// @nexora-ui/listbox/internal
+// @nexora-ui/listbox/internal — overlay host wiring only (not ListboxDirective)
 export {
   NXR_LISTBOX_OVERLAY_PANEL_CONTEXT,
   NXR_LISTBOX_OVERLAY_PANEL_HOST_CLASS,
-  NxrListboxVirtualScrollRegistry,
   NxrListboxOverlayPanelHostComponent,
   type NxrListboxOverlayPanelContext,
-  type ListboxDirective,
 } from '@nexora-ui/listbox/internal';
 ```
 

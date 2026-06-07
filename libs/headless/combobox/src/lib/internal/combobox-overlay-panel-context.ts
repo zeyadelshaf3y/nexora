@@ -3,8 +3,7 @@
  */
 
 import type { Signal } from '@angular/core';
-import type { ListboxInitialHighlight } from '@nexora-ui/listbox';
-import type { ListboxDirective } from '@nexora-ui/listbox/internal';
+import type { ListboxInitialHighlight, ListboxScrollActiveCapable } from '@nexora-ui/listbox';
 
 import type {
   ComboboxFooterDirective,
@@ -26,7 +25,7 @@ export function buildComboboxOverlayPanelContext<T>(args: {
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
-  readonly onListboxReady: (listbox: ListboxDirective<T>) => void;
+  readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }): ComboboxContext<T> {
   return {
     template: args.panel.templateRef,

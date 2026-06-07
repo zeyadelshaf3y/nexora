@@ -9,6 +9,7 @@ import type {
   BeforeCloseCallback,
   BeforeOpenCallback,
   CloseReason,
+  OverlayAnchorPopupRegistry,
   OverlayService,
   Placement,
   ViewportBoundaries,
@@ -67,6 +68,8 @@ export interface DropdownRefOptions {
   readonly onOpened?: () => void;
   /** Called after the panel has closed (with reason). */
   readonly onClosed?: (reason: CloseReason | undefined) => void;
+  /** When set, notifies the registry so tooltips on the same anchor close and stay suppressed. */
+  readonly anchorPopupRegistry?: OverlayAnchorPopupRegistry;
   /** When set, afterClosed subscription is cleaned up automatically when the injector context is destroyed. */
   readonly destroyRef?: DestroyRef;
   /** Only for reposition scroll strategy. When true (default), keep panel in viewport. When undefined, use default. */

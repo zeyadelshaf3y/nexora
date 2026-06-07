@@ -56,7 +56,9 @@ function asSingle<T>(v: T | null | readonly T[]): T | null {
       <section class="page-section sub-section">
         <h2 class="page-section-title">Single Select</h2>
         <p class="page-section-desc">
-          Object options with accessors, compareWith, and a disabled option.
+          Object options with accessors, compareWith, and a disabled option. Arrow keys update
+          <code>nxrListboxOptionHighlighted</code>
+          (<code>nxrListboxOptionHighlightedOn="keyboard"</code>).
         </p>
         <div class="listbox-page-row">
           <div
@@ -64,6 +66,8 @@ function asSingle<T>(v: T | null | readonly T[]): T | null {
             nxrListbox
             [nxrListboxValue]="singleValue()"
             (nxrListboxValueChange)="onSingleChange($event)"
+            (nxrListboxOptionHighlighted)="onHighlighted($event)"
+            nxrListboxOptionHighlightedOn="keyboard"
             [nxrListboxAccessors]="accessors"
             [nxrListboxCompareWith]="compareById"
             nxrListboxInitialHighlight="selected"
@@ -74,6 +78,9 @@ function asSingle<T>(v: T | null | readonly T[]): T | null {
           </div>
           <div class="listbox-page-meta listbox-meta-line">
             Selected: {{ singleValue() ? singleValue()!.name : '—' }}
+          </div>
+          <div class="listbox-page-meta listbox-meta-line">
+            Highlighted: {{ highlightedOption() ? highlightedOption()!.name : '—' }}
           </div>
         </div>
       </section>
@@ -284,6 +291,7 @@ export class ListboxPageComponent {
   ];
 
   readonly singleValue = signal<Fruit | null>(null);
+  readonly highlightedOption = signal<Fruit | null>(null);
   readonly multiValue = signal<readonly Fruit[]>([]);
   readonly multiSelectedNames = computed(() => {
     const v = this.multiValue();
@@ -341,6 +349,10 @@ export class ListboxPageComponent {
 
   onSingleChange(v: Fruit | null | readonly Fruit[]): void {
     this.singleValue.set(asSingle(v));
+  }
+
+  onHighlighted(e: { option: Fruit | null }): void {
+    this.highlightedOption.set(e.option);
   }
 
   onMultiChange(v: readonly Fruit[] | Fruit | null): void {

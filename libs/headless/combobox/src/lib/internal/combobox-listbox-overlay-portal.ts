@@ -3,11 +3,12 @@
  */
 
 import type { Injector, InputSignal, ModelSignal, ViewContainerRef } from '@angular/core';
-import { bindListboxReadyWithActiveScroll, type ListboxInitialHighlight } from '@nexora-ui/listbox';
-import type {
-  ListboxDirective,
-  NxrListboxOverlayPanelHostComponent,
-} from '@nexora-ui/listbox/internal';
+import {
+  bindListboxReadyWithActiveScroll,
+  type ListboxInitialHighlight,
+  type ListboxScrollActiveCapable,
+} from '@nexora-ui/listbox';
+import type { NxrListboxOverlayPanelHostComponent } from '@nexora-ui/listbox/internal';
 import { createListboxOverlayPanelPortal } from '@nexora-ui/listbox-cdk/internal';
 import type { ComponentPortal } from '@nexora-ui/overlay';
 
@@ -33,7 +34,7 @@ export function createComboboxListboxOverlayPortal<T>(args: {
   readonly compareWith: InputSignal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: InputSignal<ListboxInitialHighlight>;
   readonly onValueChange: (value: T | null | readonly T[]) => void;
-  readonly setListboxRef: (listbox: ListboxDirective<T>) => void;
+  readonly setListboxRef: (listbox: ListboxScrollActiveCapable) => void;
 }): ComponentPortal<NxrListboxOverlayPanelHostComponent> {
   return createListboxOverlayPanelPortal(
     args.vcr,

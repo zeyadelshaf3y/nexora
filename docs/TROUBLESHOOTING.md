@@ -13,6 +13,7 @@ Common issues when using or developing Nexora headless components, and what to c
 - **Close policy**: Overlay has a close policy (escape, outside, backdrop). If `closePolicy` was overridden with `escape: 'none'` or `outside: 'none'`, those actions won’t close. Check the config passed to `OverlayService.open()` or the directive’s effective config.
 - **Nested overlays**: Only the **top** overlay closes on Escape or outside click. If the user expects a parent to close, the click might be on the parent’s pane (which closes only the top). Clicks on a **backdrop** close that overlay and its nested overlays.
 - **parentRef**: When opening an overlay from inside another (e.g. popover inside dialog), the inner one must have `parentRef` set so the stack and close behavior are correct. Directives set this automatically when the trigger is inside an overlay pane; when calling the service manually, pass `parentRef: getContainingOverlayRef(element)`.
+- **`nxrPopoverClose` does nothing**: Ensure `ClosePopoverDirective` is imported in the component that declares the panel template. The button must live inside the overlay pane (`[data-nxr-overlay="pane"]`). If `popover.close()` works but `nxrPopoverClose` does not, upgrade `@nexora-ui/overlay` — older builds duplicated the pane close-registry across the main and `/internal` entry bundles (fixed by anchoring the registry on `globalThis`).
 
 ## Z-index: overlay behind header/sidebar
 
@@ -35,6 +36,12 @@ Common issues when using or developing Nexora headless components, and what to c
 
 - **Tab / hidden document**: The tooltip directive closes when the host `document` becomes hidden. If you still see a stale tip in an iframe-only scenario, ensure you are not relying on the parent tab’s visibility for a child frame without switching that frame’s document.
 - **Outside click**: Dismiss uses capture-phase `pointerdown` on the document. Clicks on the trigger, tooltip pane, or other overlay panes/bridges are ignored; if a transparent overlay sits above the page, it may receive the event first—adjust stacking or `pointer-events` in your theme.
+
+## Tooltip shows at the same time as a popover or menu
+
+- **Default behavior**: When tooltip and an anchored popup (popover, menu, select, combobox) share the **same trigger element**, the tooltip closes when the popup opens and stays closed (no hover/focus reopen) while the popup is open. No manual `(opened)="tip.close()"` wiring is required.
+- **Different elements**: If the tooltip is on a wrapper and the menu trigger is on a child (or you use `nxrPopoverAnchor` pointing elsewhere), coordination does not apply—move the tooltip to a separate help icon or use `nxrTooltipTrigger="focus"` only on the popup trigger.
+- **Opt out**: Set `[nxrTooltipCloseOnPopup]="false"` on the tooltip, or provide `closeOnPopup: false` in `TOOLTIP_DEFAULTS_CONFIG`.
 
 ## Snackbar: close with value not emitted
 

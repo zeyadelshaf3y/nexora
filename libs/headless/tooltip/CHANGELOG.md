@@ -1,6 +1,8 @@
 ## 0.2.2 (2026-05-02)
 
-This was a version bump only for tooltip to align it with other projects, there were no code changes.
+### 🚀 Features
+
+- **tooltip:** close and suppress hover/focus open while a popup on the same anchor is open (`nxrTooltipCloseOnPopup`, default on)
 
 ## 0.2.1 (2026-05-01)
 

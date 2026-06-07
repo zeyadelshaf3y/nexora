@@ -22,6 +22,7 @@ import {
   DEFAULT_HOVER_CLOSE_DELAY_MS,
   type HoverBridge,
   isInsideOverlayPaneOrBridge,
+  OverlayAnchorPopupRegistry,
   OverlayService,
   OVERLAY_DEFAULTS_CONFIG,
   OVERLAY_SELECTOR_PANE,
@@ -120,6 +121,7 @@ const POPOVER_BACKDROP_CLASS = 'nxr-popover-backdrop';
 export class PopoverTriggerDirective implements OnDestroy {
   private readonly hostRef = inject(ElementRef<HTMLElement>);
   private readonly overlay = inject(OverlayService);
+  private readonly anchorPopupRegistry = inject(OverlayAnchorPopupRegistry);
   private readonly vcr = inject(ViewContainerRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly overlayDefaults: OverlayDefaultsConfig = {
@@ -319,6 +321,7 @@ export class PopoverTriggerDirective implements OnDestroy {
   private hoverBridgeCleanup: (() => void) | null = null;
   private isNestedOverlay = false;
   private readonly listenerState = createPopoverTriggerListenerState();
+  private popupMarkedOpen = false;
 
   /**
    * Stable delegate for {@link popoverHandleClick} / focus / hover handlers (one object, no per-event allocation).
@@ -451,6 +454,7 @@ export class PopoverTriggerDirective implements OnDestroy {
         clearPopoverOutsideClickListener(this.listenerState, this.focusClose),
       disposeOverlayRef: () => this.overlayRef?.dispose(),
       clearOverlayRef: () => {
+        this.releasePopupAnchor(this.getAnchorElement());
         this.overlayRef = null;
       },
       setIsOpen: (open) => this.isOpen.set(open),
@@ -560,7 +564,10 @@ export class PopoverTriggerDirective implements OnDestroy {
         this.paneId.set(paneId);
         const wasOpen = this.isOpen();
         this.isOpen.set(isOpen);
-        if (isOpen && !wasOpen) this.nxrPopoverOpened.emit();
+        if (isOpen && !wasOpen) {
+          this.markPopupOpen(anchor);
+          this.nxrPopoverOpened.emit();
+        }
       },
       closeHandlerParams: {
         clearHoverBridge: () => this.clearHoverBridgeState(),
@@ -568,6 +575,7 @@ export class PopoverTriggerDirective implements OnDestroy {
         removeOutsideClickListener: () =>
           clearPopoverOutsideClickListener(this.listenerState, this.focusClose),
         clearOverlayRef: () => {
+          this.releasePopupAnchor(anchor);
           this.overlayRef = null;
         },
         clearOpenedBy: () => this.openState.clearOpenedBy(),
@@ -607,6 +615,18 @@ export class PopoverTriggerDirective implements OnDestroy {
     this.hoverBridgeCleanup?.();
     this.hoverBridgeCleanup = null;
     this.hoverBridge = null;
+  }
+
+  private markPopupOpen(anchor: HTMLElement): void {
+    this.popupMarkedOpen = true;
+    this.anchorPopupRegistry.markOpen(anchor);
+  }
+
+  private releasePopupAnchor(anchor: HTMLElement): void {
+    if (!this.popupMarkedOpen) return;
+
+    this.popupMarkedOpen = false;
+    this.anchorPopupRegistry.markClosed(anchor);
   }
 
   private getAnchorElement(): HTMLElement {

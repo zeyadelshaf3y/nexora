@@ -65,8 +65,7 @@ import {
   toSelectedValuesArray,
   type DropdownRefOptions,
 } from '@nexora-ui/dropdown';
-import { type ListboxInitialHighlight } from '@nexora-ui/listbox';
-import type { ListboxDirective } from '@nexora-ui/listbox/internal';
+import { type ListboxDirective, type ListboxInitialHighlight } from '@nexora-ui/listbox';
 import { BuiltinVirtualDropdownPanelComponent } from '@nexora-ui/listbox-cdk';
 import { createBuiltinVirtualPanelSignals } from '@nexora-ui/listbox-cdk/internal';
 import {
@@ -79,6 +78,7 @@ import {
   resolveOverlayBackdropClassValue,
   resolveOverlayBackdropStyleValue,
   mergeOverlayStyleValue,
+  OverlayAnchorPopupRegistry,
   OverlayService,
   OVERLAY_DEFAULTS_CONFIG,
   type CloseReason,
@@ -136,6 +136,7 @@ export class SelectComponent<T = unknown> implements SelectController, ControlVa
   // ---------------------------------------------------------------------------
 
   private readonly overlay = inject(OverlayService);
+  private readonly anchorPopupRegistry = inject(OverlayAnchorPopupRegistry);
   private readonly vcr = inject(ViewContainerRef);
   private readonly injector = inject(Injector);
   private readonly overlayDefaults = {
@@ -399,6 +400,7 @@ export class SelectComponent<T = unknown> implements SelectController, ControlVa
       useVirtualPanel: () => this.useVirtualPanel(),
       onOpened: () => this.onDropdownOpened(),
       onClosed: (reason) => this.onDropdownClosed(reason),
+      anchorPopupRegistry: this.anchorPopupRegistry,
     });
   }
 
@@ -606,7 +608,7 @@ export class SelectComponent<T = unknown> implements SelectController, ControlVa
       compareWith: this.compareWith,
       initialHighlight: this.initialHighlight,
       onValueChange: (value) => this.handleValueChange(value),
-      setListboxRef: (listbox) => this.listboxRef.set(listbox),
+      setListboxRef: (listbox) => this.listboxRef.set(listbox as ListboxDirective<T>),
     });
   }
 

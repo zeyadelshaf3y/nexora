@@ -5,8 +5,12 @@
 
 import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 
-import type { ListboxDirective } from '../directives/listbox.directive';
-import type { ListboxAccessors, ListboxInitialHighlight } from '../types';
+import type { ListboxAccessors, ListboxInitialHighlight, NxrListboxController } from '../types';
+import type { ListboxScrollActiveCapable } from '../utils/listbox-schedule-initial-scroll';
+
+/** Listbox instance passed to overlay `onListboxReady` (typically {@link ListboxDirective}). */
+export type NxrListboxReadyInstance<T = unknown> = NxrListboxController<T> &
+  ListboxScrollActiveCapable;
 
 /**
  * Reactive panel context: listbox bindings, option template, and callbacks to the root control.
@@ -41,7 +45,7 @@ export interface NxrListboxOverlayPanelContext<T = unknown> {
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
-  readonly onListboxReady: (listbox: ListboxDirective<T>) => void;
+  readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }
 
 export const NXR_LISTBOX_OVERLAY_PANEL_CONTEXT = new InjectionToken<NxrListboxOverlayPanelContext>(

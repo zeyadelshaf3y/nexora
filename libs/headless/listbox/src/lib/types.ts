@@ -23,7 +23,7 @@ export interface NxrListboxController<T = unknown> {
   /** Current active (highlighted) option, or null. Used e.g. for virtual scroll sync. */
   activeOption(): T | null;
   /** Sets the option as active (highlighted) without triggering selection. */
-  setActiveOption(item: T): void;
+  setActiveOption(item: T, source?: ListboxOptionHighlightSource): void;
   /** Clears the active (highlighted) option without triggering selection. */
   clearActiveOption(): void;
   /** Re-applies {@link ListboxInitialHighlight} (e.g. after deferring highlight until panel open). */
@@ -90,6 +90,26 @@ export type ListboxInitialHighlight = 'selected' | 'first' | 'last' | 'none';
 /** How pointer interaction updates the active (highlighted) option. Default `'off'`. */
 export type ListboxPointerHighlight = 'off' | 'hover';
 
+/** Origin of an active-option (highlight) change. Used by {@link ListboxOptionHighlightedOn}. */
+export const LISTBOX_OPTION_HIGHLIGHT_SOURCES = [
+  'keyboard',
+  'pointer',
+  'programmatic',
+  'initial',
+] as const;
+
+export type ListboxOptionHighlightSource = (typeof LISTBOX_OPTION_HIGHLIGHT_SOURCES)[number];
+
+/**
+ * Which highlight changes emit `nxrListboxOptionHighlighted`.
+ * - `'all'` (default): every source
+ * - a single source or array: only those sources
+ */
+export type ListboxOptionHighlightedOn =
+  | 'all'
+  | ListboxOptionHighlightSource
+  | readonly ListboxOptionHighlightSource[];
+
 /**
  * Accessors for option items when T is an object.
  * When options are primitives (e.g. string[]), omit this; the listbox treats each item as value and label.
@@ -109,6 +129,11 @@ export type ListboxBoundary = 'start' | 'end';
 /** Payload when the user activates an option (Enter/click). */
 export interface ListboxOptionActivatedEvent<T> {
   readonly option: T;
+}
+
+/** Payload when the active (highlighted) option changes (keyboard, pointer, or programmatic). */
+export interface ListboxOptionHighlightedEvent<T> {
+  readonly option: T | null;
 }
 
 /**
