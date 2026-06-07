@@ -1,6 +1,5 @@
 ---
 overlay: patch
-listbox: minor
 listbox-cdk: patch
 dropdown: patch
 popover: patch
@@ -13,11 +12,14 @@ mention: patch
 headless: patch
 ---
 
-feat(overlay,dropdown,listbox,popover,tooltip,menu,select,combobox): anchor popup coordination and listbox highlight events
+fix(headless): republish anchor popup coordination to npm
+
+Republish overlay, dropdown, popover, tooltip, menu, select, combobox, and
+dependents after the prior release skipped them because target versions
+already existed on npm without this feature code.
 
 fix(overlay): share closeable ref registry on globalThis across main and /internal entrypoints
 feat(overlay): export OverlayAnchorPopupRegistry for tooltip/popup coordination on shared anchors
 feat(dropdown): optional anchorPopupRegistry on DropdownRef
-feat(listbox): nxrListboxOptionHighlighted output, nxrListboxOptionHighlightedOn input, and highlight source types
 feat(popover,tooltip): close and suppress tooltip while an anchored popup is open on the same anchor
 feat(menu,select,combobox): wire anchor popup registry and listbox overlay panel updates
