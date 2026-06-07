@@ -14,9 +14,9 @@ headless: patch
 
 fix(headless): republish anchor popup coordination to npm
 
-Republish overlay, dropdown, popover, tooltip, menu, select, combobox, and
-dependents after the prior release skipped them because target versions
-already existed on npm without this feature code.
+Requires git tags synced to current npm versions first (npm run release:sync-tags).
+Bumps one patch above npm so publish is not skipped. listbox is excluded — already
+on npm at 0.3.0; source must stay at 0.3.0 so publish retags latest to 0.3.0.
 
 fix(overlay): share closeable ref registry on globalThis across main and /internal entrypoints
 feat(overlay): export OverlayAnchorPopupRegistry for tooltip/popup coordination on shared anchors

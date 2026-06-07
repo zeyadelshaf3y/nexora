@@ -7,7 +7,7 @@
     "@angular/forms": "^21.1.0",
     "@nexora-ui/core": "^0.1.0",
     "@nexora-ui/dropdown": "^0.1.1",
-    "@nexora-ui/listbox": "^0.2.0",
+    "@nexora-ui/listbox": "^0.3.0",
     "@nexora-ui/overlay": "^0.1.2",
     "@nexora-ui/listbox-cdk": "^0.1.3"
   },
