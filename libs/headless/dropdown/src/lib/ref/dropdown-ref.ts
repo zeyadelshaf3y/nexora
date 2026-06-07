@@ -43,6 +43,7 @@ export class DropdownRef {
   private afterClosedSubscription: { unsubscribe(): void } | null = null;
   private resizeCleanup: (() => void) | null = null;
   private skipFocusRestore = false;
+  private popupMarkedOpen = false;
 
   private constructor(options: DropdownRefOptions) {
     this.options = options;
@@ -92,6 +93,7 @@ export class DropdownRef {
 
     this.subscribeAfterClosed(ref);
 
+    this.markPopupOpen(anchor);
     this.options.onOpened?.();
     this.attachResizeObserver(anchor, ref);
 
@@ -141,6 +143,7 @@ export class DropdownRef {
 
   /** Disposes the overlay and clears state. Call on destroy. */
   destroy(): void {
+    this.releasePopupAnchor(this.options.getAnchor());
     this.overlayRef?.dispose();
     this.teardown();
     this.releaseClosingWaiters();
@@ -157,6 +160,7 @@ export class DropdownRef {
     }
     const shouldRestoreFocus = !this.skipFocusRestore;
     this.skipFocusRestore = false;
+    this.releasePopupAnchor(this.options.getAnchor());
     this.teardown();
     this.options.onClosed?.(reason);
     if (shouldRestoreFocus) {
@@ -217,6 +221,18 @@ export class DropdownRef {
     this.afterClosedSubscription?.unsubscribe();
     this.afterClosedSubscription = null;
     this.overlayRef = null;
+  }
+
+  private markPopupOpen(anchor: HTMLElement): void {
+    this.popupMarkedOpen = true;
+    this.options.anchorPopupRegistry?.markOpen(anchor);
+  }
+
+  private releasePopupAnchor(anchor: HTMLElement | null): void {
+    if (!this.popupMarkedOpen || anchor == null) return;
+
+    this.popupMarkedOpen = false;
+    this.options.anchorPopupRegistry?.markClosed(anchor);
   }
 
   private attachResizeObserver(anchor: HTMLElement, ref: OverlayRef): void {

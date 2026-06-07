@@ -24,6 +24,8 @@ export interface TooltipDefaultsConfig {
   readonly panelStyle?: Record<string, string> | undefined;
   readonly arrowSize?: { width: number; height: number } | undefined;
   readonly boundaries?: ViewportBoundaries | undefined;
+  /** When `true` (default), close and suppress the tooltip while a popup on the same anchor is open. */
+  readonly closeOnPopup?: boolean;
 }
 
 export const DEFAULT_TOOLTIP_DEFAULTS_CONFIG: TooltipDefaultsConfig = {
@@ -46,6 +48,7 @@ export const DEFAULT_TOOLTIP_DEFAULTS_CONFIG: TooltipDefaultsConfig = {
   panelStyle: undefined,
   arrowSize: undefined,
   boundaries: undefined,
+  closeOnPopup: true,
 };
 
 export const TOOLTIP_DEFAULTS_CONFIG = new InjectionToken<TooltipDefaultsConfig>(

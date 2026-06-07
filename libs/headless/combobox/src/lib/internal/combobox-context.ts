@@ -1,7 +1,10 @@
 import { InjectionToken } from '@angular/core';
 import type { Signal, TemplateRef } from '@angular/core';
-import type { ListboxAccessors, ListboxInitialHighlight } from '@nexora-ui/listbox';
-import type { ListboxDirective } from '@nexora-ui/listbox/internal';
+import type {
+  ListboxAccessors,
+  ListboxInitialHighlight,
+  ListboxScrollActiveCapable,
+} from '@nexora-ui/listbox';
 
 /**
  * Panel context passed to the combobox overlay listbox host.
@@ -20,7 +23,7 @@ export interface ComboboxContext<T = unknown> {
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
-  readonly onListboxReady: (listbox: ListboxDirective<T>) => void;
+  readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }
 
 /** Optional injection token for combobox panel context. */

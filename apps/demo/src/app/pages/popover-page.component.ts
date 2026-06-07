@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@
 import { ListboxDirective, ListboxOptionDirective } from '@nexora-ui/listbox';
 import { OverlayArrowDirective, type Placement } from '@nexora-ui/overlay';
 import { ClosePopoverDirective, PopoverTriggerDirective } from '@nexora-ui/popover';
+import { TooltipTriggerDirective } from '@nexora-ui/tooltip';
 
 import { IconComponent } from '../core/icons';
 
@@ -19,6 +20,7 @@ interface MenuAction {
   imports: [
     PopoverTriggerDirective,
     ClosePopoverDirective,
+    TooltipTriggerDirective,
     OverlayArrowDirective,
     ListboxDirective,
     ListboxOptionDirective,
@@ -90,6 +92,50 @@ interface MenuAction {
           Disabled
         </button>
       </div>
+    </section>
+
+    <!-- Tooltip + Popover on same trigger -->
+    <section class="page-section">
+      <h2 class="page-section-title">Tooltip + Popover</h2>
+      <p class="page-section-desc">
+        When a tooltip and popover share the same trigger, hover shows the tooltip and click opens
+        the popover. While the popover is open, the tooltip closes and stays suppressed (no hover or
+        focus reopen). Default: <code>nxrTooltipCloseOnPopup</code>.
+      </p>
+      <div class="btn-row">
+        <button
+          class="btn"
+          nxrTooltip="More options — hover for hint, click to open"
+          nxrTooltipPlacement="top"
+          nxrTooltipPanelClass="demo-tooltip-pane"
+          [nxrTooltipOpenDelay]="250"
+          [nxrPopover]="richTpl"
+          nxrPopoverPlacement="bottom-start"
+          nxrPopoverPanelClass="demo-popover-pane"
+          [nxrPopoverCloseAnimationDurationMs]="150"
+        >
+          <app-icon name="more-vertical" [size]="16" />
+          Options
+        </button>
+        <button
+          class="btn btn-ghost"
+          nxrTooltip="Tooltip can still reopen while popover is open"
+          nxrTooltipPlacement="top"
+          nxrTooltipPanelClass="demo-tooltip-pane"
+          [nxrTooltipOpenDelay]="0"
+          [nxrTooltipCloseOnPopup]="false"
+          [nxrPopover]="simpleTpl"
+          nxrPopoverPlacement="bottom"
+          nxrPopoverPanelClass="demo-popover-pane"
+          [nxrPopoverCloseAnimationDurationMs]="150"
+        >
+          Coordination off
+        </button>
+      </div>
+      <p class="popover-page-hint">
+        Try: hover the first button for the tooltip, click to open the popover, then move the
+        pointer slightly — the tooltip should not reappear until the popover closes.
+      </p>
     </section>
 
     <!-- Autocomplete Pattern -->
@@ -344,6 +390,12 @@ interface MenuAction {
         color: var(--nxr-text-muted);
         display: flex;
         align-items: center;
+      }
+      .popover-page-hint {
+        margin: 0.75rem 0 0;
+        font-size: 0.8125rem;
+        color: var(--nxr-text-muted);
+        max-width: 42rem;
       }
       .popover-page-action-menu {
         min-width: 180px;

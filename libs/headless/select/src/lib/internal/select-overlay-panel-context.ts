@@ -3,8 +3,11 @@
  */
 
 import type { Signal, TemplateRef } from '@angular/core';
-import type { ListboxAccessors, ListboxInitialHighlight } from '@nexora-ui/listbox';
-import type { ListboxDirective } from '@nexora-ui/listbox/internal';
+import type {
+  ListboxAccessors,
+  ListboxInitialHighlight,
+  ListboxScrollActiveCapable,
+} from '@nexora-ui/listbox';
 
 import type {
   SelectFooterDirective,
@@ -28,7 +31,7 @@ interface SelectOverlayPanelContext<T = unknown> {
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
-  readonly onListboxReady: (listbox: ListboxDirective<T>) => void;
+  readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }
 
 export function buildSelectOverlayPanelContext<T>(args: {
@@ -42,7 +45,7 @@ export function buildSelectOverlayPanelContext<T>(args: {
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
-  readonly onListboxReady: (listbox: ListboxDirective<T>) => void;
+  readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }): SelectOverlayPanelContext<T> {
   return {
     template: args.panel.templateRef,

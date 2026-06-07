@@ -43,22 +43,23 @@ Placement and positioning use the overlay’s RTL handling: **start**/ **end** a
 
 ## API (main inputs)
 
-| Input                                | Default              | Description                                                   |
-| ------------------------------------ | -------------------- | ------------------------------------------------------------- |
-| `nxrTooltip`                         | required             | Tooltip body: string or `TemplateRef` (`<ng-template #ref>`). |
-| `nxrTooltipPlacement`                | `'top'`              | Preferred placement (RTL-aware).                              |
-| `nxrTooltipTrigger`                  | `['hover', 'focus']` | When to open.                                                 |
-| `nxrTooltipDisplayArrow`             | `true`               | Show arrow.                                                   |
-| `nxrTooltipOpenDelay`                | `200`                | Ms before opening (skipped during warm-up).                   |
-| `nxrTooltipCloseDelay`               | `0`                  | Ms before closing.                                            |
-| `nxrTooltipHoverCloseDelay`          | `100`                | Used when close delay not set.                                |
-| `nxrTooltipFocusCloseDelay`          | `undefined`          | Focus-specific close delay fallback.                          |
-| `nxrTooltipInstantOnHandoff`         | `true`               | Instant open when moving directly between tooltips.           |
-| `nxrTooltipAllowContentHover`        | `false`              | Hovering tooltip content keeps it open.                       |
-| `nxrTooltipCloseAnimationDurationMs` | `150`                | Close animation duration in ms.                               |
-| `nxrTooltipClampToViewport`          | `false`              | Clamp to viewport vs follow anchor.                           |
-| `nxrTooltipScrollStrategy`           | `'noop'`             | `'noop'` or `'reposition'`.                                   |
-| `nxrTooltipMaintainInViewport`       | `true`               | Used with reposition strategy.                                |
+| Input                                | Default              | Description                                                                |
+| ------------------------------------ | -------------------- | -------------------------------------------------------------------------- |
+| `nxrTooltip`                         | required             | Tooltip body: string or `TemplateRef` (`<ng-template #ref>`).              |
+| `nxrTooltipPlacement`                | `'top'`              | Preferred placement (RTL-aware).                                           |
+| `nxrTooltipTrigger`                  | `['hover', 'focus']` | When to open.                                                              |
+| `nxrTooltipDisplayArrow`             | `true`               | Show arrow.                                                                |
+| `nxrTooltipOpenDelay`                | `200`                | Ms before opening (skipped during warm-up).                                |
+| `nxrTooltipCloseDelay`               | `0`                  | Ms before closing.                                                         |
+| `nxrTooltipHoverCloseDelay`          | `100`                | Used when close delay not set.                                             |
+| `nxrTooltipFocusCloseDelay`          | `undefined`          | Focus-specific close delay fallback.                                       |
+| `nxrTooltipInstantOnHandoff`         | `true`               | Instant open when moving directly between tooltips.                        |
+| `nxrTooltipCloseOnPopup`             | `true`               | Close and block hover/focus open while a popup on the same anchor is open. |
+| `nxrTooltipAllowContentHover`        | `false`              | Hovering tooltip content keeps it open.                                    |
+| `nxrTooltipCloseAnimationDurationMs` | `150`                | Close animation duration in ms.                                            |
+| `nxrTooltipClampToViewport`          | `false`              | Clamp to viewport vs follow anchor.                                        |
+| `nxrTooltipScrollStrategy`           | `'noop'`             | `'noop'` or `'reposition'`.                                                |
+| `nxrTooltipMaintainInViewport`       | `true`               | Used with reposition strategy.                                             |
 
 **State**: `isOpen`, `paneId` (for `aria-describedby`).
 
@@ -104,6 +105,7 @@ providers: [
       hoverCloseDelay: 120,
       closeAnimationDurationMs: 120,
       instantOnHandoff: true,
+      closeOnPopup: true,
       displayArrow: true,
       scrollStrategy: 'reposition',
       panelClass: 'my-tooltip-pane',

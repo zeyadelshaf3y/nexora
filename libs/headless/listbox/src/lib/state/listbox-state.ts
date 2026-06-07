@@ -10,6 +10,7 @@ import type {
   ListboxAccessors,
   ListboxBoundary,
   ListboxInitialHighlight,
+  ListboxOptionHighlightSource,
   ListboxOrientation,
 } from '../types';
 
@@ -32,6 +33,8 @@ export interface ListboxStateConfig<T> {
   getDir: () => 'ltr' | 'rtl';
   onValueChange: (value: T | null | readonly T[]) => void;
   onOptionActivated: (item: T) => void;
+  onOptionHighlighted: (item: T | null) => void;
+  shouldEmitOptionHighlighted: (source: ListboxOptionHighlightSource) => boolean;
   onBoundaryReached: (boundary: ListboxBoundary) => void;
   /** When true, do not reset active in reconcile when active is missing from registry (e.g. virtual scroll). */
   getKeepActiveWhenMissingFromRegistry?: () => boolean;
@@ -54,8 +57,15 @@ export class ListboxState<T> {
 
   constructor(private readonly config: ListboxStateConfig<T>) {}
 
-  setActive(item: T | null): void {
+  setActive(item: T | null, source: ListboxOptionHighlightSource): void {
+    const current = this.activeOption();
+    if (current === item) return;
+    if (current != null && item != null && this.itemsMatch(current, item)) return;
+
     this.activeOption.set(item);
+    if (this.config.shouldEmitOptionHighlighted(source)) {
+      this.config.onOptionHighlighted(item);
+    }
   }
 
   /**
@@ -166,12 +176,12 @@ export class ListboxState<T> {
     const entries = enabledHint ?? this.config.registry.getEnabledEntries();
 
     if (entries.length === 0) {
-      this.setActive(null);
+      this.setActive(null, 'initial');
 
       return;
     }
     const item = this.computeInitialActiveItem(strategy, entries);
-    this.setActive(item);
+    this.setActive(item, 'initial');
   }
 
   /**
@@ -211,7 +221,7 @@ export class ListboxState<T> {
     const enabled = registry.getEnabledEntries();
 
     if (enabled.length === 0) {
-      if (!keepWhenMissing) this.setActive(null);
+      if (!keepWhenMissing) this.setActive(null, 'initial');
 
       return;
     }

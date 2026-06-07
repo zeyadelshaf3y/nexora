@@ -23,6 +23,10 @@ export {
   type ListboxScrollAlignment,
   type ListboxAccessors,
   type ListboxOptionActivatedEvent,
+  type ListboxOptionHighlightedEvent,
+  type ListboxOptionHighlightSource,
+  type ListboxOptionHighlightedOn,
+  LISTBOX_OPTION_HIGHLIGHT_SOURCES,
 } from './lib/types';
 export {
   bindListboxReadyWithActiveScroll,

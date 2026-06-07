@@ -32,6 +32,8 @@ import {
   type ListboxAccessors,
   type ListboxBoundary,
   type ListboxInitialHighlight,
+  type ListboxOptionHighlightSource,
+  type ListboxOptionHighlightedOn,
   type ListboxOrientation,
   type ListboxPointerHighlight,
   type ListboxRole,
@@ -62,7 +64,7 @@ const ACTIVATION_KEYS: ReadonlySet<string> = new Set(['Enter', ' ']);
     '(keydown)': 'handleKeydown($event)',
     '(pointermove)': 'handlePointerMove($event)',
     '(pointerleave)': 'handlePointerLeave($event)',
-    '(pointerdown.capture)': 'handlePointerDownCapture($event)',
+    '(pointerdown)': 'handlePointerDown($event)',
   },
   providers: [{ provide: NXR_LISTBOX_CONTROLLER, useExisting: ListboxDirective }],
 })
@@ -85,11 +87,18 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
    * non-option areas clears it. Default `'off'` preserves mousedown-to-highlight behavior.
    */
   readonly nxrListboxPointerHighlight = input<ListboxPointerHighlight>('off');
+  /**
+   * Which highlight changes emit `nxrListboxOptionHighlighted`.
+   * Default `'all'`. Use `'keyboard'`, `'pointer'`, `'programmatic'`, `'initial'`, or an array.
+   */
+  readonly nxrListboxOptionHighlightedOn = input<ListboxOptionHighlightedOn>('all');
   /** When `'action'`, no value binding; only optionActivated is emitted. Default `'selection'`. */
   readonly nxrListboxMode = input<'selection' | 'action'>('selection');
 
   readonly nxrListboxValueChange = output<T | null | readonly T[]>();
   readonly nxrListboxOptionActivated = output<{ option: T }>();
+  /** Emits when the active (highlighted) option changes. */
+  readonly nxrListboxOptionHighlighted = output<{ option: T | null }>();
   /** Emits when keyboard navigation hits the edge of the list with wrap disabled. */
   readonly nxrListboxBoundaryReached = output<ListboxBoundary>();
 
@@ -171,6 +180,10 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
       onOptionActivated: (item) => {
         this.nxrListboxOptionActivated.emit({ option: item });
       },
+      onOptionHighlighted: (item) => {
+        this.nxrListboxOptionHighlighted.emit({ option: item });
+      },
+      shouldEmitOptionHighlighted: (source) => this.shouldEmitOptionHighlighted(source),
       onBoundaryReached: (boundary) => {
         this.nxrListboxBoundaryReached.emit(boundary);
       },
@@ -185,6 +198,14 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
         'nxrListboxMulti is true with nxrListboxRole="menu"; multi-select is not meaningful for menu role and is ignored.',
       );
     }
+  }
+
+  private shouldEmitOptionHighlighted(source: ListboxOptionHighlightSource): boolean {
+    const configured = this.nxrListboxOptionHighlightedOn();
+    if (configured === 'all') return true;
+    if (typeof configured === 'string') return configured === source;
+
+    return configured.includes(source);
   }
 
   private scheduleScrollActiveIntoView(): void {
@@ -276,7 +297,7 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
       }
       const nextItem = this.resolveNavigation(key, isVertical);
       if (nextItem !== undefined) {
-        if (nextItem != null) this.state.setActive(nextItem);
+        if (nextItem != null) this.state.setActive(nextItem, 'keyboard');
 
         return;
       }
@@ -311,7 +332,7 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
     );
     if (typeaheadMatch != null) {
       event.preventDefault();
-      this.state.setActive(typeaheadMatch);
+      this.state.setActive(typeaheadMatch, 'keyboard');
     }
   }
 
@@ -360,7 +381,7 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
     const nextItem = handler.getItemAtIndex(nextIndex);
     // Set active before scroll so option rows and `data-active` line up with CDK updates; scrolling
     // first can leave one frame (or more) where the viewport row still shows the previous item.
-    this.state.setActive(nextItem);
+    this.state.setActive(nextItem, 'keyboard');
     handler.scrollToIndex(nextIndex, alignment);
 
     return true;
@@ -434,12 +455,12 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
     this.registry.setDisabled(entry.item, disabled);
   }
 
-  setActiveOption(item: T): void {
-    this.state.setActive(item);
+  setActiveOption(item: T, source: ListboxOptionHighlightSource = 'programmatic'): void {
+    this.state.setActive(item, source);
   }
 
   clearActiveOption(): void {
-    this.state.setActive(null);
+    this.state.setActive(null, 'programmatic');
   }
 
   applyInitialHighlight(strategyOverride?: ListboxInitialHighlight): void {
@@ -460,13 +481,13 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
     const item = this.resolveItemFromEventTarget(event.target);
     if (item != null) {
       if (!this.state.isActive(item)) {
-        this.state.setActive(item);
+        this.state.setActive(item, 'pointer');
       }
       return;
     }
 
     if (this.state.activeOption() != null) {
-      this.state.setActive(null);
+      this.state.setActive(null, 'pointer');
     }
   }
 
@@ -476,15 +497,15 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
     const related = (event as PointerEvent).relatedTarget;
     if (related instanceof Node && this.hostRef.nativeElement.contains(related)) return;
 
-    this.state.setActive(null);
+    this.state.setActive(null, 'pointer');
   }
 
-  handlePointerDownCapture(event: Event): void {
+  handlePointerDown(event: Event): void {
     if (!this.usesHoverPointerHighlight()) return;
 
     if (this.resolveItemFromEventTarget(event.target) != null) return;
 
-    this.state.setActive(null);
+    this.state.setActive(null, 'pointer');
   }
 
   ngOnDestroy(): void {

@@ -21,6 +21,7 @@ interface Option {
       [nxrListboxValue]="value()"
       (nxrListboxValueChange)="onValueChange($event)"
       (nxrListboxOptionActivated)="onActivated($event)"
+      (nxrListboxOptionHighlighted)="onHighlighted($event)"
       [nxrListboxAccessors]="accessors"
       nxrListboxInitialHighlight="first"
     >
@@ -43,6 +44,7 @@ class SelectionModeHostComponent {
   };
   valueChangeEvents: (Option | null)[] = [];
   activatedEvents: Option[] = [];
+  highlightedEvents: (Option | null)[] = [];
 
   onValueChange(v: Option | null): void {
     this.valueChangeEvents.push(v);
@@ -51,6 +53,37 @@ class SelectionModeHostComponent {
 
   onActivated(e: { option: Option }): void {
     this.activatedEvents.push(e.option);
+  }
+
+  onHighlighted(e: { option: Option | null }): void {
+    this.highlightedEvents.push(e.option);
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [ListboxDirective, ListboxOptionDirective],
+  template: `
+    <div
+      nxrListbox
+      nxrListboxInitialHighlight="first"
+      nxrListboxPointerHighlight="hover"
+      nxrListboxOptionHighlightedOn="keyboard"
+      (nxrListboxOptionHighlighted)="onHighlighted($event)"
+      data-listbox
+    >
+      <div [nxrListboxOption]="item1" data-option>One</div>
+      <div [nxrListboxOption]="item2" data-option>Two</div>
+    </div>
+  `,
+})
+class KeyboardOnlyHighlightHost {
+  readonly item1 = { id: 1, name: 'One' };
+  readonly item2 = { id: 2, name: 'Two' };
+  highlightedEvents: (typeof this.item1 | null)[] = [];
+
+  onHighlighted(e: { option: typeof this.item1 | null }): void {
+    this.highlightedEvents.push(e.option);
   }
 }
 
@@ -268,6 +301,19 @@ describe('ListboxDirective', () => {
       expect(second.getAttribute('id')).toBe(listboxEl.getAttribute('aria-activedescendant'));
     });
 
+    it('emits optionHighlighted on initial highlight and keyboard navigation', () => {
+      expect(fixture.componentInstance.highlightedEvents).toEqual([{ id: 1, name: 'One' }]);
+
+      listboxEl.focus();
+      dispatchKey(listboxEl, 'ArrowDown');
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.highlightedEvents).toEqual([
+        { id: 1, name: 'One' },
+        { id: 2, name: 'Two' },
+      ]);
+    });
+
     it('Enter activates option and emits valueChange and optionActivated', () => {
       listboxEl.focus();
       dispatchKey(listboxEl, 'ArrowDown');
@@ -286,6 +332,40 @@ describe('ListboxDirective', () => {
       fixture.detectChanges();
       expect(fixture.componentInstance.valueChangeEvents.length).toBe(1);
       expect(fixture.componentInstance.valueChangeEvents[0]).toEqual({ id: 2, name: 'Two' });
+    });
+  });
+
+  describe('nxrListboxOptionHighlightedOn="keyboard"', () => {
+    let kbFixture: ComponentFixture<KeyboardOnlyHighlightHost>;
+
+    beforeEach(() => {
+      TestBed.configureTestingModule({ imports: [KeyboardOnlyHighlightHost] });
+      kbFixture = TestBed.createComponent(KeyboardOnlyHighlightHost);
+      kbFixture.detectChanges();
+    });
+
+    it('skips initial and pointer highlight', () => {
+      expect(kbFixture.componentInstance.highlightedEvents).toEqual([]);
+
+      const kbListboxEl = kbFixture.nativeElement.querySelector('[data-listbox]') as HTMLElement;
+      const first = kbFixture.nativeElement.querySelectorAll('[data-option]')[0] as HTMLElement;
+      const second = kbFixture.nativeElement.querySelectorAll('[data-option]')[1] as HTMLElement;
+
+      kbListboxEl.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      first.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      kbFixture.detectChanges();
+      expect(kbFixture.componentInstance.highlightedEvents).toEqual([]);
+      expect(first.hasAttribute('data-active')).toBe(true);
+      expect(second.hasAttribute('data-active')).toBe(false);
+
+      kbListboxEl.focus();
+      dispatchKey(kbListboxEl, 'ArrowDown');
+      kbFixture.detectChanges();
+      expect(kbFixture.componentInstance.highlightedEvents).toEqual([{ id: 2, name: 'Two' }]);
     });
   });
 

@@ -5,6 +5,11 @@
  * the close directives can walk the DOM to find the nearest pane and close it —
  * no injection tokens required, works with both component and template content.
  *
+ * The map is anchored on `globalThis` under a shared `Symbol.for` key because
+ * `@nexora-ui/overlay` and `@nexora-ui/overlay/internal` are emitted as separate
+ * bundles; a module-local WeakMap would be duplicated and writers (main entry) and
+ * readers (internal entry, e.g. `ClosePopoverDirective`) would see different maps.
+ *
  * @internal
  */
 
@@ -15,16 +20,26 @@ import type { OverlayRef } from '../ref/overlay-ref';
 /** A ref that can be closed. Used by close directives to walk the DOM and close the nearest overlay. */
 export type CloseableRef = { close(value?: unknown): unknown };
 
-const PANE_REF = new WeakMap<HTMLElement, CloseableRef>();
+const PANE_REF_KEY: unique symbol = Symbol.for('@nexora-ui/overlay#closeable-pane-ref');
+
+type GlobalWithPaneRef = typeof globalThis & {
+  [PANE_REF_KEY]?: WeakMap<HTMLElement, CloseableRef>;
+};
+
+function paneRefMap(): WeakMap<HTMLElement, CloseableRef> {
+  const g = globalThis as GlobalWithPaneRef;
+
+  return (g[PANE_REF_KEY] ??= new WeakMap<HTMLElement, CloseableRef>());
+}
 
 /** Associates a pane element with a closeable ref. Call again to override (e.g. snackbar). */
 export function registerCloseableRef(pane: HTMLElement, ref: CloseableRef): void {
-  PANE_REF.set(pane, ref);
+  paneRefMap().set(pane, ref);
 }
 
 /** Removes the association. Call when the pane is removed from the DOM. */
 export function unregisterCloseableRef(pane: HTMLElement): void {
-  PANE_REF.delete(pane);
+  paneRefMap().delete(pane);
 }
 
 /**
@@ -34,7 +49,7 @@ export function unregisterCloseableRef(pane: HTMLElement): void {
 export function closestCloseableRef(el: HTMLElement): CloseableRef | null {
   const pane = el.closest(OVERLAY_SELECTOR_PANE) as HTMLElement | null;
 
-  return pane ? (PANE_REF.get(pane) ?? null) : null;
+  return pane ? (paneRefMap().get(pane) ?? null) : null;
 }
 
 function isOverlayRef(r: CloseableRef): r is OverlayRef {

@@ -25,6 +25,7 @@ import {
   type HoverBridge,
   isInsideOverlayPaneOrBridge,
   NoopFocusStrategy,
+  OverlayAnchorPopupRegistry,
   OverlayService,
   OVERLAY_SELECTOR_PANE,
   PANE_ID_PREFIX_TOOLTIP,
@@ -102,6 +103,7 @@ export class TooltipTriggerDirective implements OnDestroy {
   private readonly vcr = inject(ViewContainerRef);
   private readonly injector = inject(Injector);
   private readonly warmup = inject(TooltipWarmupService);
+  private readonly anchorPopupRegistry = inject(OverlayAnchorPopupRegistry);
   private readonly destroyRef = inject(DestroyRef);
   private readonly defaults = {
     ...DEFAULT_TOOLTIP_DEFAULTS_CONFIG,
@@ -145,6 +147,12 @@ export class TooltipTriggerDirective implements OnDestroy {
 
   /** Prevents opening when `true`. Default: `false`. */
   readonly nxrTooltipDisabled = input<boolean>(this.defaults.disabled ?? false);
+
+  /**
+   * When `true` (default), closes the tooltip and blocks hover/focus open while an anchored
+   * popup (popover, menu, select, combobox) is open on the same trigger element.
+   */
+  readonly nxrTooltipCloseOnPopup = input<boolean>(this.defaults.closeOnPopup ?? true);
 
   /** CSS class(es) applied to the tooltip pane for styling. */
   readonly nxrTooltipPanelClass = input<string | string[] | undefined>(this.defaults.panelClass);
@@ -204,6 +212,13 @@ export class TooltipTriggerDirective implements OnDestroy {
   private isInstantOpenActive = false;
 
   constructor() {
+    const anchor = this.hostRef.nativeElement;
+    const unregister = this.anchorPopupRegistry.registerTooltip(anchor, () => {
+      if (!this.nxrTooltipCloseOnPopup()) return;
+      this.forceCloseForPopup();
+    });
+    this.destroyRef.onDestroy(unregister);
+
     effect(() => {
       const isOpen = this.isOpen();
       if (!isOpen) return;
@@ -221,6 +236,7 @@ export class TooltipTriggerDirective implements OnDestroy {
 
   onHostFocus(): void {
     if (!this.triggerIncludes('focus') || this.nxrTooltipDisabled()) return;
+    if (this.isHoverBlockedByPopup()) return;
 
     this.prepareOpenAttempt();
     this.scheduleOpen('focus', this.consumeInstantHandoff());
@@ -254,6 +270,7 @@ export class TooltipTriggerDirective implements OnDestroy {
 
   onHostMouseEnter(): void {
     if (!this.triggerIncludes('hover') || this.nxrTooltipDisabled()) return;
+    if (this.isHoverBlockedByPopup()) return;
 
     // Focus may have opened the tip (`openedBy === 'focus'`); hover-leave would no-op until promoted.
     if (this.overlayRef && this.openedBy === 'focus') {
@@ -351,6 +368,24 @@ export class TooltipTriggerDirective implements OnDestroy {
     return overlayTriggerIncludes(this.nxrTooltipTrigger(), t);
   }
 
+  private isHoverBlockedByPopup(): boolean {
+    return (
+      this.nxrTooltipCloseOnPopup() &&
+      this.anchorPopupRegistry.isPopupOpen(this.hostRef.nativeElement)
+    );
+  }
+
+  private forceCloseForPopup(): void {
+    this.cancelPendingOpen = true;
+    this.openDelay.cancel();
+    this.focusCloseDelay.cancel();
+    this.hoverBridge?.cancelClose();
+
+    if (!this.overlayRef) return;
+
+    this.close();
+  }
+
   // ---------------------------------------------------------------------------
   // Private: open flow — config
   // ---------------------------------------------------------------------------
@@ -437,6 +472,7 @@ export class TooltipTriggerDirective implements OnDestroy {
     runWithOpenDelay(
       this.nxrTooltipOpenDelay(),
       () => {
+        if (this.isHoverBlockedByPopup()) return;
         if (!this.overlayRef) this.open(trigger);
       },
       this.openDelay,

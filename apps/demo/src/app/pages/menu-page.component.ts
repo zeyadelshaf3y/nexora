@@ -14,6 +14,7 @@ import {
   type CloseReason,
 } from '@nexora-ui/menu';
 import type { ViewportBoundaries } from '@nexora-ui/overlay';
+import { TooltipTriggerDirective } from '@nexora-ui/tooltip';
 
 import { IconComponent } from '../core/icons';
 
@@ -96,6 +97,7 @@ const CHROME_ACTIONS: ActionItem[] = [
     MenuGroupLabelDirective,
     MenuSeparatorDirective,
     IconComponent,
+    TooltipTriggerDirective,
   ],
   template: `
     <div id="menu">
@@ -133,6 +135,53 @@ const CHROME_ACTIONS: ActionItem[] = [
           <span class="menu-meta">
             Last activated: {{ lastBasicActivated() ? (lastBasicActivated() | json) : '—' }}
           </span>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- 1b. Menu + tooltip (same trigger)                                   -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <section class="page-section sub-section">
+        <h2 class="page-section-title">Menu + Tooltip</h2>
+        <p class="page-section-desc">
+          Tooltip and menu on the same trigger: hover for a short hint, click to open the menu.
+          While the menu is open, the tooltip stays closed (default
+          <code>nxrTooltipCloseOnPopup</code>).
+        </p>
+        <div class="menu-demo-row">
+          <nxr-menu
+            (optionActivated)="onMoreButtonActivated($event)"
+            panelClass="demo-menu-pane"
+            placement="bottom-end"
+          >
+            <button
+              class="menu-trigger menu-trigger--icon-only"
+              nxrMenuTrigger
+              nxrTooltip="More row actions"
+              nxrTooltipPlacement="top"
+              nxrTooltipPanelClass="demo-tooltip-pane"
+              [nxrTooltipOpenDelay]="250"
+              aria-label="More actions"
+            >
+              <app-icon name="more-vertical" [size]="18" class="menu-trigger-icon" />
+            </button>
+            <ng-template nxrMenuPanel>
+              <button class="menu-option" [nxrMenuItem]="moreEdit">
+                <app-icon name="edit" [size]="14" class="menu-option-icon" />
+                Edit
+              </button>
+              <button class="menu-option" [nxrMenuItem]="moreCopy">
+                <app-icon name="copy" [size]="14" class="menu-option-icon" />
+                Copy
+              </button>
+              <div class="menu-separator" nxrMenuSeparator></div>
+              <button class="menu-option" [nxrMenuItem]="moreDelete">
+                <app-icon name="trash" [size]="14" class="menu-option-icon" />
+                Delete
+              </button>
+            </ng-template>
+          </nxr-menu>
+          <span class="menu-meta">Hover for tooltip, click for menu — tooltip won't overlap.</span>
         </div>
       </section>
 

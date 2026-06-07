@@ -20,7 +20,7 @@ Peers: `@nexora-ui/listbox`, `@angular/cdk`, `@nexora-ui/overlay` (portal).
 ## When you use this
 
 - **Default:** `virtualScroll` + `virtualItems` on `<nxr-combobox>` / `<nxr-select>` — they host `nxr-builtin-virtual-dropdown-panel` and wire overlay + listbox. Row/header/footer templates: `nxrComboboxVirtual*` / `nxrSelectVirtual*`.
-- **Custom panel:** embed `nxr-listbox-cdk-virtual-panel` only with `NxrListboxOverlayPanelHostComponent`’s injector (`NXR_LISTBOX_CONTROLLER`, `NxrListboxVirtualScrollRegistry`). Import the host/context symbols from `@nexora-ui/listbox/internal`, use **`childOwnsScroll: true`**, and:
+- **Custom panel:** embed `nxr-listbox-cdk-virtual-panel` only with `NxrListboxOverlayPanelHostComponent`’s injector (`NXR_LISTBOX_CONTROLLER`, `NxrListboxVirtualScrollRegistry` from `@nexora-ui/listbox`). Import the host/context symbols from `@nexora-ui/listbox/internal`, use **`childOwnsScroll: true`**, and:
   - **`viewportMaxHeight`** aligned with overlay `maxHeight`
   - **`fillAvailableHeight`** when the parent is a flex column under a capped pane
   - **`mergeVirtualDropdownPaneStyle`** + **`createListboxVirtualDropdownPanelStyle`** (from `@nexora-ui/dropdown`) on the pane so `max-height` alone does not collapse flex children to 0

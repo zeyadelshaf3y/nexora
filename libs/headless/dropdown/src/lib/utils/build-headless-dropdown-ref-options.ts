@@ -10,6 +10,7 @@ import type {
   BeforeCloseCallback,
   BeforeOpenCallback,
   CloseReason,
+  OverlayAnchorPopupRegistry,
   OverlayService,
   Placement,
   ViewportBoundaries,
@@ -61,6 +62,7 @@ export interface HeadlessDropdownRefOptionsInput {
   readonly arrowSize?: DropdownOption<ArrowSize | undefined>;
   readonly onOpened: () => void;
   readonly onClosed: (reason: CloseReason | undefined) => void;
+  readonly anchorPopupRegistry?: OverlayAnchorPopupRegistry;
 }
 
 export function buildHeadlessDropdownRefOptions(
@@ -91,6 +93,9 @@ export function buildHeadlessDropdownRefOptions(
     beforeClose: input.beforeClose,
     onOpened: input.onOpened,
     onClosed: input.onClosed,
+    ...(input.anchorPopupRegistry != null
+      ? { anchorPopupRegistry: input.anchorPopupRegistry }
+      : {}),
     ...(input.boundaries !== undefined ? { boundaries: input.boundaries } : {}),
     ...(input.getFocusRestoreTarget != null
       ? { getFocusRestoreTarget: input.getFocusRestoreTarget }

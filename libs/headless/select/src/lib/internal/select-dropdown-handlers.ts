@@ -4,7 +4,7 @@
 
 import type { WritableSignal } from '@angular/core';
 import { applyClosedTransition, applyOpenedTransition } from '@nexora-ui/dropdown';
-import type { ListboxDirective } from '@nexora-ui/listbox/internal';
+import type { ListboxDirective } from '@nexora-ui/listbox';
 import type { CloseReason } from '@nexora-ui/overlay';
 
 export function handleSelectDropdownOpened(args: {

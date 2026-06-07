@@ -48,6 +48,7 @@ import {
   resolveOverlayBackdropClassValue,
   resolveOverlayBackdropStyleValue,
   mergeOverlayStyleValue,
+  OverlayAnchorPopupRegistry,
   OverlayService,
   OVERLAY_DEFAULTS_CONFIG,
   type CloseReason,
@@ -85,6 +86,7 @@ import { DEFAULT_MENU_DEFAULTS_CONFIG, MENU_DEFAULTS_CONFIG } from './menu-defau
 })
 export class MenuComponent<T = unknown> implements MenuController {
   private readonly overlay = inject(OverlayService);
+  private readonly anchorPopupRegistry = inject(OverlayAnchorPopupRegistry);
   private readonly vcr = inject(ViewContainerRef);
   private readonly injector = inject(Injector);
   private readonly overlayDefaults = {
@@ -206,6 +208,7 @@ export class MenuComponent<T = unknown> implements MenuController {
       useVirtualPanel: () => false,
       onOpened: () => this.onMenuDropdownOpened(),
       onClosed: (reason) => this.onMenuDropdownClosed(reason),
+      anchorPopupRegistry: this.anchorPopupRegistry,
     });
   }
 

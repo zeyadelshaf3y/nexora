@@ -18,9 +18,9 @@ export function scheduleListboxScrollActiveOnNextMicrotask(
  * Builds `onListboxReady` for portaled listbox hosts (select/combobox): stores the listbox ref
  * and scrolls the active option on the next microtask after layout settles.
  */
-export function bindListboxReadyWithActiveScroll<T extends ListboxScrollActiveCapable>(
-  setListboxRef: (listbox: T) => void,
-): (listbox: T) => void {
+export function bindListboxReadyWithActiveScroll(
+  setListboxRef: (listbox: ListboxScrollActiveCapable) => void,
+): (listbox: ListboxScrollActiveCapable) => void {
   return (listbox) => {
     setListboxRef(listbox);
     scheduleListboxScrollActiveOnNextMicrotask(listbox);

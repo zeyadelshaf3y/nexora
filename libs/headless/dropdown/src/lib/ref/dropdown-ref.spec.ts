@@ -1,4 +1,10 @@
-import type { CloseReason, OverlayRef, OverlayService, Portal } from '@nexora-ui/overlay';
+import type {
+  CloseReason,
+  OverlayAnchorPopupRegistry,
+  OverlayRef,
+  OverlayService,
+  Portal,
+} from '@nexora-ui/overlay';
 import { Subject, type Observable } from 'rxjs';
 import { vi } from 'vitest';
 
@@ -105,5 +111,50 @@ describe('DropdownRef', () => {
     emitClosed(undefined);
     expect(await openPromise).toBe(true);
     expect(overlayRef.attach).toHaveBeenCalledTimes(2);
+  });
+
+  it('notifies anchor popup registry on open and close', async () => {
+    const { ref: overlayRef, emitClosed } = createOverlayRef();
+    const overlay = { create: () => overlayRef } as OverlayService;
+    const anchor = document.createElement('button');
+    const registry = {
+      markOpen: vi.fn(),
+      markClosed: vi.fn(),
+    } as unknown as OverlayAnchorPopupRegistry;
+
+    const dropdown = DropdownRef.create({
+      getAnchor: () => anchor,
+      overlay,
+      anchorPopupRegistry: registry,
+    });
+
+    expect(await dropdown.open({} as Portal)).toBe(true);
+    expect(registry.markOpen).toHaveBeenCalledWith(anchor);
+
+    dropdown.close();
+    emitClosed('programmatic');
+    expect(registry.markClosed).toHaveBeenCalledWith(anchor);
+  });
+
+  it('releases registry once when destroyed while open', async () => {
+    const { ref: overlayRef } = createOverlayRef();
+    const overlay = { create: () => overlayRef } as OverlayService;
+    const anchor = document.createElement('button');
+    const registry = {
+      markOpen: vi.fn(),
+      markClosed: vi.fn(),
+    } as unknown as OverlayAnchorPopupRegistry;
+
+    const dropdown = DropdownRef.create({
+      getAnchor: () => anchor,
+      overlay,
+      anchorPopupRegistry: registry,
+    });
+
+    expect(await dropdown.open({} as Portal)).toBe(true);
+    dropdown.destroy();
+
+    expect(registry.markClosed).toHaveBeenCalledTimes(1);
+    expect(registry.markClosed).toHaveBeenCalledWith(anchor);
   });
 });

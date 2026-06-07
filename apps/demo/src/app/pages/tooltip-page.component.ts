@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import type { Placement } from '@nexora-ui/overlay';
+import { OverlayArrowDirective } from '@nexora-ui/overlay';
+import { ClosePopoverDirective, PopoverTriggerDirective } from '@nexora-ui/popover';
 import {
   TOOLTIP_DEFAULTS_CONFIG,
   TOOLTIP_WARMUP_CONFIG,
@@ -68,6 +70,9 @@ export class TooltipProviderWarmupDemoComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     TooltipTriggerDirective,
+    PopoverTriggerDirective,
+    ClosePopoverDirective,
+    OverlayArrowDirective,
     TooltipProviderDefaultsDemoComponent,
     TooltipProviderWarmupDemoComponent,
   ],
@@ -114,6 +119,14 @@ export class TooltipProviderWarmupDemoComponent {}
           <span>Global: matching fields in <code>TOOLTIP_DEFAULTS_CONFIG</code></span>
         </div>
         <div class="tooltip-cheat-sheet-item">
+          <strong>Popup coordination</strong>
+          <code>nxrTooltipCloseOnPopup</code>
+          <span
+            >Default <code>true</code>: close and block reopen while popover/menu/select is open on
+            the same trigger. Global: <code>TOOLTIP_DEFAULTS_CONFIG.closeOnPopup</code></span
+          >
+        </div>
+        <div class="tooltip-cheat-sheet-item">
           <strong>Rich content</strong>
           <code>[nxrTooltip]="templateRef"</code>
           <span
@@ -121,6 +134,46 @@ export class TooltipProviderWarmupDemoComponent {}
             <code>nxrTooltip="…"</code></span
           >
         </div>
+      </div>
+    </section>
+
+    <!-- Tooltip + anchored popup -->
+    <section class="page-section">
+      <h2 class="page-section-title">Tooltip + Popover / Menu</h2>
+      <p class="page-section-desc">
+        Icon or overflow buttons often need a hover hint and a click panel on the same element. With
+        <code>nxrTooltipCloseOnPopup</code> (default), opening the panel closes the tooltip and
+        prevents it from reopening until the panel closes. Works the same for <code>nxr-menu</code>,
+        <code>nxr-select</code>, and <code>nxr-combobox</code> triggers — see the Menu demo page.
+      </p>
+      <div class="btn-row">
+        <button
+          class="btn"
+          nxrTooltip="Account settings and preferences"
+          nxrTooltipPlacement="top"
+          nxrTooltipPanelClass="demo-tooltip-pane"
+          [nxrTooltipOpenDelay]="200"
+          [nxrPopover]="popupCoordTpl"
+          nxrPopoverPlacement="bottom-start"
+          nxrPopoverPanelClass="demo-popover-pane"
+          [nxrPopoverCloseAnimationDurationMs]="120"
+        >
+          Settings
+        </button>
+        <button
+          class="btn btn-ghost"
+          nxrTooltip="Compare: tooltip is not coordinated"
+          nxrTooltipPlacement="top"
+          nxrTooltipPanelClass="demo-tooltip-pane"
+          [nxrTooltipOpenDelay]="0"
+          [nxrTooltipCloseOnPopup]="false"
+          [nxrPopover]="popupCoordTpl"
+          nxrPopoverPlacement="bottom"
+          nxrPopoverPanelClass="demo-popover-pane"
+          [nxrPopoverCloseAnimationDurationMs]="120"
+        >
+          <code>closeOnPopup: false</code>
+        </button>
       </div>
     </section>
 
@@ -453,6 +506,14 @@ export class TooltipProviderWarmupDemoComponent {}
         </button>
       </div>
     </section>
+
+    <ng-template #popupCoordTpl>
+      <div nxrOverlayArrow class="demo-arrow"></div>
+      <div class="tpl-popover tpl-popover--compact">
+        <p>Panel open — tooltip on this trigger stays suppressed until this closes.</p>
+        <button class="btn btn-sm btn-ghost" nxrPopoverClose>Close</button>
+      </div>
+    </ng-template>
   `,
   styles: [
     `
