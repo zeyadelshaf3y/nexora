@@ -1,3 +1,10 @@
+## 0.2.5 (2026-06-09)
+
+### 🧱 Updated Dependencies
+
+- Updated listbox-cdk to 0.1.7
+- Updated listbox to 0.3.2
+
 ## 0.2.4 (2026-06-09)
 
 ### 🧱 Updated Dependencies

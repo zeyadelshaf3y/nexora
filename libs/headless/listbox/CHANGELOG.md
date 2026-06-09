@@ -1,3 +1,17 @@
+## 0.3.2 (2026-06-09)
+
+### 🩹 Fixes
+
+- fix(listbox): publish deduplicated NXR_LISTBOX_CONTROLLER in internal bundle ([351ecc3](https://github.com/zeyadelshaf3y/nexora/commit/351ecc3))
+
+  Republish after the internal entry import fix so select/combobox options receive
+  NXR_LISTBOX_CONTROLLER and render with role="option".
+
+### ❤️ Thank You
+
+- Cursor @cursoragent
+- Zeyad Alshafey
+
 ## 0.3.1 (2026-06-09)
 
 ### 🩹 Fixes
