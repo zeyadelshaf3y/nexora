@@ -11,7 +11,7 @@ import type { MentionTriggerConfig } from '../types/mention-types';
 
 import { MentionControllerImpl, type MentionControllerCallbacks } from './mention-controller';
 import { normalizePanelClasses, type MentionControllerWire } from './mention-controller-wire';
-import type { MentionPanelContext } from './mention-panel-host.component';
+import type { MentionPanelContext } from './mention-panel-tokens';
 
 export interface MentionControllerRuntime<T = unknown> {
   readonly controller: MentionControllerImpl<T>;
@@ -91,6 +91,7 @@ export function createMentionControllerRuntime<T = unknown>(
     overlayPanelExtraStyle: wire.panelStyle,
     maxHeight: wire.maxHeight,
     closeAnimationDurationMs: wire.closeMs,
+    pointerHighlight: wire.pointerHighlight,
     beforeOpen: wire.beforeOpen,
     beforeClose: wire.beforeClose,
     callbacks,

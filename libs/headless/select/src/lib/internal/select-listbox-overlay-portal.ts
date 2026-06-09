@@ -6,6 +6,7 @@ import type { Injector, InputSignal, ModelSignal, ViewContainerRef } from '@angu
 import {
   bindListboxReadyWithActiveScroll,
   type ListboxInitialHighlight,
+  type ListboxPointerHighlight,
   type ListboxScrollActiveCapable,
 } from '@nexora-ui/listbox';
 import type { NxrListboxOverlayPanelHostComponent } from '@nexora-ui/listbox/internal';
@@ -33,6 +34,7 @@ export function createSelectListboxOverlayPortal<T>(args: {
   readonly accessors: InputSignal<SelectAccessors<T> | undefined>;
   readonly compareWith: InputSignal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: InputSignal<ListboxInitialHighlight>;
+  readonly pointerHighlight: InputSignal<ListboxPointerHighlight>;
   readonly onValueChange: (value: T | null | readonly T[]) => void;
   readonly setListboxRef: (listbox: ListboxScrollActiveCapable) => void;
 }): ComponentPortal<NxrListboxOverlayPanelHostComponent> {
@@ -49,6 +51,7 @@ export function createSelectListboxOverlayPortal<T>(args: {
       accessors: args.accessors,
       compareWith: args.compareWith,
       initialHighlight: args.initialHighlight,
+      pointerHighlight: args.pointerHighlight,
       onValueChange: args.onValueChange,
       onListboxReady: bindListboxReadyWithActiveScroll(args.setListboxRef),
     }),

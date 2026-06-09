@@ -13,17 +13,19 @@
 
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  type AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   DestroyRef,
   effect,
   ElementRef,
   inject,
-  InjectionToken,
+  Injector,
   signal,
+  type TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
-import type { TemplateRef } from '@angular/core';
 
 import type { MentionPanelState } from '../types/mention-types';
 import {
@@ -32,25 +34,22 @@ import {
 } from '../utils/mention-panel-dom';
 
 import type { MentionController } from './mention-controller.types';
+import { createMentionPanelOutletInjector } from './mention-panel-outlet-injector';
+import {
+  NXR_MENTION_CONTROLLER,
+  NXR_MENTION_PANEL_FOOTER_TEMPLATE,
+  NXR_MENTION_PANEL_HEADER_TEMPLATE,
+  NXR_MENTION_PANEL_TEMPLATE,
+  type MentionPanelContext,
+} from './mention-panel-tokens';
 
-export const NXR_MENTION_CONTROLLER = new InjectionToken<MentionController<unknown>>(
-  'NXR_MENTION_CONTROLLER',
-);
-export const NXR_MENTION_PANEL_TEMPLATE = new InjectionToken<
-  TemplateRef<MentionPanelContext<unknown>>
->('NXR_MENTION_PANEL_TEMPLATE');
-export const NXR_MENTION_PANEL_HEADER_TEMPLATE = new InjectionToken<TemplateRef<unknown> | null>(
-  'NXR_MENTION_PANEL_HEADER_TEMPLATE',
-);
-export const NXR_MENTION_PANEL_FOOTER_TEMPLATE = new InjectionToken<TemplateRef<unknown> | null>(
-  'NXR_MENTION_PANEL_FOOTER_TEMPLATE',
-);
-
-export interface MentionPanelContext<T = unknown> {
-  readonly state: MentionPanelState<T>;
-  readonly select: (item: T) => void;
-  readonly close: () => void;
-}
+export type { MentionPanelContext };
+export {
+  NXR_MENTION_CONTROLLER,
+  NXR_MENTION_PANEL_FOOTER_TEMPLATE,
+  NXR_MENTION_PANEL_HEADER_TEMPLATE,
+  NXR_MENTION_PANEL_TEMPLATE,
+} from './mention-panel-tokens';
 
 const TOUCH_OPTIONS: AddEventListenerOptions = { capture: true, passive: false };
 
@@ -74,10 +73,22 @@ const TOUCH_OPTIONS: AddEventListenerOptions = { capture: true, passive: false }
     @if (panelTemplate && controller) {
       @if (hasChromeLayout) {
         <div class="nxr-mention-panel-host__panel">
-          <ng-container *ngTemplateOutlet="panelTemplate; context: context()" />
+          @if (panelOutletInjector(); as inj) {
+            <ng-container
+              [ngTemplateOutlet]="panelTemplate"
+              [ngTemplateOutletContext]="context()"
+              [ngTemplateOutletInjector]="inj"
+            />
+          }
         </div>
       } @else {
-        <ng-container *ngTemplateOutlet="panelTemplate; context: context()" />
+        @if (panelOutletInjector(); as inj) {
+          <ng-container
+            [ngTemplateOutlet]="panelTemplate"
+            [ngTemplateOutletContext]="context()"
+            [ngTemplateOutletInjector]="inj"
+          />
+        }
       }
     }
     @if (footerTemplate) {
@@ -117,9 +128,11 @@ const TOUCH_OPTIONS: AddEventListenerOptions = { capture: true, passive: false }
     `,
   ],
 })
-export class MentionPanelHostComponent<T = unknown> {
+export class MentionPanelHostComponent<T = unknown> implements AfterViewInit {
   readonly destroyRef = inject(DestroyRef);
   readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly hostInjector = inject(Injector);
 
   protected readonly controller = inject(NXR_MENTION_CONTROLLER) as MentionController<T>;
   protected readonly panelTemplate = inject(NXR_MENTION_PANEL_TEMPLATE) as TemplateRef<
@@ -139,6 +152,8 @@ export class MentionPanelHostComponent<T = unknown> {
     select: () => {},
     close: () => {},
   });
+
+  readonly panelOutletInjector = signal<Injector | undefined>(undefined);
 
   private buildContext(state: MentionPanelState<T>): MentionPanelContext<T> {
     return {
@@ -166,6 +181,16 @@ export class MentionPanelHostComponent<T = unknown> {
       const state = this.controller.panelState();
       this.context.set(this.buildContext(state));
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.panelOutletInjector.set(
+      createMentionPanelOutletInjector(
+        this.hostInjector,
+        this.controller as MentionController<unknown>,
+      ),
+    );
+    this.cdr.detectChanges();
   }
 
   onPanelMouseDownCapture(event: Event): void {

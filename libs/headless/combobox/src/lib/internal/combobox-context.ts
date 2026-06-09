@@ -3,6 +3,7 @@ import type { Signal, TemplateRef } from '@angular/core';
 import type {
   ListboxAccessors,
   ListboxInitialHighlight,
+  ListboxPointerHighlight,
   ListboxScrollActiveCapable,
 } from '@nexora-ui/listbox';
 
@@ -22,6 +23,7 @@ export interface ComboboxContext<T = unknown> {
   readonly accessors: Signal<ListboxAccessors<T> | undefined>;
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
+  readonly pointerHighlight: Signal<ListboxPointerHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
   readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }

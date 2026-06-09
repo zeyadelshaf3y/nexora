@@ -6,7 +6,11 @@
  * to know about the listbox layer.
  */
 
-import type { ListboxAccessors, ListboxInitialHighlight } from '@nexora-ui/listbox';
+import type {
+  ListboxAccessors,
+  ListboxInitialHighlight,
+  ListboxPointerHighlight,
+} from '@nexora-ui/listbox';
 
 /**
  * Accessor functions for mapping option items to value, label, and disabled state.
@@ -41,3 +45,6 @@ export type SelectScrollStrategy = 'noop' | 'reposition' | 'block' | 'close';
 
 /** Re-export so consumers can type the `[initialHighlight]` input without importing from listbox. */
 export type SelectInitialHighlight = ListboxInitialHighlight;
+
+/** Re-export so consumers can type the `[pointerHighlight]` input without importing from listbox. */
+export type SelectPointerHighlight = ListboxPointerHighlight;

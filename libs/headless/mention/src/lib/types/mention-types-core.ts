@@ -215,6 +215,9 @@ export interface MentionTriggerConfig<T = unknown> {
   readonly panel?: MentionTriggerPanelOptions;
 }
 
+/** Pointer-driven active highlight for suggestion rows (see `nxrMentionPointerHighlight`). */
+export type MentionPointerHighlight = 'off' | 'hover';
+
 /** Read-only state exposed to panel template. */
 export interface MentionPanelState<T = unknown> {
   readonly session: MentionSession<T> | null;

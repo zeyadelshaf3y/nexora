@@ -13,6 +13,7 @@ export { MentionPanelDirective } from './lib/directives/mention-panel.directive'
 export { MentionHeaderDirective } from './lib/directives/mention-header.directive';
 export { MentionFooterDirective } from './lib/directives/mention-footer.directive';
 export { MentionScrollIntoViewDirective } from './lib/directives/mention-scroll-into-view.directive';
+export { MentionOptionDirective } from './lib/directives/mention-option.directive';
 export type { ArrowSize } from '@nexora-ui/overlay';
 export type {
   MentionMatch,
@@ -22,6 +23,7 @@ export type {
   MentionTriggerConfig,
   MentionTriggerPanelOptions,
   MentionPanelState,
+  MentionPointerHighlight,
   MentionEntity,
   MentionDocument,
   MentionChipInteractionEvent,

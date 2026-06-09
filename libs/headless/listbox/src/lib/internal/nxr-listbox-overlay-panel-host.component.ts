@@ -64,6 +64,7 @@ export const NXR_LISTBOX_OVERLAY_PANEL_HOST_CLASS = 'nxr-listbox-overlay-panel-h
       [nxrListboxAccessors]="panelContext.accessors()"
       [nxrListboxCompareWith]="panelContext.compareWith()"
       [nxrListboxInitialHighlight]="panelContext.initialHighlight()"
+      [nxrListboxPointerHighlight]="panelContext.pointerHighlight()"
       #listbox="nxrListbox"
       #listboxEl
     >

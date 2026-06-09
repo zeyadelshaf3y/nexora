@@ -56,7 +56,7 @@ import {
 } from '../internal/mention-controller-wire';
 import { MentionDocumentState } from '../internal/mention-document-state';
 import { MentionEditorHostLifecycle } from '../internal/mention-editor-host-lifecycle';
-import type { MentionPanelContext } from '../internal/mention-panel-host.component';
+import type { MentionPanelContext } from '../internal/mention-panel-tokens';
 import {
   normalizeInsertMentionOptions,
   resolveProgrammaticRange,
@@ -68,6 +68,7 @@ import type {
   MentionDocument,
   MentionEntity,
   MentionInsertOptions,
+  MentionPointerHighlight,
   MentionSelectEvent,
   MentionSession,
   MentionTriggerConfig,
@@ -150,6 +151,8 @@ export class MentionDirective<T = unknown> implements OnDestroy {
    */
   readonly nxrMentionMaxHeight = input<string | undefined>(undefined);
   readonly nxrMentionCloseAnimationDurationMs = input<number>(150);
+  /** When `'hover'`, pointer position drives active highlight on options marked with `[nxrMentionOption]`. */
+  readonly nxrMentionPointerHighlight = input<MentionPointerHighlight>('hover');
   readonly nxrMentionAriaLabel = input<string>(NXR_MENTION_DEFAULT_ARIA_LABEL);
   /** Optional id of your list panel for `aria-controls` on the editor (accessibility). */
   readonly nxrMentionAriaControlsPanelId = input<string | undefined>(undefined);
@@ -429,6 +432,7 @@ export class MentionDirective<T = unknown> implements OnDestroy {
       panelStyle: this.nxrMentionPanelStyle,
       maxHeight: this.nxrMentionMaxHeight,
       closeAnimationDurationMs: this.nxrMentionCloseAnimationDurationMs,
+      pointerHighlight: this.nxrMentionPointerHighlight,
       beforeOpen: this.nxrMentionBeforeOpen,
       beforeClose: this.nxrMentionBeforeClose,
       chipClass: this.nxrMentionChipClass,

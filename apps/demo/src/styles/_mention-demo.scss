@@ -247,7 +247,8 @@ app-mention-page .demo-placeholder,
 .mention-option[data-active] {
   background: var(--nxr-primary-subtle, rgb(99 102 241 / 8%));
   color: var(--nxr-primary, #6366f1);
-  font-weight: 500;
+
+  // font-weight: 500;
 }
 
 app-mention-page .mention-meta {

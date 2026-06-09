@@ -18,6 +18,7 @@ function baseWire(): MentionControllerWire {
     panelStyle: undefined,
     maxHeight: undefined,
     closeMs: 150,
+    pointerHighlight: 'hover',
     beforeOpen: undefined,
     beforeClose: undefined,
     chipClass: undefined,
@@ -100,6 +101,13 @@ describe('isSameMentionControllerWire', () => {
       ...prev,
       panelStyle: { maxWidth: '24rem', borderRadius: '4px' },
     };
+
+    expect(isSameMentionControllerWire(prev, next, true, true)).toBe(false);
+  });
+
+  it('detects pointerHighlight changes', () => {
+    const prev: MentionControllerWire = { ...baseWire(), pointerHighlight: 'off' };
+    const next: MentionControllerWire = { ...prev, pointerHighlight: 'hover' };
 
     expect(isSameMentionControllerWire(prev, next, true, true)).toBe(false);
   });

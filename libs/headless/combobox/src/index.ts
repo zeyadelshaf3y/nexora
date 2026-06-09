@@ -35,5 +35,6 @@ export { NXR_COMBOBOX, type ComboboxController } from './lib/tokens/combobox-tok
 export type {
   ComboboxAccessors,
   ComboboxInitialHighlight,
+  ComboboxPointerHighlight,
   ComboboxScrollStrategy,
 } from './lib/types/combobox-types';

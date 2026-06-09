@@ -3,8 +3,12 @@ import type { BeforeCloseCallback, BeforeOpenCallback, Placement } from '@nexora
 
 import type { MentionControllerCallbacks } from '../internal/mention-controller';
 import type { MentionControllerWire } from '../internal/mention-controller-wire';
-import type { MentionPanelContext } from '../internal/mention-panel-host.component';
-import type { MentionSelectEvent, MentionTriggerConfig } from '../types/mention-types';
+import type { MentionPanelContext } from '../internal/mention-panel-tokens';
+import type {
+  MentionSelectEvent,
+  MentionTriggerConfig,
+  MentionPointerHighlight,
+} from '../types/mention-types';
 
 export function createDirectiveControllerCallbacks<T>(params: {
   mentionSelectEmit: (payload: MentionSelectEvent<T>) => void;
@@ -48,6 +52,7 @@ export function buildMentionControllerWire<T>(params: {
   panelStyle: Signal<Record<string, string> | undefined>;
   maxHeight: Signal<string | undefined>;
   closeAnimationDurationMs: Signal<number>;
+  pointerHighlight: Signal<MentionPointerHighlight>;
   beforeOpen: Signal<BeforeOpenCallback | undefined>;
   beforeClose: Signal<BeforeCloseCallback | undefined>;
   chipClass: Signal<string | undefined>;
@@ -67,6 +72,7 @@ export function buildMentionControllerWire<T>(params: {
     panelStyle: params.panelStyle(),
     maxHeight: params.maxHeight(),
     closeMs: params.closeAnimationDurationMs(),
+    pointerHighlight: params.pointerHighlight(),
     beforeOpen: params.beforeOpen(),
     beforeClose: params.beforeClose(),
     chipClass: params.chipClass(),

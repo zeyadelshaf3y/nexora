@@ -13,6 +13,7 @@ export type {
   MentionLinearRange,
   MentionMatch,
   MentionPanelState,
+  MentionPointerHighlight,
   MentionSession,
   MentionTriggerConfig,
   MentionTriggerPanelOptions,

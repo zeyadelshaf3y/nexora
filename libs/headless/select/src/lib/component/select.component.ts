@@ -65,7 +65,11 @@ import {
   toSelectedValuesArray,
   type DropdownRefOptions,
 } from '@nexora-ui/dropdown';
-import { type ListboxDirective, type ListboxInitialHighlight } from '@nexora-ui/listbox';
+import {
+  type ListboxDirective,
+  type ListboxInitialHighlight,
+  type ListboxPointerHighlight,
+} from '@nexora-ui/listbox';
 import { BuiltinVirtualDropdownPanelComponent } from '@nexora-ui/listbox-cdk';
 import { createBuiltinVirtualPanelSignals } from '@nexora-ui/listbox-cdk/internal';
 import {
@@ -197,6 +201,9 @@ export class SelectComponent<T = unknown> implements SelectController, ControlVa
 
   /** Which option to highlight when the panel opens. */
   readonly initialHighlight = input<ListboxInitialHighlight>('selected');
+
+  /** When `'hover'`, pointer position drives active highlight (like menu). Default `'off'`. */
+  readonly pointerHighlight = input<ListboxPointerHighlight>('off');
 
   /** Prevents the select from opening. */
   readonly disabled = input(false);
@@ -607,6 +614,7 @@ export class SelectComponent<T = unknown> implements SelectController, ControlVa
       accessors: this.accessors,
       compareWith: this.compareWith,
       initialHighlight: this.initialHighlight,
+      pointerHighlight: this.pointerHighlight,
       onValueChange: (value) => this.handleValueChange(value),
       setListboxRef: (listbox) => this.listboxRef.set(listbox as ListboxDirective<T>),
     });

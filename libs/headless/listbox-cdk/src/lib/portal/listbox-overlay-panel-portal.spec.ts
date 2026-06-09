@@ -13,6 +13,7 @@ describe('createListboxOverlayPanelPortal', () => {
       accessors: () => undefined,
       compareWith: () => undefined,
       initialHighlight: () => 'selected',
+      pointerHighlight: () => 'off',
       onValueChange: () => undefined,
       onListboxReady: () => undefined,
     });

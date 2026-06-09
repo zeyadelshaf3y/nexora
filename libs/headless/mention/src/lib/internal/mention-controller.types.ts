@@ -10,18 +10,21 @@ import type { MentionTextSurfaceAdapter } from '../adapters/mention-surface';
 import type {
   MentionOpenChangeHandler,
   MentionPanelState,
+  MentionPointerHighlight,
   MentionQueryChangeHandler,
   MentionSelectHandler,
   MentionTriggerConfig,
 } from '../types/mention-types';
 
-import type { MentionPanelContext } from './mention-panel-host.component';
+import type { MentionPanelContext } from './mention-panel-tokens';
 
 export interface MentionController<T = unknown> {
   readonly panelState: Signal<MentionPanelState<T>>;
   select(item: T): void;
   close(): void;
   handleKeydown(event: KeyboardEvent): void;
+  usesHoverPointerHighlight(): boolean;
+  setActiveIndex(index: number): void;
   /** Idempotent. Call after {@link close} when the owning directive is destroyed. */
   dispose(): void;
 }
@@ -60,6 +63,7 @@ export interface MentionControllerInit<T = unknown> {
   /** Default max-height for the panel pane. Per-trigger `panel.maxHeight` overrides this. */
   readonly maxHeight?: string;
   readonly closeAnimationDurationMs?: number;
+  readonly pointerHighlight?: MentionPointerHighlight;
   readonly beforeOpen?: BeforeOpenCallback;
   readonly beforeClose?: BeforeCloseCallback;
   readonly callbacks?: MentionControllerCallbacks<T>;

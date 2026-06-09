@@ -4,7 +4,7 @@
 
 import { Directive, inject, TemplateRef } from '@angular/core';
 
-import type { MentionPanelContext } from '../internal/mention-panel-host.component';
+import type { MentionPanelContext } from '../internal/mention-panel-tokens';
 
 export type { MentionPanelContext };
 

@@ -1,9 +1,9 @@
 import type { TemplateRef } from '@angular/core';
 import type { BeforeCloseCallback, BeforeOpenCallback, Placement } from '@nexora-ui/overlay';
 
-import type { MentionTriggerConfig } from '../types/mention-types';
+import type { MentionTriggerConfig, MentionPointerHighlight } from '../types/mention-types';
 
-import type { MentionPanelContext } from './mention-panel-host.component';
+import type { MentionPanelContext } from './mention-panel-tokens';
 
 type PanelClassInput = string | string[] | undefined;
 type PanelStyleInput = Record<string, string> | undefined;
@@ -23,6 +23,7 @@ export interface MentionControllerWire<T = unknown> {
   readonly panelStyle: PanelStyleInput;
   readonly maxHeight: string | undefined;
   readonly closeMs: number;
+  readonly pointerHighlight: MentionPointerHighlight;
   readonly beforeOpen: BeforeOpenCallback | undefined;
   readonly beforeClose: BeforeCloseCallback | undefined;
   readonly chipClass: string | undefined;
@@ -103,6 +104,7 @@ export function isSameMentionControllerWire<T>(
     areStyleRecordsShallowEqual(prev.panelStyle, next.panelStyle) &&
     prev.maxHeight === next.maxHeight &&
     prev.closeMs === next.closeMs &&
+    prev.pointerHighlight === next.pointerHighlight &&
     prev.beforeOpen === next.beforeOpen &&
     prev.beforeClose === next.beforeClose &&
     prev.chipClass === next.chipClass

@@ -4,11 +4,11 @@ import { ComponentPortal } from '@nexora-ui/overlay';
 import type { MentionController } from './mention-controller.types';
 import {
   MentionPanelHostComponent,
-  NXR_MENTION_CONTROLLER,
   NXR_MENTION_PANEL_FOOTER_TEMPLATE,
   NXR_MENTION_PANEL_HEADER_TEMPLATE,
   NXR_MENTION_PANEL_TEMPLATE,
 } from './mention-panel-host.component';
+import { NXR_MENTION_CONTROLLER } from './mention-panel-tokens';
 
 export function createMentionPanelInjector(
   parentInjector: Injector,

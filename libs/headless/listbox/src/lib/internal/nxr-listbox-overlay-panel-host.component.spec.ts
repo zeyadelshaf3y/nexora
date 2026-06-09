@@ -20,6 +20,7 @@ function makeContext(
     accessors: signal(undefined),
     compareWith: signal(undefined),
     initialHighlight: signal('none'),
+    pointerHighlight: signal('off'),
     onValueChange: () => {},
     onListboxReady: () => {},
   };

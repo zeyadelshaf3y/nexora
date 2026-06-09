@@ -5,7 +5,12 @@
 
 import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 
-import type { ListboxAccessors, ListboxInitialHighlight, NxrListboxController } from '../types';
+import type {
+  ListboxAccessors,
+  ListboxInitialHighlight,
+  ListboxPointerHighlight,
+  NxrListboxController,
+} from '../types';
 import type { ListboxScrollActiveCapable } from '../utils/listbox-schedule-initial-scroll';
 
 /** Listbox instance passed to overlay `onListboxReady` (typically {@link ListboxDirective}). */
@@ -44,6 +49,8 @@ export interface NxrListboxOverlayPanelContext<T = unknown> {
   readonly accessors: Signal<ListboxAccessors<T> | undefined>;
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
+  /** Pointer-driven active highlight; forwarded to internal `[nxrListbox]`. */
+  readonly pointerHighlight: Signal<ListboxPointerHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
   readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }

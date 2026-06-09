@@ -6,6 +6,7 @@ import type { Signal, TemplateRef } from '@angular/core';
 import type {
   ListboxAccessors,
   ListboxInitialHighlight,
+  ListboxPointerHighlight,
   ListboxScrollActiveCapable,
 } from '@nexora-ui/listbox';
 
@@ -30,6 +31,7 @@ interface SelectOverlayPanelContext<T = unknown> {
   readonly accessors: Signal<ListboxAccessors<T> | undefined>;
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
+  readonly pointerHighlight: Signal<ListboxPointerHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
   readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }
@@ -44,6 +46,7 @@ export function buildSelectOverlayPanelContext<T>(args: {
   readonly accessors: Signal<SelectAccessors<T> | undefined>;
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
+  readonly pointerHighlight: Signal<ListboxPointerHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
   readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }): SelectOverlayPanelContext<T> {
@@ -57,6 +60,7 @@ export function buildSelectOverlayPanelContext<T>(args: {
     accessors: args.accessors,
     compareWith: args.compareWith,
     initialHighlight: args.initialHighlight,
+    pointerHighlight: args.pointerHighlight,
     onValueChange: args.onValueChange,
     onListboxReady: args.onListboxReady,
   };

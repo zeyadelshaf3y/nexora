@@ -64,7 +64,11 @@ import {
   toSelectedValuesArray,
   type DropdownRefOptions,
 } from '@nexora-ui/dropdown';
-import { type ListboxDirective, type ListboxInitialHighlight } from '@nexora-ui/listbox';
+import {
+  type ListboxDirective,
+  type ListboxInitialHighlight,
+  type ListboxPointerHighlight,
+} from '@nexora-ui/listbox';
 import { BuiltinVirtualDropdownPanelComponent } from '@nexora-ui/listbox-cdk';
 import { createBuiltinVirtualPanelSignals } from '@nexora-ui/listbox-cdk/internal';
 import {
@@ -191,6 +195,7 @@ export class ComboboxComponent<T = unknown> implements ComboboxController, Contr
   readonly compareWith = input<((a: unknown, b: unknown) => boolean) | undefined>(undefined);
   readonly placeholder = input('');
   readonly initialHighlight = input<ListboxInitialHighlight>('selected');
+  readonly pointerHighlight = input<ListboxPointerHighlight>('off');
   readonly disabled = input(false);
   readonly required = input(false);
 
@@ -666,6 +671,7 @@ export class ComboboxComponent<T = unknown> implements ComboboxController, Contr
       accessors: this.accessors,
       compareWith: this.compareWith,
       initialHighlight: this.initialHighlight,
+      pointerHighlight: this.pointerHighlight,
       onValueChange: (v) => this.applySelectionChange(v),
       setListboxRef: (listbox) => this.listboxRef.set(listbox as ListboxDirective<T>),
     });

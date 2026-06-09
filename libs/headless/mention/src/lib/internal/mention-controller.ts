@@ -33,6 +33,7 @@ import { DEFAULT_MENTION_CLOSE_ANIMATION_MS } from '../constants/mention-overlay
 import type {
   MentionMatch,
   MentionPanelState,
+  MentionPointerHighlight,
   MentionSession,
   MentionTriggerConfig,
 } from '../types/mention-types';
@@ -47,9 +48,9 @@ import type {
 import { subscribeMentionItemsFetch } from './mention-fetch-pipeline';
 import { MentionLoadingSchedule } from './mention-loading-schedule';
 import { handleMentionOpenPanelKeydown } from './mention-open-panel-keydown';
-import { type MentionPanelContext } from './mention-panel-host.component';
 import { buildMentionPanelOverlayConfig } from './mention-panel-overlay-config';
 import { createMentionPanelInjector, createMentionPanelPortal } from './mention-panel-portal';
+import type { MentionPanelContext } from './mention-panel-tokens';
 import { buildTriggerConfigLookup } from './mention-programmatic-insert';
 import {
   createMentionVirtualAnchorElement,
@@ -130,6 +131,7 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
   private readonly overlayPanelExtraStyle: Readonly<Record<string, string>> | undefined;
   private readonly maxHeight: string | undefined;
   private readonly closeAnimationDurationMs: number;
+  private readonly pointerHighlight: MentionPointerHighlight;
   private readonly beforeOpen: MentionControllerInit<T>['beforeOpen'];
   private readonly beforeClose: MentionControllerInit<T>['beforeClose'];
   private readonly callbacks?: MentionControllerCallbacks<T>;
@@ -214,6 +216,7 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
     this.maxHeight = params.maxHeight;
     this.closeAnimationDurationMs =
       params.closeAnimationDurationMs ?? DEFAULT_MENTION_CLOSE_ANIMATION_MS;
+    this.pointerHighlight = params.pointerHighlight ?? 'hover';
     this.beforeOpen = params.beforeOpen;
     this.beforeClose = params.beforeClose;
     this.callbacks = params.callbacks;
@@ -581,5 +584,16 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
 
   updateCaretPosition(): void {
     this.caretReposition.run();
+  }
+
+  usesHoverPointerHighlight(): boolean {
+    return this.pointerHighlight === 'hover';
+  }
+
+  setActiveIndex(index: number): void {
+    const max = this.items().length - 1;
+    if (max < 0) return;
+
+    this.activeIndex.set(Math.min(Math.max(index, 0), max));
   }
 }

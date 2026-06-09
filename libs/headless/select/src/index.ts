@@ -33,5 +33,6 @@ export { NXR_SELECT, type SelectController } from './lib/tokens/select-tokens';
 export {
   type SelectAccessors,
   type SelectInitialHighlight,
+  type SelectPointerHighlight,
   type SelectScrollStrategy,
 } from './lib/types/select-types';

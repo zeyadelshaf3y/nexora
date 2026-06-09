@@ -2,8 +2,8 @@ import { Injector, type TemplateRef, type ViewContainerRef } from '@angular/core
 import { describe, expect, it } from 'vitest';
 
 import type { MentionController } from './mention-controller.types';
-import { NXR_MENTION_CONTROLLER, NXR_MENTION_PANEL_TEMPLATE } from './mention-panel-host.component';
 import { createMentionPanelInjector, createMentionPanelPortal } from './mention-panel-portal';
+import { NXR_MENTION_CONTROLLER, NXR_MENTION_PANEL_TEMPLATE } from './mention-panel-tokens';
 
 describe('createMentionPanelInjector', () => {
   const parent = Injector.NULL;

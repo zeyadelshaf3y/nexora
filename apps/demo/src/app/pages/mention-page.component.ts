@@ -9,6 +9,7 @@ import {
   MentionDirective,
   MentionFooterDirective,
   MentionHeaderDirective,
+  MentionOptionDirective,
   MentionPanelDirective,
   MentionScrollIntoViewDirective,
 } from '@nexora-ui/mention';
@@ -148,6 +149,7 @@ function cloneMentionDocument(d: MentionDocument): MentionDocument {
     MentionHeaderDirective,
     MentionFooterDirective,
     MentionScrollIntoViewDirective,
+    MentionOptionDirective,
     PopoverTriggerDirective,
   ],
   templateUrl: './mention-page.component.html',
