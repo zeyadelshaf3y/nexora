@@ -41,6 +41,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+
+      - name: Sync release tags from npm
+        run: npm run release:sync-tags
+
+      - name: Push synced release tags
+        run: git push origin --tags
 
       - name: Release packages
         run: npx nx release --yes
