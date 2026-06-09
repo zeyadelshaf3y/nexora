@@ -4,6 +4,9 @@
  *
  * When `headerTemplate` or `footerTemplate` are present on the panel context the host switches to a
  * flex-column layout so the header and footer remain fixed while the listbox scrolls independently.
+ *
+ * Imports {@link ListboxDirective} from the primary package entry (not relative paths) so the
+ * internal secondary bundle does not instantiate a second `NXR_LISTBOX_CONTROLLER` token.
  */
 
 import { NgTemplateOutlet } from '@angular/common';
@@ -19,10 +22,8 @@ import {
   ViewEncapsulation,
   viewChild,
 } from '@angular/core';
-// Secondary entry must import the primary package so ng-packagr does not bundle a
-// second NXR_LISTBOX_CONTROLLER token into @nexora-ui/listbox/internal.
-// eslint-disable-next-line @nx/enforce-module-boundaries -- intentional cross-entry import
 import { createListboxPanelOutletInjector, ListboxDirective } from '@nexora-ui/listbox';
+
 import {
   NXR_LISTBOX_OVERLAY_PANEL_CONTEXT,
   type NxrListboxOverlayPanelContext,

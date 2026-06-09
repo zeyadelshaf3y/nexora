@@ -31,4 +31,12 @@ export default [
     // Override or add rules here
     rules: {},
   },
+  {
+    files: ['**/internal/nxr-listbox-overlay-panel-host.component.ts'],
+    rules: {
+      // Internal entry must import the primary package so ng-packagr does not bundle a second
+      // NXR_LISTBOX_CONTROLLER InjectionToken into @nexora-ui/listbox/internal.
+      '@nx/enforce-module-boundaries': 'off',
+    },
+  },
 ];
