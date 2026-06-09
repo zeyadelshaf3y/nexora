@@ -20,8 +20,7 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { ListboxDirective } from '../directives/listbox.directive';
-import { createListboxPanelOutletInjector } from '../utils/create-listbox-panel-outlet-injector';
+import { createListboxPanelOutletInjector, ListboxDirective } from '@nexora-ui/listbox';
 
 import {
   NXR_LISTBOX_OVERLAY_PANEL_CONTEXT,
