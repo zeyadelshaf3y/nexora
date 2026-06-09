@@ -51,3 +51,6 @@ jobs:
 
       - name: Release packages
         run: npx nx release --yes
+
+      - name: Push release commit and tags
+        run: git push origin HEAD:main --follow-tags
