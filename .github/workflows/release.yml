@@ -52,5 +52,8 @@ jobs:
       - name: Release packages
         run: npx nx release --yes
 
+      - name: Sync npm latest dist-tags
+        run: npm run release:sync-npm-dist-tags
+
       - name: Push release commit and tags
         run: git push origin HEAD:main --follow-tags
