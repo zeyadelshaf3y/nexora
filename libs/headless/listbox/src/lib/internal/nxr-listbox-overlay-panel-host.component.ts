@@ -19,9 +19,10 @@ import {
   ViewEncapsulation,
   viewChild,
 } from '@angular/core';
-
+// Secondary entry must import the primary package so ng-packagr does not bundle a
+// second NXR_LISTBOX_CONTROLLER token into @nexora-ui/listbox/internal.
+// eslint-disable-next-line @nx/enforce-module-boundaries -- intentional cross-entry import
 import { createListboxPanelOutletInjector, ListboxDirective } from '@nexora-ui/listbox';
-
 import {
   NXR_LISTBOX_OVERLAY_PANEL_CONTEXT,
   type NxrListboxOverlayPanelContext,
