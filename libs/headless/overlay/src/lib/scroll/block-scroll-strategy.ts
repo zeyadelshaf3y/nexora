@@ -11,7 +11,6 @@ import type { ScrollStrategy } from './scroll-strategy';
 interface SavedBodyStyles {
   readonly overflow: string;
   readonly paddingRight: string;
-  readonly rootOverflow: string;
 }
 
 const activeConsumers = new Set<BlockScrollStrategy>();
@@ -25,43 +24,46 @@ function getWindowElements() {
   return { win, body, root };
 }
 
+/** Scrollbar width for padding compensation (uses layout viewport on `<html>`). */
+function getScrollbarWidth(win: Window, root: HTMLElement | undefined): number {
+  if (!root) return 0;
+  return win.innerWidth - root.clientWidth;
+}
+
 function lockScroll(consumer: BlockScrollStrategy): void {
   activeConsumers.add(consumer);
   if (activeConsumers.size > 1) return;
 
   const { win, body, root } = getWindowElements();
 
-  if (!body || !root || !win) return;
+  if (!body || !win) return;
 
   saved = {
     overflow: body.style.overflow,
     paddingRight: body.style.paddingRight,
-    rootOverflow: root.style.overflow,
   };
 
-  const scrollbarWidth = win.innerWidth - root.clientWidth;
+  const scrollbarWidth = getScrollbarWidth(win, root);
 
   if (scrollbarWidth > 0) {
     const currentPadding = parseFloat(win.getComputedStyle(body).paddingRight) || 0;
     body.style.paddingRight = `${currentPadding + scrollbarWidth}px`;
   }
 
+  // Only lock `body`. Avoid `overflow: hidden` on `<html>` — it breaks `position: sticky`
+  // on page chrome (headers, sidebars) behind the modal.
   body.style.overflow = 'hidden';
-  root.style.overflow = 'hidden';
 }
 
 function unlockScroll(consumer: BlockScrollStrategy): void {
   activeConsumers.delete(consumer);
   if (activeConsumers.size > 0) return;
 
-  const { body, root } = getWindowElements();
+  const { body } = getWindowElements();
 
   if (body && saved) {
     body.style.overflow = saved.overflow;
     body.style.paddingRight = saved.paddingRight;
-    if (root) {
-      root.style.overflow = saved.rootOverflow;
-    }
   }
 
   saved = null;
@@ -72,7 +74,8 @@ function unlockScroll(consumer: BlockScrollStrategy): void {
  *
  * Compensates for the removed scrollbar by adding equivalent `padding-right`
  * to `document.body`, preventing the layout shift that occurs when
- * `overflow: hidden` removes the scrollbar.
+ * `overflow: hidden` removes the scrollbar. Only `body` is locked — not
+ * `document.documentElement` — so `position: sticky` page chrome keeps working.
  *
  * Uses a centralized Set of active consumers so nested overlays share a
  * single lock. Scroll is only restored when every overlay using this strategy
