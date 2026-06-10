@@ -15,6 +15,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   type ElementRef,
   inject,
   Injector,
@@ -64,7 +65,7 @@ export const NXR_LISTBOX_OVERLAY_PANEL_HOST_CLASS = 'nxr-listbox-overlay-panel-h
       [nxrListboxAccessors]="panelContext.accessors()"
       [nxrListboxCompareWith]="panelContext.compareWith()"
       [nxrListboxInitialHighlight]="panelContext.initialHighlight()"
-      [nxrListboxPointerHighlight]="panelContext.pointerHighlight()"
+      [nxrListboxPointerHighlight]="listboxPointerHighlight()"
       #listbox="nxrListbox"
       #listboxEl
     >
@@ -117,6 +118,12 @@ export const NXR_LISTBOX_OVERLAY_PANEL_HOST_CLASS = 'nxr-listbox-overlay-panel-h
 })
 export class NxrListboxOverlayPanelHostComponent implements AfterViewInit {
   readonly panelContext = inject<NxrListboxOverlayPanelContext>(NXR_LISTBOX_OVERLAY_PANEL_CONTEXT);
+
+  /** Defaults to `'off'` when an older panel context omits `pointerHighlight`. */
+  readonly listboxPointerHighlight = computed(() => {
+    const pointerHighlight = this.panelContext.pointerHighlight;
+    return typeof pointerHighlight === 'function' ? pointerHighlight() : 'off';
+  });
 
   readonly childOwnsScrollLayout = this.panelContext.childOwnsScroll === true;
   readonly hasChromeLayout =

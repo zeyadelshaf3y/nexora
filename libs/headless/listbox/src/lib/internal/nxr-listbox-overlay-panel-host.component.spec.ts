@@ -6,12 +6,13 @@ import {
   NXR_LISTBOX_OVERLAY_PANEL_CONTEXT,
   type NxrListboxOverlayPanelContext,
 } from './nxr-listbox-overlay-panel-context';
+import type { ListboxPointerHighlight } from '../types';
 import { NxrListboxOverlayPanelHostComponent } from './nxr-listbox-overlay-panel-host.component';
 
-function makeContext(
+function makeContextBase(
   tpl: TemplateRef<unknown>,
   childOwnsScroll: boolean,
-): NxrListboxOverlayPanelContext {
+): Omit<NxrListboxOverlayPanelContext, 'pointerHighlight'> {
   return {
     template: tpl,
     childOwnsScroll,
@@ -20,9 +21,18 @@ function makeContext(
     accessors: signal(undefined),
     compareWith: signal(undefined),
     initialHighlight: signal('none'),
-    pointerHighlight: signal('off'),
     onValueChange: () => {},
     onListboxReady: () => {},
+  };
+}
+
+function makeContext(
+  tpl: TemplateRef<unknown>,
+  childOwnsScroll: boolean,
+): NxrListboxOverlayPanelContext {
+  return {
+    ...makeContextBase(tpl, childOwnsScroll),
+    pointerHighlight: signal<ListboxPointerHighlight>('off'),
   };
 }
 
@@ -66,6 +76,26 @@ class PanelHostChildScrollParent {
   @ViewChild('tpl', { static: true }) tpl!: TemplateRef<unknown>;
 }
 
+@Component({
+  standalone: true,
+  imports: [NxrListboxOverlayPanelHostComponent],
+  template: `
+    <ng-template #tpl><span data-test="panel-slot">slot</span></ng-template>
+    <nxr-listbox-overlay-panel-host />
+  `,
+  providers: [
+    {
+      provide: NXR_LISTBOX_OVERLAY_PANEL_CONTEXT,
+      deps: [PanelHostLegacyContextParent],
+      useFactory: (p: PanelHostLegacyContextParent): NxrListboxOverlayPanelContext =>
+        makeContextBase(p.tpl, false),
+    },
+  ],
+})
+class PanelHostLegacyContextParent {
+  @ViewChild('tpl', { static: true }) tpl!: TemplateRef<unknown>;
+}
+
 describe('NxrListboxOverlayPanelHostComponent', () => {
   it('sets overflow auto on the listbox host when childOwnsScroll is false', () => {
     TestBed.configureTestingModule({ imports: [PanelHostListboxScrollsParent] });
@@ -86,6 +116,30 @@ describe('NxrListboxOverlayPanelHostComponent', () => {
       .nativeElement as HTMLElement;
 
     expect(listbox.style.overflow).toBe('hidden');
+  });
+
+  it('opens when panel context omits pointerHighlight (legacy select/combobox builds)', () => {
+    TestBed.configureTestingModule({ imports: [PanelHostLegacyContextParent] });
+    const fixture = TestBed.createComponent(PanelHostLegacyContextParent);
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('[role="listbox"]'))).not.toBeNull();
+  });
+
+  it('forwards pointerHighlight signal to the internal listbox', () => {
+    TestBed.configureTestingModule({ imports: [PanelHostListboxScrollsParent] });
+    const fixture = TestBed.createComponent(PanelHostListboxScrollsParent);
+    fixture.detectChanges();
+
+    const host = fixture.debugElement.query(By.directive(NxrListboxOverlayPanelHostComponent))
+      .componentInstance as NxrListboxOverlayPanelHostComponent;
+
+    expect(host.listboxPointerHighlight()).toBe('off');
+
+    host.panelContext.pointerHighlight?.set('hover');
+    fixture.detectChanges();
+
+    expect(host.listboxPointerHighlight()).toBe('hover');
   });
 
   it('adds child-scroll layout classes when childOwnsScroll is true', () => {

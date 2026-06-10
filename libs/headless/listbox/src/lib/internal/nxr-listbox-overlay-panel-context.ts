@@ -49,8 +49,11 @@ export interface NxrListboxOverlayPanelContext<T = unknown> {
   readonly accessors: Signal<ListboxAccessors<T> | undefined>;
   readonly compareWith: Signal<((a: unknown, b: unknown) => boolean) | undefined>;
   readonly initialHighlight: Signal<ListboxInitialHighlight>;
-  /** Pointer-driven active highlight; forwarded to internal `[nxrListbox]`. */
-  readonly pointerHighlight: Signal<ListboxPointerHighlight>;
+  /**
+   * Pointer-driven active highlight; forwarded to internal `[nxrListbox]`.
+   * Optional for backward compatibility with select/combobox builds before pointer highlight.
+   */
+  readonly pointerHighlight?: Signal<ListboxPointerHighlight>;
   readonly onValueChange: (v: T | null | readonly T[]) => void;
   readonly onListboxReady: (listbox: ListboxScrollActiveCapable) => void;
 }
