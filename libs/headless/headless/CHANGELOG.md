@@ -1,3 +1,13 @@
+## 0.2.9 (2026-06-10)
+
+### 🧱 Updated Dependencies
+
+- Updated listbox-cdk to 0.1.9
+- Updated listbox to 0.3.4
+- Updated menu to 0.2.8
+- Updated select to 0.3.1
+- Updated combobox to 0.3.1
+
 ## 0.2.8 (2026-06-10)
 
 ### 🧱 Updated Dependencies

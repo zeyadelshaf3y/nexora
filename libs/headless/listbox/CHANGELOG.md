@@ -1,3 +1,19 @@
+## 0.3.4 (2026-06-10)
+
+### 🩹 Fixes
+
+- fix(listbox): default overlay panel pointerHighlight when missing from legacy select/combobox builds ([f237fca](https://github.com/zeyadelshaf3y/nexora/commit/f237fca))
+
+  When `NxrListboxOverlayPanelHostComponent` forwards `panelContext.pointerHighlight()` to
+  `[nxrListboxPointerHighlight]`, older select/combobox builds that omit the signal on the overlay
+  panel context crash on open (`pointerHighlight is not a function`).
+  - Make `pointerHighlight` optional on `NxrListboxOverlayPanelContext`.
+  - Resolve binding via `listboxPointerHighlight` computed; default to `'off'` when absent.
+
+### ❤️ Thank You
+
+- Zeyad Alshafey
+
 ## 0.3.3 (2026-06-10)
 
 ### 🩹 Fixes
