@@ -1,3 +1,9 @@
+## 0.1.5 (2026-06-11)
+
+### 🩹 Fixes
+
+- **popover:** publish popup-open registry coordination so tooltips close and stay suppressed while a shared-anchor popover is open.
+
 ## 0.1.3 (2026-05-02)
 
 ### 🚀 Features
