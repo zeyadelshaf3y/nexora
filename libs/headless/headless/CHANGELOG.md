@@ -1,3 +1,9 @@
+## 0.2.10 (2026-06-11)
+
+### 🧱 Updated Dependencies
+
+- Updated popover to 0.1.7
+
 ## 0.2.9 (2026-06-10)
 
 ### 🧱 Updated Dependencies
