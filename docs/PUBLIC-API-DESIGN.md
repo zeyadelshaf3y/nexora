@@ -36,6 +36,7 @@ ref?.afterClosed().subscribe(() => this.cleanup());
 
 - **Minimal surface**: `close()`, `afterClosed(): Observable<T>`, and pane access if needed (e.g. `getPaneElement()`). Snackbar adds `close(value)` / `dismiss(value)` so `afterClosed()` emits that value.
 - **No internal types in the ref**: The ref is an interface; implementation details (stack, attach/detach) are not exposed. Document whether a method is stable.
+- **Content-side access**: The opener gets the ref from `open()`. The opened **component** gets the same ref by injecting **`OVERLAY_REF`** (auto-provided; no `injector` factory needed), so it can drive its own overlay — `updateSize`, `addPanelClass` / `removePanelClass`, `addCloseGuard`, and lifecycle (`isOpen`, `afterOpened`, `beforeClosed`, `afterClosed`). Results still flow out via component `outputs`, not a typed `close(value)` (that pattern is snackbar-only).
 
 ## Directive APIs (Popover, Tooltip)
 

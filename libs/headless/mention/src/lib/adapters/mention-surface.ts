@@ -54,6 +54,8 @@ export interface MentionTextSurfaceAdapter {
    * `getSelectionStart` and `getSelectionEnd` separately when both offsets are needed.
    */
   getSelectionRange(): MentionSelectionRange | null;
+  /** Programmatically selects a linear range in adapter plain-text space. */
+  setSelectionRange?(range: MentionSelectionRange): boolean;
   getSelectionStart(): number | null;
   getSelectionEnd(): number | null;
   isSelectionCollapsed(): boolean;
@@ -72,6 +74,18 @@ export interface MentionTextSurfaceAdapter {
     caretOffset?: number,
     baseChipClass?: string,
   ): void;
+  /**
+   * Optional: patch an existing mention chip's safe attributes by mention id. When `index` is
+   * given (the entity's position in document order), the chip at that position is preferred so
+   * repeated mentions sharing an id resolve to the correct occurrence; it falls back to the first
+   * chip with that id when the index does not match (e.g. unhydrated DOM).
+   */
+  updateMentionAttributes?(
+    mentionId: string,
+    attributes: MentionDocument['mentions'][number]['attributes'],
+    baseChipClass?: string,
+    index?: number,
+  ): boolean;
   isFocused(): boolean;
   subscribe(callbacks: MentionSurfaceCallbacks): () => void;
   /** Optional: insert a new line block (div > br) and place caret there. */

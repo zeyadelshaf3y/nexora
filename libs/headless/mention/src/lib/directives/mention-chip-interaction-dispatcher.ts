@@ -1,3 +1,4 @@
+import { readMentionLogicalText } from '../adapters/internal/contenteditable-dom-constants';
 import type { MentionChipInteractionEvent, MentionEntity } from '../types/mention-types';
 
 export interface MentionChipInteractionDispatcherOptions {
@@ -30,7 +31,7 @@ export class MentionChipInteractionDispatcher {
     const buildEntity = (chip: HTMLElement): MentionEntity => ({
       id: chip.getAttribute(mentionIdAttr) ?? '',
       label: chip.getAttribute(mentionLabelAttr) ?? undefined,
-      text: chip.textContent ?? '',
+      text: readMentionLogicalText(chip),
       start: 0,
       end: 0,
     });

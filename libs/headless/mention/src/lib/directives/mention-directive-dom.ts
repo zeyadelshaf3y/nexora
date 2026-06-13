@@ -4,7 +4,13 @@ export function getChipElementByMentionId(
 ): HTMLElement | null {
   if (!editableRoot) return null;
 
-  return editableRoot.querySelector<HTMLElement>(`[data-mention-id="${CSS.escape(mentionId)}"]`);
+  const chips = editableRoot.querySelectorAll<HTMLElement>('[data-mention-id]');
+
+  for (const chip of Array.from(chips)) {
+    if (chip.getAttribute('data-mention-id') === mentionId) return chip;
+  }
+
+  return null;
 }
 
 export function getChipElements(editableRoot: HTMLElement | null | undefined): HTMLElement[] {

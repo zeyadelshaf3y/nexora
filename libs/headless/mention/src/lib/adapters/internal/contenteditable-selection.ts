@@ -1,4 +1,8 @@
-import { ATTR_MENTION_ID, LINE_BREAK_TAG } from './contenteditable-dom-constants';
+import {
+  ATTR_MENTION_ID,
+  LINE_BREAK_TAG,
+  readMentionLogicalText,
+} from './contenteditable-dom-constants';
 import {
   isEmptyLinePlaceholderBr,
   isEmptyRootLineBlock,
@@ -205,7 +209,7 @@ export function walkSelectionModel(
     }
 
     if (isMentionElement(el)) {
-      const mentionText = nodeText(el);
+      const mentionText = readMentionLogicalText(el);
       const mentionTextLength = mentionText.length;
       const parent = el.parentNode;
       const childIndex =
@@ -322,6 +326,8 @@ export function walkSelectionModel(
 }
 
 function rectFromCollapsedRange(range: Range): DOMRect | null {
+  if (typeof range.getBoundingClientRect !== 'function') return null;
+
   const rect = range.getBoundingClientRect();
   if (rect.width === 0 && rect.height === 0) {
     const rects = range.getClientRects();
@@ -380,6 +386,57 @@ function setCollapsedRangeAtNodeOffset(range: Range, node: Node, off: number): b
     range.setStartBefore(el);
     range.setEndBefore(el);
   }
+
+  return true;
+}
+
+function resolveBoundaryPoint(node: Node, offset: number): { node: Node; offset: number } {
+  if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === LINE_BREAK_TAG) {
+    const parent = node.parentNode;
+    if (parent) {
+      const idx = Array.prototype.indexOf.call(parent.childNodes, node);
+
+      return { node: parent, offset: idx + (offset > 0 ? 1 : 0) };
+    }
+  }
+
+  return { node, offset };
+}
+
+export function setSelectionRangeAtLinearOffsets(
+  root: HTMLElement,
+  start: number,
+  end: number,
+): boolean {
+  if (start < 0 || end < 0) return false;
+
+  const doc = root.ownerDocument;
+  if (!doc) return false;
+
+  const rangeStart = Math.min(start, end);
+  const rangeEnd = Math.max(start, end);
+  const mapped = walkSelectionModel(root, null, { rangeStart, rangeEnd });
+
+  if (mapped.rangeStartNode == null || mapped.rangeEndNode == null) return false;
+
+  const startPoint = resolveBoundaryPoint(mapped.rangeStartNode, mapped.rangeStartOffset);
+  const endPoint = resolveBoundaryPoint(mapped.rangeEndNode, mapped.rangeEndOffset);
+  const range = doc.createRange();
+
+  try {
+    range.setStart(startPoint.node, startPoint.offset);
+    range.setEnd(endPoint.node, endPoint.offset);
+  } catch {
+    return false;
+  }
+
+  if (!root.contains(range.commonAncestorContainer)) return false;
+
+  const selection = doc.getSelection();
+  if (!selection) return false;
+
+  selection.removeAllRanges();
+  selection.addRange(range);
 
   return true;
 }

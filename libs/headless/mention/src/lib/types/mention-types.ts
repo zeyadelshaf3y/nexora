@@ -5,6 +5,7 @@
 
 export type {
   MentionAttributes,
+  MentionChipContext,
   MentionControllerState,
   MentionDocument,
   MentionEntity,
@@ -20,12 +21,20 @@ export type {
 } from './mention-types-core';
 
 export type {
+  MentionAttributesUpdate,
   MentionBeforePasteHandler,
   MentionChipInteractionEvent,
+  MentionDocumentUpdater,
+  MentionEntityPredicate,
+  MentionEntityTarget,
+  MentionFocusOptions,
   MentionInsertOptions,
   MentionOpenChangeHandler,
   MentionPasteEvent,
   MentionQueryChangeHandler,
+  MentionReplaceOptions,
   MentionSelectEvent,
   MentionSelectHandler,
+  MentionUpdateDocumentOptions,
+  MentionUpsertOptions,
 } from './mention-types-events';

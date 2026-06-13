@@ -514,6 +514,60 @@ describe('createContenteditableAdapter', () => {
     expect(roundTrip.mentions[0]?.text).toBe('@alice');
   });
 
+  it('sets a linear selection range across a restored mention', () => {
+    adapter.setDocument({
+      bodyText: 'Hello @alice',
+      mentions: [
+        {
+          id: 'u1',
+          label: 'Alice Smith',
+          text: '@alice',
+          start: 6,
+          end: 12,
+        },
+      ],
+    });
+
+    expect(adapter.setSelectionRange?.({ start: 6, end: 12 })).toBe(true);
+    expect(adapter.getSelectionRange()).toEqual({ start: 6, end: 12 });
+  });
+
+  it('patches safe mention attributes and ignores protected attributes', () => {
+    adapter.setDocument({
+      bodyText: 'Hello @alice',
+      mentions: [
+        {
+          id: 'u1',
+          label: 'Alice Smith',
+          text: '@alice',
+          start: 6,
+          end: 12,
+          attributes: { 'data-initials': 'AS' },
+        },
+      ],
+    });
+
+    expect(
+      adapter.updateMentionAttributes?.(
+        'u1',
+        {
+          class: 'updated',
+          'data-initials': 'AA',
+          'data-mention-id': 'evil',
+          onclick: 'alert(1)',
+        },
+        'base-chip',
+      ),
+    ).toBe(true);
+
+    const chip = root.querySelector<HTMLElement>('[data-mention-id="u1"]');
+    expect(chip?.className).toBe('base-chip updated');
+    expect(chip?.getAttribute('data-initials')).toBe('AA');
+    expect(chip?.getAttribute('data-mention-id')).toBe('u1');
+    expect(chip?.hasAttribute('onclick')).toBe(false);
+    expect(adapter.getDocument().mentions[0]?.attributes?.['data-initials']).toBe('AA');
+  });
+
   it('getValue/getDocument preserve consecutive spaces around mentions', () => {
     root.appendChild(document.createTextNode('hello\u00A0\u00A0'));
     const mention = document.createElement('span');
@@ -740,5 +794,85 @@ describe('createContenteditableAdapter', () => {
     const doc = adapter.getDocument();
     expect(doc.mentions.length).toBe(n);
     expect(doc.bodyText.length).toBe(bodyText.length);
+  });
+
+  it('reads canonical data-mention-text, ignoring custom template inner markup', () => {
+    const mention = document.createElement('span');
+    mention.setAttribute('data-mention-id', 'u1');
+    mention.setAttribute('data-mention-label', 'Alice Smith');
+    mention.setAttribute('data-mention-text', '@alice');
+    mention.setAttribute('contenteditable', 'false');
+    // Simulate a hydrated custom chip template (avatar initials + name) inside the span.
+    mention.innerHTML = '<span aria-hidden="true">AS</span><span>Alice Smith</span>';
+    root.appendChild(document.createTextNode('Hi '));
+    root.appendChild(mention);
+    root.appendChild(document.createTextNode(' there'));
+
+    const doc = adapter.getDocument();
+    expect(doc.bodyText).toBe('Hi @alice there');
+    expect(doc.mentions.length).toBe(1);
+    expect(doc.mentions[0]?.text).toBe('@alice');
+    expect(doc.mentions[0]?.start).toBe(3);
+    expect(doc.mentions[0]?.end).toBe(9);
+  });
+
+  it('falls back to textContent when data-mention-text is absent (legacy chips)', () => {
+    const mention = document.createElement('span');
+    mention.setAttribute('data-mention-id', 'u1');
+    mention.textContent = '@legacy';
+    root.appendChild(mention);
+
+    expect(adapter.getValue()).toBe('@legacy');
+  });
+
+  it('round-trips data-mention-trigger via attributes without leaking data-mention-text', () => {
+    adapter.setDocument({
+      bodyText: 'Hello @alice',
+      mentions: [
+        {
+          id: 'u1',
+          label: 'Alice',
+          text: '@alice',
+          start: 6,
+          end: 12,
+          attributes: { 'data-mention-trigger': '@', 'data-color': '#6366f1' },
+        },
+      ],
+    });
+
+    const chip = root.querySelector('span[data-mention-id="u1"]');
+    expect(chip?.getAttribute('data-mention-text')).toBe('@alice');
+    expect(chip?.getAttribute('data-mention-trigger')).toBe('@');
+
+    const roundTrip = adapter.getDocument();
+    const attrs = roundTrip.mentions[0]?.attributes ?? {};
+    expect(attrs['data-mention-trigger']).toBe('@');
+    expect(attrs['data-color']).toBe('#6366f1');
+    // Canonical text is derived, never duplicated into the serialized attributes.
+    expect('data-mention-text' in attrs).toBe(false);
+    // Internal chip plumbing must not leak into the consumer-facing document.
+    expect('spellcheck' in attrs).toBe(false);
+    expect('contenteditable' in attrs).toBe(false);
+  });
+
+  it('insert tags the chip with its trigger and canonical text', () => {
+    root.appendChild(document.createTextNode('@a'));
+    adapter.replaceTextRange(
+      0,
+      2,
+      {
+        replacementText: '@alice',
+        caretPlacement: 'end',
+        mentionId: 'u1',
+        mentionLabel: 'Alice',
+        mentionAttributes: { 'data-mention-trigger': '@' },
+      },
+      undefined,
+      undefined,
+    );
+
+    const chip = root.querySelector('span[data-mention-id="u1"]');
+    expect(chip?.getAttribute('data-mention-text')).toBe('@alice');
+    expect(chip?.getAttribute('data-mention-trigger')).toBe('@');
   });
 });

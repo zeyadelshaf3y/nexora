@@ -1,5 +1,5 @@
-import { Component, input } from '@angular/core';
-import { CloseDialogDirective } from '@nexora-ui/overlay';
+import { Component, DestroyRef, inject, input, signal } from '@angular/core';
+import { CloseDialogDirective, OVERLAY_REF } from '@nexora-ui/overlay';
 
 @Component({
   selector: 'app-demo-dialog',
@@ -9,12 +9,25 @@ import { CloseDialogDirective } from '@nexora-ui/overlay';
     <div class="demo-dialog-content">
       <h2>{{ title() || 'Component Dialog' }}</h2>
       <p>This dialog was opened with <code>ComponentPortal</code>.</p>
-      <p>It receives inputs and emits outputs through the overlay service.</p>
+      <p>
+        It controls its own overlay by injecting
+        <code>OVERLAY_REF</code> — resizing the pane and guarding close from the inside.
+      </p>
 
       <div class="demo-dialog-meta">
         <span class="meta-label">Theme</span>
         <span class="meta-value">{{ theme() }}</span>
         <span class="meta-value">{{ name() }}</span>
+      </div>
+
+      <div class="demo-dialog-self-controls">
+        <button class="btn btn-ghost" type="button" (click)="toggleSize()">
+          {{ expanded() ? 'Shrink dialog' : 'Expand dialog' }}
+        </button>
+        <label class="demo-dialog-guard">
+          <input type="checkbox" [checked]="hasUnsavedChanges()" (change)="toggleUnsaved()" />
+          Block close (unsaved changes)
+        </label>
       </div>
 
       <div class="demo-dialog-actions">
@@ -68,6 +81,22 @@ import { CloseDialogDirective } from '@nexora-ui/overlay';
         color: #334155;
         font-weight: 500;
       }
+      .demo-dialog-self-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+      .demo-dialog-guard {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: 0.8125rem;
+        color: #475569;
+        cursor: pointer;
+      }
       .demo-dialog-actions {
         display: flex;
         justify-content: flex-end;
@@ -103,4 +132,28 @@ export class DemoDialogComponent {
   readonly title = input<string>('Component Dialog');
   readonly theme = input<string>('default');
   readonly name = input<string>('');
+
+  private readonly overlay = inject(OVERLAY_REF);
+
+  protected readonly expanded = signal(false);
+  protected readonly hasUnsavedChanges = signal(false);
+
+  constructor() {
+    const removeGuard = this.overlay.addCloseGuard(() => {
+      if (!this.hasUnsavedChanges()) return true;
+      return confirm('You have unsaved changes. Close anyway?');
+    });
+    inject(DestroyRef).onDestroy(removeGuard);
+  }
+
+  protected toggleSize(): void {
+    this.expanded.update((value) => !value);
+    this.overlay.updateSize(
+      this.expanded() ? { height: '70vh', maxHeight: '90vh' } : { height: 'auto' },
+    );
+  }
+
+  protected toggleUnsaved(): void {
+    this.hasUnsavedChanges.update((value) => !value);
+  }
 }

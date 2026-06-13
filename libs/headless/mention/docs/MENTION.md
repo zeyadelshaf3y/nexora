@@ -61,6 +61,19 @@ Set **`nxrMentionChipLeaveDelayMs`** (e.g. `100`–`150`) when you open a hover 
 
 Moving to **plain text inside the editor** ends chip hover **immediately** (no delay). Moving **chip → chip** is still handled by the usual `mouseover` transition.
 
+## Custom chip templates
+
+`ng-template[nxrMentionChip]` lets you render rich chip contents. A bare `nxrMentionChip` registers the **default** template; `nxrMentionChip="@"` registers a **per-trigger** override (resolved over the default).
+
+How it works:
+
+- The adapter still creates framework-agnostic chip spans with canonical text in **`data-mention-text`** plus a **`data-mention-trigger`** attribute. All logical-text readers (`getDocument`, selection/offset mapping, line length, chip hover) read `data-mention-text`, so arbitrary inner markup never corrupts `bodyText` or caret math.
+- A `MutationObserver` on the editable root hydrates each chip with an embedded view (per-trigger template, else default) and **destroys the view when the chip is removed** (backspace, range delete, `setDocument`, `clear`) and on directive teardown. This single mechanism covers select, `insertMention`, restore, and paste.
+- Hydration is **idempotent** (tracked by the renderer's live view map, not a DOM marker, so nothing leaks into the serialized document) and cheap for plain typing (text-node mutations carry no chip elements). Inserted chips hydrate one microtask after insertion; the plain-text fallback is already correct, so there is no flicker. Changing the registered `nxrMentionChip` templates (or their trigger) re-renders existing chips.
+- Node moves (line merges) relocate the chip node and its view together, so no re-render is needed.
+
+Restore caveat: the template context has **no `item`** (the original selected object is gone after serialization). Stash any presentational data in `getMentionAttributes` so it lives in `MentionEntity.attributes` and renders identically on insert and restore.
+
 ## Query length cap
 
 Per trigger, optional **`maxQueryLength`** on `MentionTriggerConfig` ends the mention match when the query segment grows past that length (panel closes / no `getItems` for that overlong query). Use to limit work and list height for very long typed queries.
@@ -75,6 +88,23 @@ Optional **`panel`** on `MentionTriggerConfig` configures the **anchored overlay
   - legacy trigger string as second argument
   - preferred `{ trigger, at }` options where `at` is `'selection' | 'start' | 'end' | { start, end? }`
 - Programmatic insertion also respects `beforeInsert` / `afterInsert`.
+- `replaceMention(idOrMatcher, item, options?)` replaces an existing mention through the same insertion pipeline. It returns `false` when no mention matches.
+- `upsertMention(item, options?)` replaces an existing mention by `mentionId` / `matchBy`, otherwise inserts at `fallbackAt`.
+- `removeMention(idOrMatcher)` removes a mention by its serialized range.
+- `updateMentionAttributes(idOrMatcher, patchOrUpdater)` patches safe chip attributes in place and refreshes custom chip templates. The same allowlist applies as insertion: `class`, `title`, `data-*`, and `aria-*`; protected mention metadata is not overwritten.
+- `selectMentionRange(idOrMatcherOrRange)` maps a serialized mention or linear range to a DOM selection.
+- `focusMention(id, options?)` focuses the editor and can select the chip, place the caret before/after it, and scroll it into view.
+- `setDocument(doc)` remains the restore/sync API and suppresses `mentionDocumentChange`; `updateDocument(updater, { emit })` is the editing API and emits by default when the resulting document differs.
+
+Example:
+
+```ts
+mention.upsertMention(user, {
+  trigger: '@',
+  mentionId: user.id,
+  fallbackAt: 'end',
+});
+```
 
 ## Accessibility
 

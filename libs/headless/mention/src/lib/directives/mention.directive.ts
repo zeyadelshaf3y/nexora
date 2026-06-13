@@ -13,6 +13,7 @@ import {
   Directive,
   computed,
   contentChild,
+  contentChildren,
   effect,
   inject,
   Injector,
@@ -48,12 +49,22 @@ import {
   NXR_MENTION_DEFAULT_PANEL_OFFSET,
 } from '../constants/mention-constants';
 import { NXR_MENTION_OVERLAY_PANE_CLASS } from '../constants/mention-overlay-constants';
+import {
+  MENTION_CHIP_TEMPLATES_HOST,
+  type MentionChipTemplatesHost,
+} from '../internal/mention-chip-host-token';
+import { MentionChipRenderer } from '../internal/mention-chip-renderer';
 import { type MentionControllerImpl } from '../internal/mention-controller';
 import { createMentionControllerRuntime } from '../internal/mention-controller-runtime';
 import {
   isSameMentionControllerWire,
   type MentionControllerWire,
 } from '../internal/mention-controller-wire';
+import {
+  findMentionEntity,
+  findMentionEntityForUpsert,
+  toMentionLinearRange,
+} from '../internal/mention-document-edit';
 import { MentionDocumentState } from '../internal/mention-document-state';
 import { MentionEditorHostLifecycle } from '../internal/mention-editor-host-lifecycle';
 import type { MentionPanelContext } from '../internal/mention-panel-tokens';
@@ -63,20 +74,31 @@ import {
   resolveTriggerConfig,
 } from '../internal/mention-programmatic-insert';
 import type {
+  MentionAttributes,
+  MentionAttributesUpdate,
+  MentionChipContext,
   MentionChipInteractionEvent,
   MentionBeforePasteHandler,
   MentionDocument,
+  MentionDocumentUpdater,
   MentionEntity,
+  MentionEntityTarget,
+  MentionFocusOptions,
   MentionInsertOptions,
+  MentionLinearRange,
   MentionPointerHighlight,
+  MentionReplaceOptions,
   MentionSelectEvent,
   MentionSession,
   MentionTriggerConfig,
+  MentionUpdateDocumentOptions,
+  MentionUpsertOptions,
 } from '../types/mention-types';
 import { isSameMentionDocument } from '../utils/mention-document-equality';
 import { applyMentionInsertion } from '../utils/mention-insertion';
 
 import type { MentionChipInteractionDispatcher } from './mention-chip-interaction-dispatcher';
+import { MentionChipDirective } from './mention-chip.directive';
 import { createMentionChipInteractionDispatcher } from './mention-directive-chip-bridge';
 import {
   buildMentionControllerWire,
@@ -116,8 +138,9 @@ import type { MentionSessionCheckScheduler } from './mention-session-check-sched
   host: {
     style: 'display:block;position:relative;width:100%;min-width:0;',
   },
+  providers: [{ provide: MENTION_CHIP_TEMPLATES_HOST, useExisting: MentionDirective }],
 })
-export class MentionDirective<T = unknown> implements OnDestroy {
+export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, OnDestroy {
   private readonly viewContainerRef = inject(ViewContainerRef);
   private readonly injector = inject(Injector);
   private readonly ngZone = inject(NgZone);
@@ -126,6 +149,7 @@ export class MentionDirective<T = unknown> implements OnDestroy {
   private readonly panelDir = contentChild(MentionPanelDirective<T>);
   private readonly headerDir = contentChild(MentionHeaderDirective);
   private readonly footerDir = contentChild(MentionFooterDirective);
+  private readonly chipDirs = contentChildren(MentionChipDirective);
 
   // ── Inputs ──────────────────────────────────────────────────────────
 
@@ -226,6 +250,8 @@ export class MentionDirective<T = unknown> implements OnDestroy {
   private composing = false;
   private sessionScheduler: MentionSessionCheckScheduler<MentionSurfaceSnapshot> | null = null;
   private chipInteractionDispatcher: MentionChipInteractionDispatcher | null = null;
+  private chipRenderer: MentionChipRenderer | null = null;
+  private chipRefreshScheduled = false;
   private lastMentionWire: MentionControllerWire<T> | null = null;
   private readonly documentState = new MentionDocumentState();
 
@@ -273,6 +299,22 @@ export class MentionDirective<T = unknown> implements OnDestroy {
       if (!this.editorHostLifecycle.hasHost()) return;
 
       this.emitEditorClassToHost();
+    });
+  }
+
+  /**
+   * Coalesced, deferred re-render of already-rendered chips. Called by {@link MentionChipDirective}
+   * when a chip template appears, changes trigger, or is removed. Deferred to a microtask so it
+   * never runs during the change-detection pass that projected the template (which would trip
+   * `ExpressionChangedAfterChecked`).
+   */
+  notifyChipTemplatesChanged(): void {
+    if (this.chipRefreshScheduled) return;
+
+    this.chipRefreshScheduled = true;
+    queueMicrotask(() => {
+      this.chipRefreshScheduled = false;
+      this.chipRenderer?.refreshAll();
     });
   }
 
@@ -371,6 +413,136 @@ export class MentionDirective<T = unknown> implements OnDestroy {
     return true;
   }
 
+  /** Replaces an existing mention by id/matcher. Returns false when no target is found. */
+  replaceMention(
+    target: MentionEntityTarget,
+    item: T,
+    options: MentionReplaceOptions = {},
+  ): boolean {
+    const mention = findMentionEntity(this.getDocument(), target);
+
+    if (!mention) return false;
+
+    return this.insertMention(item, {
+      trigger: options.trigger,
+      at: this.getMentionReplacementRange(mention),
+    });
+  }
+
+  /** Replaces an existing mention or inserts a new one at `fallbackAt`. */
+  upsertMention(item: T, options: MentionUpsertOptions = {}): boolean {
+    const mention = findMentionEntityForUpsert({
+      document: this.getDocument(),
+      mentionId: options.mentionId,
+      matchBy: options.matchBy,
+    });
+
+    return this.insertMention(item, {
+      trigger: options.trigger,
+      at: mention ? this.getMentionReplacementRange(mention) : options.fallbackAt,
+    });
+  }
+
+  /** Removes an existing mention by id/matcher. */
+  removeMention(target: MentionEntityTarget): boolean {
+    if (!this.adapter || this.nxrMentionDisabled()) return false;
+
+    const mention = findMentionEntity(this.getDocument(), target);
+
+    if (!mention) return false;
+
+    this.adapter.replaceTextRange(mention.start, mention.end, '');
+
+    return true;
+  }
+
+  /** Applies a document update. Emits value/document outputs by default when content changes. */
+  updateDocument(
+    updater: MentionDocumentUpdater,
+    options: MentionUpdateDocumentOptions = {},
+  ): MentionDocument {
+    const nextDocument = updater(this.getDocument());
+
+    if (!this.adapter) return nextDocument;
+
+    if (options.emit === false) {
+      this.applyDocumentWithSuppressedEmit(nextDocument);
+    } else {
+      this.applyDocumentFromEdit(nextDocument);
+    }
+
+    return this.getDocument();
+  }
+
+  /** Updates safe attributes for an existing mention chip. */
+  updateMentionAttributes(target: MentionEntityTarget, update: MentionAttributesUpdate): boolean {
+    if (!this.adapter || this.nxrMentionDisabled()) return false;
+
+    const document = this.getDocument();
+    const mention = findMentionEntity(document, target);
+
+    if (!mention) return false;
+
+    // Mentions and chip elements share document order, so the entity's index disambiguates
+    // repeated mentions of the same id (a matcher can target a later occurrence).
+    const index = document.mentions.indexOf(mention);
+    const nextAttributes = this.resolveMentionAttributesUpdate(mention, update);
+
+    if (
+      !this.adapter.updateMentionAttributes?.(
+        mention.id,
+        nextAttributes,
+        this.nxrMentionChipClass(),
+        index,
+      )
+    ) {
+      return false;
+    }
+
+    const chip = this.getChipElements()[index] ?? this.getChipElement(mention.id);
+    if (chip) this.chipRenderer?.refreshChip(chip);
+    this.syncContentValueFromAdapter();
+
+    return true;
+  }
+
+  /** Selects an existing mention or explicit linear range in the editor. */
+  selectMentionRange(target: MentionEntityTarget | MentionLinearRange): boolean {
+    if (!this.adapter?.setSelectionRange) return false;
+
+    const range = this.resolveMentionSelectionTarget(target);
+
+    if (!range) return false;
+
+    return this.adapter.setSelectionRange({ start: range.start, end: range.end ?? range.start });
+  }
+
+  /** Focuses the editor and selects or places the caret around a mention chip. */
+  focusMention(mentionId: string, options: MentionFocusOptions = {}): boolean {
+    const mention = findMentionEntity(this.getDocument(), mentionId);
+    const chip = this.getChipElement(mentionId);
+
+    if (!mention || !chip) return false;
+
+    const scrollIntoView = options.scrollIntoView;
+    if (scrollIntoView) {
+      chip.scrollIntoView(scrollIntoView === true ? undefined : scrollIntoView);
+    }
+
+    this.editorHostLifecycle
+      .getEditableRef()
+      ?.nativeElement.focus({ preventScroll: options.preventScroll ?? true });
+
+    const selection = options.select ?? 'select';
+    if (selection === false) return true;
+
+    const start =
+      selection === 'after' ? mention.end : selection === 'before' ? mention.start : mention.start;
+    const end = selection === 'select' ? mention.end : start;
+
+    return this.adapter?.setSelectionRange?.({ start, end }) ?? false;
+  }
+
   /** Returns a chip element by mention id, or null if not found. */
   getChipElement(mentionId: string): HTMLElement | null {
     return getChipElementByMentionId(
@@ -392,6 +564,7 @@ export class MentionDirective<T = unknown> implements OnDestroy {
 
   private onEditorReady(ref: ElementRef<HTMLElement>): void {
     this.setupChipInteractionDispatcher(ref.nativeElement);
+    this.setupChipRenderer(ref.nativeElement);
     const triggers = this.nxrMentionTriggers();
     const panel = this.panelDir();
 
@@ -564,6 +737,32 @@ export class MentionDirective<T = unknown> implements OnDestroy {
     this.chipInteractionDispatcher = null;
   }
 
+  // ── Private: custom chip templates ──────────────────────────────────
+
+  private setupChipRenderer(root: HTMLElement): void {
+    this.teardownChipRenderer();
+
+    this.chipRenderer = new MentionChipRenderer(root, this.viewContainerRef, this.ngZone, () =>
+      this.buildChipTemplateMap(),
+    );
+    this.chipRenderer.attach();
+  }
+
+  private teardownChipRenderer(): void {
+    this.chipRenderer?.dispose();
+    this.chipRenderer = null;
+  }
+
+  private buildChipTemplateMap(): ReadonlyMap<string, TemplateRef<MentionChipContext>> {
+    const map = new Map<string, TemplateRef<MentionChipContext>>();
+
+    for (const dir of this.chipDirs()) {
+      map.set(dir.trigger(), dir.templateRef);
+    }
+
+    return map;
+  }
+
   // ── Private: session check ──────────────────────────────────────────
 
   private scheduleSessionCheck(snapshot?: MentionSurfaceSnapshot): void {
@@ -622,9 +821,51 @@ export class MentionDirective<T = unknown> implements OnDestroy {
       doc,
       afterSetDocument: () => {
         this.applyBaseChipClassToRenderedMentions();
+        this.chipRenderer?.refresh();
         this.syncContentValueFromAdapter();
       },
     });
+  }
+
+  private applyDocumentFromEdit(doc: MentionDocument): void {
+    if (!this.adapter) return;
+
+    this.adapter.setDocument(doc);
+    this.applyBaseChipClassToRenderedMentions();
+    this.chipRenderer?.refresh();
+    this.syncContentValueFromAdapter();
+  }
+
+  private resolveMentionAttributesUpdate(
+    mention: MentionEntity,
+    update: MentionAttributesUpdate,
+  ): MentionAttributes {
+    if (typeof update === 'function') return update(mention.attributes, mention);
+
+    return {
+      ...(mention.attributes ?? {}),
+      ...update,
+    };
+  }
+
+  private resolveMentionSelectionTarget(
+    target: MentionEntityTarget | MentionLinearRange,
+  ): { readonly start: number; readonly end?: number } | null {
+    if (typeof target === 'object' && target != null) return target;
+
+    const mention = findMentionEntity(this.getDocument(), target);
+
+    return mention ? toMentionLinearRange(mention) : null;
+  }
+
+  private getMentionReplacementRange(mention: MentionEntity): MentionLinearRange {
+    const value = this.getPlainText();
+    const nextChar = value[mention.end];
+
+    return {
+      start: mention.start,
+      end: nextChar === ' ' ? mention.end + 1 : mention.end,
+    };
   }
 
   private applyBaseChipClassToRenderedMentions(): void {
@@ -649,6 +890,7 @@ export class MentionDirective<T = unknown> implements OnDestroy {
 
   private destroyHost(): void {
     this.teardownChipInteractionDispatcher();
+    this.teardownChipRenderer();
     this.editorHostLifecycle.destroy();
     this.destroyController();
   }

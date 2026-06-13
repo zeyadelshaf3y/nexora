@@ -10,7 +10,6 @@ import type {
   OpenOptionsForTemplate,
 } from '../types/open-types';
 
-import { OverlayService, type OverlayOpenConfig } from './overlay.service';
 import {
   DEFAULT_OVERLAY_DEFAULTS_CONFIG,
   mergeOverlayClassValue,
@@ -20,15 +19,16 @@ import {
   mergeOverlayStyleValue,
   warnOnIgnoredPanelServiceOverlayDefaults,
 } from './overlay-defaults.config';
-import {
-  DIALOG_DEFAULTS_CONFIG,
-  DEFAULT_DIALOG_DEFAULTS_CONFIG,
-} from './panel-services-defaults.config';
+import { OverlayService, type OverlayOpenConfig } from './overlay.service';
 import {
   resolvePanelOverlayFocusStrategy,
   resolvePanelOverlayHasBackdrop,
   resolvePanelOverlayScrollStrategy,
 } from './panel-overlay-modal-defaults';
+import {
+  DIALOG_DEFAULTS_CONFIG,
+  DEFAULT_DIALOG_DEFAULTS_CONFIG,
+} from './panel-services-defaults.config';
 
 const DIALOG_BACKDROP_CLASS = 'nxr-dialog-backdrop';
 

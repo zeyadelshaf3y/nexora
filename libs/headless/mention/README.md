@@ -96,6 +96,38 @@ mention.focus();
 - `NXR_MENTION_DEFAULT_PANEL_OFFSET` (default panel offset in px)
 - `NXR_MENTION_DEFAULT_ARIA_LABEL` (default editor aria-label)
 
+## Custom chip templates
+
+Render rich chip contents (avatar + name, `#` icon + tag, …) with `ng-template[nxrMentionChip]`. The library always owns the chip span (the mention boundary and its canonical `data-mention-text`); your template only fills the inner visual content.
+
+```html
+<div nxrMention [nxrMentionTriggers]="triggers">
+  <!-- default template (any trigger without a specific override) -->
+  <ng-template nxrMentionChip let-mention let-text="text">
+    <span class="chip-label">{{ text }}</span>
+  </ng-template>
+
+  <!-- per-trigger override -->
+  <ng-template nxrMentionChip="@" let-mention let-text="text">
+    <img class="chip-avatar" [src]="mention.attributes?.['data-avatar']" alt="" />
+    <span>{{ text }}</span>
+  </ng-template>
+
+  <ng-template nxrMentionPanel let-state="state" let-select="select"><!-- … --></ng-template>
+</div>
+```
+
+Context (`MentionChipContext`): `$implicit` / `mention` (the `MentionEntity`), `text` (canonical chip text), `trigger`.
+
+Key rules:
+
+- The template is **item-free by design**. Hydration is DOM-driven and also runs on `setDocument` restore, where the original selected item no longer exists. Put presentational data (avatar URL, initials, icon kind, color) into the mention `attributes` via `getMentionAttributes` / `insertWith(...).mentionAttributes` so it round-trips and renders identically on insert and restore.
+- Chip `attributes` are allowlisted (`class`, `title`, `data-*`, `aria-*`); `data-mention-text` is reserved/canonical and never overridable.
+- The chip carries `data-mention-trigger` so per-trigger templates resolve after restore; it round-trips through `MentionDocument.attributes`.
+- Entity `start`/`end` are `0` in the chip context (not resolved to offsets). Use `getDocument()` / `getMentions()` for positions.
+- Custom interactive controls inside a chip should `stopPropagation()` so they don't trigger chip click/hover outputs. Keep a meaningful `label`/`aria-label` when visuals are icon-only.
+- With no matching template the chip keeps its plain-text rendering (fully backward compatible).
+
 ## Trigger text vs chip (e.g. Facebook)
 
 The parser replaces the whole range **from trigger through query** (`rangeStart`–`rangeEnd`).  
@@ -115,6 +147,22 @@ Use **`insertWith`** so **`replacementText`** is only the visible name (and `men
 - `mentionValueChange` and `mentionDocumentChange` are coalesced to avoid duplicate emissions for unchanged content.
 - `mentionOpenChange` is transition-based (`true` on closed -> open, `false` on open -> closed), so repeated session checks while open do not re-emit `true`.
 - Internal note: `MentionControllerImpl` now has `close()` plus `dispose()`; `nxrMention` calls both during teardown. Package consumers should use the directive API (no deep imports).
+
+### Programmatic editing
+
+Use the template ref (`#mention="nxrMention"`) for editor/document operations:
+
+- `getPlainText()`, `getMentions()`, `getDocument()` read the current serialized state.
+- `setDocument(doc)` restores a document and suppresses `mentionDocumentChange` for sync/restore flows.
+- `updateDocument(updater, { emit? })` applies a document update and emits by default when content changes.
+- `insertMention(item, { trigger, at })` inserts or replaces an explicit range.
+- `replaceMention(idOrMatcher, item, { trigger? })` replaces one existing mention and returns `false` when not found.
+- `upsertMention(item, { mentionId, matchBy, trigger, fallbackAt })` replaces a matching mention or inserts at `fallbackAt`.
+- `removeMention(idOrMatcher)` removes one mention.
+- `updateMentionAttributes(idOrMatcher, patchOrUpdater)` patches safe chip attributes (`class`, `title`, `data-*`, `aria-*`) and refreshes chip templates.
+- `selectMentionRange(idOrMatcherOrRange)` and `focusMention(id, options?)` help build edit/inspect flows.
+
+`replaceMention` and `upsertMention` reuse the same insertion path as panel selection, including `insertWith`, `getMentionAttributes`, `beforeInsert`, `afterInsert`, chip classes, and `mentionSelect`. When replacing a library-created chip, they consume one following space if present so repeated upserts do not accumulate separators.
 
 ## RTL
 

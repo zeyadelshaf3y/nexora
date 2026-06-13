@@ -4,6 +4,7 @@ import type { Portal } from '../portal/portal';
 
 import type { ClosePolicy } from './close-policy';
 import type { CloseReason } from './close-reason';
+import type { BeforeCloseCallback, PanelDimensionOptions } from './overlay-config';
 
 /**
  * Public reference to an overlay instance.
@@ -28,8 +29,39 @@ export interface OverlayRef {
   close(reason?: CloseReason): Promise<boolean>;
   /** Overrides close animation duration for subsequent close calls. */
   setCloseAnimationDurationMs(durationMs: number | undefined): void;
+  /** True while the overlay is attached (open) and has not been closed/disposed. */
+  isOpen(): boolean;
+  /** Emits once after the overlay is attached and content is created; completes after one emission. */
+  afterOpened(): Observable<void>;
+  /**
+   * Emits the close reason at the moment close is committed (after guards pass, before the close
+   * animation). Use to react as closing begins; completes after one emission. For "fully closed",
+   * use {@link afterClosed}.
+   */
+  beforeClosed(): Observable<CloseReason | undefined>;
   /** Emits the close reason when the overlay has closed; completes after one emission. */
   afterClosed(): Observable<CloseReason | undefined>;
+
+  /**
+   * Updates the pane size at runtime and repositions. Merges with the size given at open time;
+   * pass only the dimensions you want to change. Useful from inside the opened component (via
+   * {@link OVERLAY_REF}) to grow/shrink the overlay in response to user actions. No-op when detached.
+   */
+  updateSize(size: Partial<PanelDimensionOptions>): void;
+  /**
+   * Adds CSS class(es) to the pane at runtime. No-op when detached. Useful from inside the opened
+   * component (via {@link OVERLAY_REF}) to toggle a modifier class (e.g. an "expanded" state).
+   */
+  addPanelClass(classes: string | string[]): void;
+  /** Removes CSS class(es) from the pane at runtime. No-op when detached. */
+  removePanelClass(classes: string | string[]): void;
+  /**
+   * Registers an extra before-close guard. Runs after the `beforeClose` passed at open time and
+   * after any previously added guards; returning `false` (or a promise of `false`) prevents close.
+   * Returns a function that removes the guard. Useful from inside the opened component (via
+   * {@link OVERLAY_REF}) to veto close based on its own state (e.g. unsaved changes).
+   */
+  addCloseGuard(guard: BeforeCloseCallback): () => void;
 
   /** Pane element when attached; null when detached. Use for focus or measuring. */
   getPaneElement(): HTMLElement | null;

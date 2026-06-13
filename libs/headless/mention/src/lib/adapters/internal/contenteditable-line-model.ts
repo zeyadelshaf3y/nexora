@@ -4,6 +4,7 @@ import {
   LINE_BLOCK_TAG_P,
   LINE_BREAK_TAG,
   isLineBlockTag,
+  readMentionLogicalText,
 } from './contenteditable-dom-constants';
 
 /** `<div><br></div>` (or `<p>`) as sole line child of the editing root. */
@@ -100,7 +101,7 @@ function logicalInlineLength(node: Node, editingRoot: HTMLElement): number {
 
   if (el.tagName === LINE_BREAK_TAG) return isEmptyLinePlaceholderBr(el, editingRoot) ? 0 : 1;
   if (el.hasAttribute(ATTR_MENTION_ID))
-    return (el.textContent || '').replace(/\u00A0/g, ' ').length;
+    return readMentionLogicalText(el).replace(/\u00A0/g, ' ').length;
 
   return Array.from(el.childNodes).reduce(
     (sum, kid) => sum + logicalInlineLength(kid, editingRoot),
@@ -166,6 +167,57 @@ export function linearOffsetAtEditingRootBoundary(
   }
 
   return pos;
+}
+
+/**
+ * Remove a single leading empty placeholder line (`<div><br></div>`) when it is followed by
+ * another line block. Returns whether the DOM was changed.
+ */
+export function removeLeadingEmptyArtifactLine(root: HTMLElement): boolean {
+  const first = root.firstChild;
+
+  if (!isRootLineBlock(first, root)) return false;
+  if (!isEmptyRootLineBlock(first, root)) return false;
+  if (!isRootLineBlock(first.nextSibling, root)) return false;
+
+  root.removeChild(first);
+
+  return true;
+}
+
+/**
+ * Native undo/redo of a "clear" desyncs from our structural normalization and re-inserts the
+ * restored content beneath a spurious empty placeholder line. When the rebuilt value is exactly
+ * the known pre-clear value prefixed only by blank lines, strip the leftover leading empty
+ * line(s) so we land back on the original structure. Gated strictly so legitimate content (and
+ * intentional leading blank lines) is never altered.
+ */
+export function reconcileLeadingEmptyLineArtifact(
+  root: HTMLElement,
+  expectedValue: string,
+  readValue: () => string,
+): boolean {
+  let current = readValue();
+
+  if (current === expectedValue) return false;
+  if (!current.endsWith(expectedValue)) return false;
+
+  const prefix = current.slice(0, current.length - expectedValue.length);
+  if (!/^\n+$/.test(prefix)) return false;
+
+  let changed = false;
+  let safety = 0;
+
+  while (current !== expectedValue && safety < 16) {
+    safety += 1;
+
+    if (!removeLeadingEmptyArtifactLine(root)) break;
+
+    changed = true;
+    current = readValue();
+  }
+
+  return changed;
 }
 
 /** Keep root line model sane on each input (cheap structural fixes). */
@@ -327,7 +379,9 @@ export function normalizeTextSpacesAndLineModel(
     while (node) {
       const textNode = node as Text;
       const parent = textNode.parentElement;
-      const inMention = parent != null && parent.hasAttribute(ATTR_MENTION_ID);
+      // Skip any text nested anywhere inside a chip (custom templates may wrap text in extra
+      // elements) so we never rewrite spaces inside chip-owned / Angular-rendered DOM.
+      const inMention = parent != null && parent.closest(`[${ATTR_MENTION_ID}]`) != null;
 
       if (!inMention && textNode.nodeValue?.includes(' ')) {
         textNode.nodeValue = textNode.nodeValue.replace(/ /g, '\u00A0');

@@ -1,5 +1,5 @@
 import { createId, getViewportRect as getViewportRectFromCore } from '@nexora-ui/core';
-import { Subject } from 'rxjs';
+import { ReplaySubject, Subject } from 'rxjs';
 
 import { registerCloseableRef, unregisterCloseableRef } from '../close/closeable-ref-registry';
 import type { OverlayContainerService } from '../container/overlay-container.service';
@@ -11,7 +11,7 @@ import type { ClosePolicy } from './close-policy';
 import { mergeClosePolicy } from './close-policy';
 import { CLOSE_REASON_PROGRAMMATIC, type CloseReason } from './close-reason';
 import { runOverlayCloseVisualTransition } from './overlay-close-visual';
-import type { OverlayConfig } from './overlay-config';
+import type { BeforeCloseCallback, OverlayConfig, PanelDimensionOptions } from './overlay-config';
 import {
   resolveOverlayCloseAnimationDurationMs,
   runOverlayBeforeClose,
@@ -23,8 +23,17 @@ import {
   createOverlayHostDomState,
   removeOverlayPaneAndBackdrop,
 } from './overlay-host-dom';
+import {
+  applyOverlayPaneSizingFromConfig,
+  clearOverlayPaneSizing,
+} from './overlay-pane-from-config';
 import { applyInitialOverlayPaneAndBackdropStyles } from './overlay-pane-initial-styles';
-import { DEFAULT_CLOSE_ANIMATION_MS } from './overlay-pane-styling';
+import {
+  addClasses,
+  applyStyles,
+  DEFAULT_CLOSE_ANIMATION_MS,
+  removeClasses,
+} from './overlay-pane-styling';
 import { runOverlayPositionCycle } from './overlay-position-cycle';
 import type { OverlayRef } from './overlay-ref';
 import { createOverlayRepositionRegistrations } from './overlay-reposition-registrations';
@@ -72,11 +81,20 @@ export class OverlayRefImpl implements OverlayRef {
   private host: HTMLElement | null = null;
   private closed = false;
   private closeAnimationDurationOverrideMs: number | undefined;
+  // ReplaySubject so an opener that subscribes after `await open()` (i.e. after attach has already
+  // emitted) still receives the "opened" event. Injected component content subscribes during attach
+  // and is unaffected.
+  private readonly afterOpened$ = new ReplaySubject<void>(1);
+  private readonly beforeClosed$ = new Subject<CloseReason | undefined>();
   private readonly afterClosed$ = new Subject<CloseReason | undefined>();
   private listenerCleanups: Array<() => void> = [];
   private repositionCancel: (() => void) | null = null;
   private lastPlacement: Placement | null = null;
   private readonly hostDomState = createOverlayHostDomState();
+  /** Runtime size overrides applied via {@link updateSize}, merged over the open-time config. */
+  private sizeOverrides: Partial<PanelDimensionOptions> = {};
+  /** Extra before-close guards registered via {@link addCloseGuard}, run after `config.beforeClose`. */
+  private readonly closeGuards: BeforeCloseCallback[] = [];
 
   constructor(
     private readonly config: OverlayConfig,
@@ -107,6 +125,9 @@ export class OverlayRefImpl implements OverlayRef {
     this.attachPortalAndRegisterCloseable(pane, portal);
     this.attachStrategiesAndStartEnterAnimation(pane, backdrop);
 
+    this.afterOpened$.next();
+    this.afterOpened$.complete();
+
     return true;
   }
 
@@ -122,12 +143,21 @@ export class OverlayRefImpl implements OverlayRef {
   private applyContainedHostStyles(pane: HTMLElement): void {
     if (!this.hasScopedContentHostAttached()) return;
 
+    this.applyHostScopedMaxSizes(pane, this.config.maxWidth, this.config.maxHeight);
+  }
+
+  /** Caps pane max width/height to the content host's visible rect (inset by boundaries). */
+  private applyHostScopedMaxSizes(
+    pane: HTMLElement,
+    maxWidth: string | undefined,
+    maxHeight: string | undefined,
+  ): void {
     applyPaneMaxSizesForContainedHost(
       pane,
       getOverlayBaseViewportRect(this.config.host, this.host, getViewportRectFromCore),
       this.config.boundaries,
-      this.config.maxWidth,
-      this.config.maxHeight,
+      maxWidth,
+      maxHeight,
     );
   }
 
@@ -171,6 +201,7 @@ export class OverlayRefImpl implements OverlayRef {
     if (await this.isBeforeCloseBlocking(reason, runBeforeClose)) return false;
 
     this.closed = true;
+    this.emitCloseStarting(reason);
     this.teardownListeners();
     this.config.focusStrategy.restoreOnClose(this);
 
@@ -204,6 +235,19 @@ export class OverlayRefImpl implements OverlayRef {
     return true;
   }
 
+  /**
+   * Emits the "close is committed" lifecycle: completes `afterOpened` (it can no longer emit),
+   * emits `beforeClosed` with the reason (only if the overlay actually opened), then completes it.
+   * Runs once, before the close animation.
+   */
+  private emitCloseStarting(reason: CloseReason | undefined): void {
+    this.afterOpened$.complete();
+
+    if (this.pane != null) this.beforeClosed$.next(reason);
+
+    this.beforeClosed$.complete();
+  }
+
   /** Detaches portal content, scroll strategy, and stack registration (pane may still be in DOM). */
   private detachPortalScrollAndStack(): void {
     this.detach();
@@ -223,15 +267,84 @@ export class OverlayRefImpl implements OverlayRef {
   ): Promise<boolean> {
     if (!runBeforeClose) return false;
 
-    return !(await runOverlayBeforeClose(
-      this.config.beforeClose,
-      reason,
-      CLOSE_REASON_PROGRAMMATIC,
-    ));
+    const effectiveReason = reason ?? CLOSE_REASON_PROGRAMMATIC;
+    const guards = [this.config.beforeClose, ...this.closeGuards];
+
+    for (const guard of guards) {
+      if (!(await runOverlayBeforeClose(guard, effectiveReason, CLOSE_REASON_PROGRAMMATIC))) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   setCloseAnimationDurationMs(durationMs: number | undefined): void {
     this.closeAnimationDurationOverrideMs = durationMs;
+  }
+
+  /** Merges size overrides, re-applies pane sizing, and repositions. No-op when detached. */
+  updateSize(size: Partial<PanelDimensionOptions>): void {
+    this.sizeOverrides = { ...this.sizeOverrides, ...size };
+
+    const pane = this.pane;
+    if (!pane) return;
+
+    this.applyCurrentSizing(pane);
+    this.applyPosition();
+  }
+
+  /**
+   * Clears then re-applies pane sizing. Clearing first lets `updateSize` reset a dimension to
+   * `auto` by passing `undefined`. Precedence mirrors the open-time order (config sizing, then
+   * `panelStyle`) and adds explicit runtime overrides on top, so a `panelStyle` width/max set at
+   * open time survives a later `updateSize` that only changes a different dimension. Host-scoped
+   * overlays get their max sizes re-capped to the host rect (the viewport-cap path is skipped).
+   */
+  private applyCurrentSizing(pane: HTMLElement): void {
+    const merged = { ...this.config, ...this.sizeOverrides };
+
+    clearOverlayPaneSizing(pane);
+    applyOverlayPaneSizingFromConfig(pane, merged);
+    applyStyles(pane, this.config.panelStyle);
+    this.applySizeOverrideStyles(pane);
+
+    if (this.hasScopedContentHostAttached()) {
+      this.applyHostScopedMaxSizes(pane, merged.maxWidth, merged.maxHeight);
+    }
+  }
+
+  /** Re-applies only the dimensions explicitly set via {@link updateSize}, so they win over `panelStyle`. */
+  private applySizeOverrideStyles(pane: HTMLElement): void {
+    const o = this.sizeOverrides;
+    const s = pane.style;
+
+    if (o.width != null) s.setProperty('width', o.width);
+    if (o.height != null) s.setProperty('height', o.height);
+    if (o.minWidth != null) s.setProperty('min-width', o.minWidth);
+    if (o.minHeight != null) s.setProperty('min-height', o.minHeight);
+    if (o.maxWidth != null) s.setProperty('max-width', o.maxWidth);
+    if (o.maxHeight != null) s.setProperty('max-height', o.maxHeight);
+  }
+
+  /** Adds CSS class(es) to the pane. No-op when detached. */
+  addPanelClass(classes: string | string[]): void {
+    if (this.pane) addClasses(this.pane, classes);
+  }
+
+  /** Removes CSS class(es) from the pane. No-op when detached. */
+  removePanelClass(classes: string | string[]): void {
+    if (this.pane) removeClasses(this.pane, classes);
+  }
+
+  /** Registers a before-close guard; returns a function that removes it. */
+  addCloseGuard(guard: BeforeCloseCallback): () => void {
+    this.closeGuards.push(guard);
+
+    return () => {
+      const index = this.closeGuards.indexOf(guard);
+      if (index !== -1) this.closeGuards.splice(index, 1);
+    };
   }
 
   /** Disposes the overlay (closes if still open and completes afterClosed). */
@@ -240,6 +353,21 @@ export class OverlayRefImpl implements OverlayRef {
       // Dispose is a hard teardown path and should never be vetoed by beforeClose hooks.
       void this.closeInternal(CLOSE_REASON_PROGRAMMATIC, false);
     }
+  }
+
+  /** True while the overlay is attached and has not been closed. */
+  isOpen(): boolean {
+    return !this.closed && this.pane !== null;
+  }
+
+  /** Observable that emits once after the overlay is attached and then completes. */
+  afterOpened() {
+    return this.afterOpened$.asObservable();
+  }
+
+  /** Observable that emits the close reason when close is committed (before animation) and then completes. */
+  beforeClosed() {
+    return this.beforeClosed$.asObservable();
   }
 
   /** Observable that emits the close reason when the overlay closes and then completes. */
@@ -415,10 +543,21 @@ export class OverlayRefImpl implements OverlayRef {
 
     if (!pane) return;
 
-    this.lastPlacement = runOverlayPositionCycle(pane, this.config, {
-      getViewportRect: () => this.getPositioningViewportRect(),
-      getAnchorElement: () => this.getResolvedAnchor(),
-      currentPlacement: this.lastPlacement ?? undefined,
-    });
+    this.lastPlacement = runOverlayPositionCycle(
+      pane,
+      { ...this.config, ...this.sizeOverrides },
+      {
+        getViewportRect: () => this.getPositioningViewportRect(),
+        getAnchorElement: () => this.getResolvedAnchor(),
+        currentPlacement: this.lastPlacement ?? undefined,
+      },
+    );
+
+    // The position cycle writes `transform-origin` from the placement result. When a
+    // `transformOriginElement` (trigger/anchor) is configured, that element is the source of truth
+    // for the enter/close scale animation, so re-apply it here. Otherwise a reposition during the
+    // open animation (e.g. the pane ResizeObserver's initial callback) would reset the origin to the
+    // centered placement value and the overlay would grow from its center instead of the trigger.
+    this.setTransformOriginFromTrigger(pane);
   }
 }

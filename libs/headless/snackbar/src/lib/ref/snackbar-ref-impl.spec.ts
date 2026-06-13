@@ -13,6 +13,9 @@ function createOverlayRefMock(afterClosed$: Subject<CloseReason | undefined>): O
     dispose: vi.fn(),
     close: vi.fn().mockResolvedValue(true),
     setCloseAnimationDurationMs: vi.fn(),
+    isOpen: vi.fn(() => true),
+    afterOpened: () => new Subject<void>().asObservable(),
+    beforeClosed: () => afterClosed$.asObservable(),
     afterClosed: () => afterClosed$.asObservable(),
     getPaneElement: vi.fn(() => null),
     getBackdropElement: vi.fn(() => null),
@@ -30,6 +33,10 @@ function createOverlayRefMock(afterClosed$: Subject<CloseReason | undefined>): O
     notifyOutsideClickAttempted: vi.fn(),
     reposition: vi.fn(),
     setZIndex: vi.fn(),
+    updateSize: vi.fn(),
+    addPanelClass: vi.fn(),
+    removePanelClass: vi.fn(),
+    addCloseGuard: vi.fn(() => vi.fn()),
   };
 }
 

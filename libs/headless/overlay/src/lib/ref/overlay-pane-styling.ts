@@ -100,6 +100,31 @@ export function addClasses(el: HTMLElement, classes: string | string[] | undefin
   }
 }
 
+function removeWhitespaceSeparatedClasses(el: HTMLElement, value: string | undefined): void {
+  if (!value) return;
+
+  const parts = value.split(/\s+/);
+
+  for (const t of parts) {
+    if (t) el.classList.remove(t);
+  }
+}
+
+/**
+ * Removes class tokens from an element. Accepts a string or array of strings (space-separated tokens allowed).
+ */
+export function removeClasses(el: HTMLElement, classes: string | string[] | undefined): void {
+  if (!classes) return;
+
+  if (Array.isArray(classes)) {
+    for (const token of classes) {
+      removeWhitespaceSeparatedClasses(el, token);
+    }
+  } else {
+    removeWhitespaceSeparatedClasses(el, classes);
+  }
+}
+
 /**
  * Applies inline styles from a record. Keys are camelCased and converted to kebab-case.
  */

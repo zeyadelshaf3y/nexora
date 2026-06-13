@@ -12,10 +12,12 @@ import {
   ATTR_CONTENTEDITABLE,
   ATTR_MENTION_ID,
   ATTR_MENTION_LABEL,
+  ATTR_MENTION_TEXT,
   LINE_BREAK_TAG,
   isLineBlockTag,
+  readMentionLogicalText,
 } from './internal/contenteditable-dom-constants';
-import { getSelectionInRoot } from './internal/contenteditable-events';
+import { emitEditorInputEvent, getSelectionInRoot } from './internal/contenteditable-events';
 import { insertTextAtCaretInEditor } from './internal/contenteditable-insert-text';
 import {
   isEmptyLinePlaceholderBr,
@@ -24,11 +26,13 @@ import {
 import { insertLineBreakInEditor } from './internal/contenteditable-linebreak';
 import {
   createMentionChipElement,
+  applyMentionChipAttributes,
   replaceTextRangeInEditor,
 } from './internal/contenteditable-replace';
 import {
   getBoundingRectAtLinearOffset,
   getCaretRectFromSelection,
+  setSelectionRangeAtLinearOffsets,
   walkSelectionModel,
 } from './internal/contenteditable-selection';
 import { subscribeEditorSurface } from './internal/contenteditable-subscribe';
@@ -63,7 +67,9 @@ function extractMentionAttributes(el: Element): Record<string, string> | undefin
     if (
       attr.name === ATTR_MENTION_ID ||
       attr.name === ATTR_MENTION_LABEL ||
-      attr.name === ATTR_CONTENTEDITABLE
+      attr.name === ATTR_MENTION_TEXT ||
+      attr.name === ATTR_CONTENTEDITABLE ||
+      attr.name === 'spellcheck'
     ) {
       continue;
     }
@@ -102,7 +108,7 @@ function buildMentionDocumentFromDom(root: Node): MentionDocument {
     }
 
     if (isMentionElement(el)) {
-      const content = normalizeNbsp(el.textContent || '');
+      const content = normalizeNbsp(readMentionLogicalText(el));
       const start = text.length;
       text += content;
 
@@ -387,6 +393,10 @@ export function createContenteditableAdapter(
       return getLinearSelectionOffsets();
     },
 
+    setSelectionRange(range: MentionSelectionRange): boolean {
+      return setSelectionRangeAtLinearOffsets(root, range.start, range.end);
+    },
+
     getSelectionStart(): number | null {
       return this.getSelectionRange()?.start ?? null;
     },
@@ -442,6 +452,32 @@ export function createContenteditableAdapter(
         invalidateSnapshotCache,
         baseChipClass,
       });
+    },
+
+    updateMentionAttributes(
+      mentionId: string,
+      attributes: MentionEntity['attributes'],
+      baseChipClass?: string,
+      index?: number,
+    ): boolean {
+      const chips = Array.from(root.querySelectorAll<HTMLElement>(`[${ATTR_MENTION_ID}]`));
+      const matchesId = (el: HTMLElement | undefined): boolean =>
+        el != null && el.getAttribute(ATTR_MENTION_ID) === mentionId;
+
+      // Chips are in document order, so prefer the chip at the entity's index to disambiguate
+      // repeated mentions of the same id; fall back to the first chip with that id.
+      const byIndex = index != null ? chips[index] : undefined;
+      const chip = matchesId(byIndex)
+        ? byIndex
+        : chips.find((el) => el.getAttribute(ATTR_MENTION_ID) === mentionId);
+
+      if (!chip) return false;
+
+      applyMentionChipAttributes(chip, attributes, baseChipClass);
+      invalidateSnapshotCache();
+      emitEditorInputEvent(root);
+
+      return true;
     },
 
     isFocused(): boolean {
