@@ -11,7 +11,6 @@ import type {
 } from '../types/open-types';
 
 import { resolveDrawerPanelDimensions } from './drawer-dimensions';
-import { OverlayService, type OverlayOpenConfig } from './overlay.service';
 import {
   DEFAULT_OVERLAY_DEFAULTS_CONFIG,
   mergeOverlayClassValue,
@@ -21,15 +20,16 @@ import {
   mergeOverlayStyleValue,
   warnOnIgnoredPanelServiceOverlayDefaults,
 } from './overlay-defaults.config';
-import {
-  DEFAULT_DRAWER_DEFAULTS_CONFIG,
-  DRAWER_DEFAULTS_CONFIG,
-} from './panel-services-defaults.config';
+import { OverlayService, type OverlayOpenConfig } from './overlay.service';
 import {
   resolvePanelOverlayFocusStrategy,
   resolvePanelOverlayHasBackdrop,
   resolvePanelOverlayScrollStrategy,
 } from './panel-overlay-modal-defaults';
+import {
+  DEFAULT_DRAWER_DEFAULTS_CONFIG,
+  DRAWER_DEFAULTS_CONFIG,
+} from './panel-services-defaults.config';
 
 const DRAWER_BACKDROP_CLASS = 'nxr-drawer-backdrop';
 

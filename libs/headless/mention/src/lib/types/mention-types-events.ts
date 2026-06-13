@@ -2,7 +2,12 @@
  * Mention events, callbacks, and programmatic insertion options.
  */
 
-import type { MentionEntity, MentionLinearRange } from './mention-types-core';
+import type {
+  MentionAttributes,
+  MentionDocument,
+  MentionEntity,
+  MentionLinearRange,
+} from './mention-types-core';
 
 /**
  * Emitted by chip interaction outputs (mouseover/out delegation + click).
@@ -50,3 +55,51 @@ export interface MentionInsertOptions {
   /** Where to insert when not using the current selection/caret. */
   readonly at?: 'selection' | 'start' | 'end' | MentionLinearRange;
 }
+
+/** Predicate used by programmatic APIs to resolve a mention from the current document snapshot. */
+export type MentionEntityPredicate = (mention: MentionEntity, index: number) => boolean;
+
+/** Shared target accepted by APIs that operate on an existing mention. */
+export type MentionEntityTarget = string | MentionEntityPredicate;
+
+/** Programmatic mention upsert options. */
+export interface MentionUpsertOptions {
+  /** Trigger to use when inserting/replacing through trigger config. */
+  readonly trigger?: string;
+  /** Mention id to replace when present. */
+  readonly mentionId?: string;
+  /** Custom matcher for existing mentions. Checked after `mentionId` when both are provided. */
+  readonly matchBy?: MentionEntityPredicate;
+  /** Where to insert when no existing mention matches. Defaults to the current selection. */
+  readonly fallbackAt?: 'selection' | 'start' | 'end' | MentionLinearRange;
+}
+
+/** Programmatic mention replacement options. */
+export interface MentionReplaceOptions {
+  /** Trigger to use when replacing through trigger config. */
+  readonly trigger?: string;
+}
+
+/** Programmatic mention focus behavior. */
+export interface MentionFocusOptions {
+  /** Scroll the chip into view before focusing/selecting it. Default `false`. */
+  readonly scrollIntoView?: boolean | ScrollIntoViewOptions;
+  /** Selection placement after focus. Default `'select'`. */
+  readonly select?: 'select' | 'before' | 'after' | false;
+  /** Prevent browser scroll while focusing the editor. Default `true`. */
+  readonly preventScroll?: boolean;
+}
+
+/** Programmatic document update options. */
+export interface MentionUpdateDocumentOptions {
+  /** Emit value/document outputs when the applied document differs. Default `true`. */
+  readonly emit?: boolean;
+}
+
+/** Attribute patch or updater for `MentionDirective.updateMentionAttributes(...)`. */
+export type MentionAttributesUpdate =
+  | MentionAttributes
+  | ((attributes: MentionAttributes | undefined, mention: MentionEntity) => MentionAttributes);
+
+/** Document updater for `MentionDirective.updateDocument(...)`. */
+export type MentionDocumentUpdater = (document: MentionDocument) => MentionDocument;

@@ -77,4 +77,40 @@ describe('MentionChipInteractionDispatcher', () => {
     root.remove();
     outside.remove();
   });
+
+  it('emits canonical data-mention-text (not inner template markup) on enter', () => {
+    const root = document.createElement('div');
+    const chip = document.createElement('span');
+    chip.setAttribute('data-mention-id', 'u1');
+    chip.setAttribute('data-mention-label', 'Alice Smith');
+    chip.setAttribute('data-mention-text', '@alice');
+    // Hydrated custom template: avatar initials + name would otherwise pollute textContent.
+    chip.innerHTML = '<span aria-hidden="true">AS</span><span>Alice Smith</span>';
+    root.appendChild(chip);
+    document.body.appendChild(root);
+
+    const onEnter = vi.fn();
+
+    const dispatcher = new MentionChipInteractionDispatcher({
+      root,
+      mentionIdAttr: 'data-mention-id',
+      mentionLabelAttr: 'data-mention-label',
+      getLeaveDelayMs: () => 0,
+      onEnter,
+      onLeave: vi.fn(),
+      onChipClick: vi.fn(),
+    });
+
+    dispatcher.attach();
+
+    const innerName = chip.lastElementChild as HTMLElement;
+    innerName.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+    expect(onEnter).toHaveBeenCalledTimes(1);
+    expect(onEnter.mock.calls[0]?.[0].entity.text).toBe('@alice');
+    expect(onEnter.mock.calls[0]?.[0].element).toBe(chip);
+
+    dispatcher.dispose();
+    root.remove();
+  });
 });

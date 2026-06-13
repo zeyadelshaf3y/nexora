@@ -529,7 +529,9 @@
     <p class="page-section-desc">
       Hover over a mention chip to see user info. Uses <code>mentionChipMouseEnter</code> /
       <code>mentionChipClick</code> outputs. The <code>event.element</code> is passed to
-      <code>nxrPopoverAnchor</code> so the popover is anchored to the chip.
+      <code>nxrPopoverAnchor</code> so the popover is anchored to the chip. Chips use a custom
+      <code>nxrMentionChip="&#64;"</code> template (avatar + name); hover still resolves to the
+      outer chip and <code>entity.text</code> stays clean.
     </p>
     <div class="mention-demo-wrapper">
       <span
@@ -559,6 +561,15 @@
             Type &#64; and select a user, then hover over the chip…
           </div>
         }
+        <ng-template nxrMentionChip="@" let-mention let-text="text">
+          <span
+            class="demo-chip-avatar"
+            [style.background]="mention.attributes?.['data-color']"
+            aria-hidden="true"
+            >{{ mention.attributes?.['data-initials'] }}</span
+          >
+          <span class="demo-chip-name">{{ text }}</span>
+        </ng-template>
         <ng-template nxrMentionPanel let-state="state" let-select="select">
           <div class="mention-panel">
             @if (state.loading) {
@@ -659,9 +670,9 @@
     <p class="page-section-desc">
       Access the editor via <code>#apiEditor="nxrMention"</code> or
       <code>ViewChild(MentionDirective)</code>. Signals: <code>isEmpty</code>, <code>isOpen</code>,
-      <code>currentQuery</code>. Methods: <code>clear()</code>, <code>getMentions()</code>,
-      <code>getDocument()</code>, <code>getPlainText()</code>, <code>focus()</code>,
-      <code>blur()</code>.
+      <code>currentQuery</code>. This section exercises the read, document, insertion, upsert,
+      selection, focus, and chip lookup APIs. A custom <code>nxrMentionChip="&#64;"</code> template
+      renders an avatar chip so programmatic updates also demonstrate template hydration.
     </p>
     <div class="mention-demo-wrapper">
       <div
@@ -676,6 +687,15 @@
         @if (apiEditor.isEmpty()) {
           <div class="demo-placeholder">Use the API buttons below…</div>
         }
+        <ng-template nxrMentionChip="@" let-mention let-text="text">
+          <span
+            class="demo-chip-avatar"
+            [style.background]="mention.attributes?.['data-color']"
+            aria-hidden="true"
+            >{{ mention.attributes?.['data-initials'] }}</span
+          >
+          <span class="demo-chip-name">{{ text }}</span>
+        </ng-template>
         <ng-template nxrMentionPanel let-state="state" let-select="select">
           <div class="mention-panel">
             @if (state.loading) {
@@ -698,13 +718,46 @@
           </div>
         </ng-template>
       </div>
-      <div class="mention-doc-actions">
-        <button type="button" (click)="apiGetMentions()">getMentions()</button>
-        <button type="button" (click)="apiGetDocument()">getDocument()</button>
-        <button type="button" (click)="apiGetPlainText()">getPlainText()</button>
-        <button type="button" (click)="apiInsertAlice()">insertMention(alice)</button>
-        <button type="button" (click)="apiClear()">clear()</button>
-        <button type="button" (click)="apiFocus()">focus()</button>
+      <div class="mention-api-groups">
+        <div class="mention-api-group">
+          <span class="mention-api-group-title">Read</span>
+          <button type="button" (click)="apiGetMentions()">getMentions()</button>
+          <button type="button" (click)="apiGetDocument()">getDocument()</button>
+          <button type="button" (click)="apiGetPlainText()">getPlainText()</button>
+        </div>
+        <div class="mention-api-group">
+          <span class="mention-api-group-title">Document</span>
+          <button type="button" (click)="apiSetDocument()">setDocument(demo)</button>
+          <button type="button" (click)="apiUpdateDocument()">updateDocument(append)</button>
+          <button type="button" (click)="apiClear()">clear()</button>
+        </div>
+        <div class="mention-api-group">
+          <span class="mention-api-group-title">Insert + panel</span>
+          <button type="button" (click)="apiInsertAlice()">insertMention(alice)</button>
+          <button type="button" (click)="apiInsertTrigger()">insertTextAtCaret + detect</button>
+          <button type="button" (click)="apiClosePanel()">closeMentionPanel()</button>
+        </div>
+        <div class="mention-api-group">
+          <span class="mention-api-group-title">Edit mentions</span>
+          <button type="button" (click)="apiUpsertBob()">upsertMention(bob)</button>
+          <button type="button" (click)="apiReplaceAlice()">replaceMention(alice → diana)</button>
+          <button type="button" (click)="apiUpdateAliceAttributes()">
+            updateMentionAttributes()
+          </button>
+          <button type="button" (click)="apiRemoveBob()">removeMention(bob)</button>
+        </div>
+        <div class="mention-api-group">
+          <span class="mention-api-group-title">Focus + selection</span>
+          <button type="button" (click)="apiFocus()">focus()</button>
+          <button type="button" (click)="apiBlur()">blur()</button>
+          <button type="button" (click)="apiSelectAliceRange()">selectMentionRange(alice)</button>
+          <button type="button" (click)="apiFocusBob()">focusMention(bob)</button>
+        </div>
+        <div class="mention-api-group">
+          <span class="mention-api-group-title">Chip DOM</span>
+          <button type="button" (click)="apiGetAliceChip()">getChipElement(alice)</button>
+          <button type="button" (click)="apiGetChipElements()">getChipElements()</button>
+        </div>
       </div>
       <div class="mention-events">
         <span class="badge">isEmpty</span> {{ apiEditor.isEmpty() }}<br />

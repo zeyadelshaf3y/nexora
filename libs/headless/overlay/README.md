@@ -104,6 +104,52 @@ if (ref) {
 
 **Options:** `type` (`'dialog'` | `'drawer'`), `placement` (dialog or drawer positions), `drawerSize` (for drawer), `maxWidth`, `maxHeight`, `beforeOpen`, `beforeClose`. Return `false` from `beforeOpen` to cancel opening (the promise resolves with `null`); return `false` from `beforeClose` to prevent closing. For components: `injector`, `inputs`, `outputs`.
 
+## Controlling the overlay from inside the content (`OVERLAY_REF`)
+
+When you open **component** content, the overlay's own `OverlayRef` is provided through the **`OVERLAY_REF`** injection token. The opened component can inject it to control the overlay it lives in — no `injector` factory required. (Templates already capture the opener's injector; close them with `nxrDialogClose` / `nxrDrawerClose`.) Any custom `injector` you pass to `open()` becomes the parent of the provided injector, so your own tokens still resolve.
+
+```ts
+import { OVERLAY_REF } from '@nexora-ui/overlay';
+
+@Component({
+  /* ... */
+})
+export class MyDialogComponent {
+  private readonly overlay = inject(OVERLAY_REF);
+
+  expand(): void {
+    // Merges with the size given at open time; pass undefined to reset a dimension to auto.
+    this.overlay.updateSize({ height: '70vh', maxHeight: '90vh' });
+    this.overlay.addPanelClass('my-dialog--expanded');
+  }
+
+  constructor() {
+    // Veto close based on the component's own state. Runs after the opener's beforeClose.
+    const removeGuard = this.overlay.addCloseGuard(() => !this.hasUnsavedChanges());
+    inject(DestroyRef).onDestroy(removeGuard);
+  }
+}
+```
+
+**Runtime control methods on `OverlayRef`:**
+
+| Method                                                 | Purpose                                                                                                                                                                  |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `updateSize(size)`                                     | Re-apply pane dimensions and reposition. Merges with the open-time size; pass `undefined` for a dimension to reset it to `auto` / the viewport cap. No-op when detached. |
+| `addPanelClass(classes)` / `removePanelClass(classes)` | Toggle pane CSS class(es) at runtime. No-op when detached.                                                                                                               |
+| `addCloseGuard(guard)`                                 | Register an extra `beforeClose` guard; runs after the open-time `beforeClose`. Returns a function that removes it. Return `false` to veto close.                         |
+
+**Lifecycle observables (each emits once, then completes):**
+
+| Method                                                 | Emits                                                                |
+| ------------------------------------------------------ | -------------------------------------------------------------------- |
+| `afterOpened(): Observable<void>`                      | After the overlay is attached and content is created.                |
+| `beforeClosed(): Observable<CloseReason \| undefined>` | When close is committed (guards passed), before the close animation. |
+| `afterClosed(): Observable<CloseReason \| undefined>`  | After the overlay has fully closed and detached.                     |
+| `isOpen(): boolean`                                    | Synchronous state check: `true` while attached and not yet closed.   |
+
+Results are still passed out via component `outputs` (or the opener's `afterClosed`/shared state); `close()` does not carry a typed return value.
+
 ## Anchored overlays and arrow (e.g. popovers)
 
 For overlays anchored to an element (e.g. popover next to a trigger), use **`AnchoredStrategy`** with 12 placements: `top-start`, `top`, `top-end`, `bottom-start`, `bottom`, `bottom-end`, `start-top`, `start`, `start-end`, `end-start`, `end`, `end-end`. **RTL**: `start`/`end` and placement logic use the anchor’s (or nearest `[dir]` / document) direction via **`getResolvedDir`** from `@nexora-ui/core`; no extra configuration required.
@@ -142,12 +188,12 @@ The overlay pane has `data-placement` set (e.g. `dialog-center`, `drawer-end`) a
 
 ## API surface
 
-| Kind         | Symbols                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Notes                                                                                                                 |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| **Stable**   | `OverlayService`, `OverlayRef`, `OverlayConfig`, `DialogService`, `DrawerService`, `ClosePolicy`, position/scroll/focus strategies, `getContainingOverlayRef`, `createAnchoredOverlayConfig`, `createDropdownAnchoredConfig`, `createMenuAnchoredConfig`, `BaseAnchoredPresetParams`, `composeBeforeOpenCallbacks`, `composeBeforeCloseCallbacks`, `TemplatePortal`, `ComponentPortal`, close reasons, directives (`nxrOverlay`, `nxrDialogClose`, etc.) | Safe for app and other Nexora libs; we avoid breaking these in minor/patch releases.                                  |
-| **Internal** | `handleCloseClick`, `closestCloseableRef`, `registerCloseableRef`, `unregisterCloseableRef`                                                                                                                                                                                                                                                                                                                                                              | Used by close directives and overlay impl. Prefer `getContainingOverlayRef` when you need the containing overlay ref. |
-| **Internal** | `applyComponentInputs`, `subscribeComponentOutputs`, `isComponent`                                                                                                                                                                                                                                                                                                                                                                                       | Used by overlay and snackbar services for component content; may change.                                              |
-| **Internal** | Strategy/ref implementation classes, positioning helpers (e.g. placement-utils)                                                                                                                                                                                                                                                                                                                                                                          | Not exported; only strategies and config builders are part of the public API so the package stays tree-shakeable.     |
+| Kind         | Symbols                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Notes                                                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Stable**   | `OverlayService`, `OverlayRef`, `OVERLAY_REF`, `OverlayConfig`, `DialogService`, `DrawerService`, `ClosePolicy`, position/scroll/focus strategies, `getContainingOverlayRef`, `createAnchoredOverlayConfig`, `createDropdownAnchoredConfig`, `createMenuAnchoredConfig`, `BaseAnchoredPresetParams`, `composeBeforeOpenCallbacks`, `composeBeforeCloseCallbacks`, `TemplatePortal`, `ComponentPortal`, close reasons, directives (`nxrOverlay`, `nxrDialogClose`, etc.) | Safe for app and other Nexora libs; we avoid breaking these in minor/patch releases.                                  |
+| **Internal** | `handleCloseClick`, `closestCloseableRef`, `registerCloseableRef`, `unregisterCloseableRef`                                                                                                                                                                                                                                                                                                                                                                             | Used by close directives and overlay impl. Prefer `getContainingOverlayRef` when you need the containing overlay ref. |
+| **Internal** | `applyComponentInputs`, `subscribeComponentOutputs`, `isComponent`                                                                                                                                                                                                                                                                                                                                                                                                      | Used by overlay and snackbar services for component content; may change.                                              |
+| **Internal** | Strategy/ref implementation classes, positioning helpers (e.g. placement-utils)                                                                                                                                                                                                                                                                                                                                                                                         | Not exported; only strategies and config builders are part of the public API so the package stays tree-shakeable.     |
 
 ## Conventions
 

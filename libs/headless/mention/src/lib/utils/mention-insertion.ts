@@ -1,3 +1,4 @@
+import { ATTR_MENTION_TRIGGER } from '../adapters/internal/contenteditable-dom-constants';
 import type { MentionTextSurfaceAdapter } from '../adapters/mention-surface';
 import type {
   MentionInsertion,
@@ -52,7 +53,9 @@ export function buildMentionInsertion<T>(
   const mergedClass = mergeMentionClassTokens(classFromConfig, classFromAttrs, classFromInsertion);
 
   const mergedMentionAttributes = mergeMentionAttributeRecords(
-    mentionAttrs,
+    // Tag the chip with its trigger so per-trigger chip templates can resolve it (round-trips
+    // through `MentionDocument.attributes`). Caller-provided attributes still win on conflict.
+    { [ATTR_MENTION_TRIGGER]: config.trigger, ...(mentionAttrs ?? {}) },
     base.mentionAttributes,
     mergedClass,
   );

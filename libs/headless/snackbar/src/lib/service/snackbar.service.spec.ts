@@ -64,6 +64,10 @@ function createMockOverlayRef(
     }) as OverlayRef['dispose'],
     close: close as OverlayRef['close'],
     setCloseAnimationDurationMs: vi.fn() as OverlayRef['setCloseAnimationDurationMs'],
+    isOpen: (() => true) as OverlayRef['isOpen'],
+    afterOpened: (() => new Subject<void>().asObservable()) as OverlayRef['afterOpened'],
+    beforeClosed: ((): Observable<CloseReason | undefined> =>
+      afterClosed$.asObservable()) as OverlayRef['beforeClosed'],
     afterClosed: ((): Observable<CloseReason | undefined> =>
       afterClosed$.asObservable()) as OverlayRef['afterClosed'],
     getPaneElement: vi.fn(() => pane) as OverlayRef['getPaneElement'],
@@ -79,6 +83,10 @@ function createMockOverlayRef(
     notifyOutsideClickAttempted: vi.fn() as OverlayRef['notifyOutsideClickAttempted'],
     reposition: vi.fn() as OverlayRef['reposition'],
     setZIndex: vi.fn() as OverlayRef['setZIndex'],
+    updateSize: vi.fn() as OverlayRef['updateSize'],
+    addPanelClass: vi.fn() as OverlayRef['addPanelClass'],
+    removePanelClass: vi.fn() as OverlayRef['removePanelClass'],
+    addCloseGuard: vi.fn(() => vi.fn()) as OverlayRef['addCloseGuard'],
   };
 }
 

@@ -14,6 +14,7 @@ export {
   type ClosePolicyPresetName,
 } from './lib/ref/close-policy-presets';
 export type { OverlayRef } from './lib/ref/overlay-ref';
+export { OVERLAY_REF } from './lib/ref/overlay-ref-token';
 export type {
   ArrowSize,
   OverlayConfig,

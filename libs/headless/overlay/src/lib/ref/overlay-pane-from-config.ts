@@ -31,6 +31,28 @@ export type OverlayPaneSizingFromConfig = Pick<
   'width' | 'height' | 'minWidth' | 'minHeight' | 'maxWidth' | 'maxHeight' | 'host' | 'boundaries'
 >;
 
+/** Pane sizing properties managed by {@link applyOverlayPaneSizingFromConfig}. */
+const OVERLAY_PANE_SIZING_PROPERTIES = [
+  'width',
+  'height',
+  'min-width',
+  'min-height',
+  'max-width',
+  'max-height',
+] as const;
+
+/**
+ * Removes all pane sizing inline styles so they can be re-applied from scratch.
+ *
+ * Used by `OverlayRef.updateSize` before re-applying, so passing `undefined` for a dimension
+ * resets it to `auto` / the viewport cap instead of leaving the previous inline value in place.
+ */
+export function clearOverlayPaneSizing(pane: HTMLElement): void {
+  for (const property of OVERLAY_PANE_SIZING_PROPERTIES) {
+    pane.style.removeProperty(property);
+  }
+}
+
 /**
  * Applies width/height/min* on the pane. When **`overlayHasHostOption(config)`** is false, sets max-*
  * capped to the effective viewport (optionally inset by `boundaries`). Host-scoped max sizes are

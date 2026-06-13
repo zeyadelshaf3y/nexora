@@ -7,6 +7,7 @@ import { listen } from '@nexora-ui/core';
 
 import type { MentionSurfaceCallbacks, MentionTextSurfaceAdapter } from '../mention-surface';
 
+import { createUndoClearArtifactReconciler } from './contenteditable-history-reconcile';
 import {
   ensureRootLineModel,
   normalizeStructuralBrIntoLineRows,
@@ -105,10 +106,18 @@ export function subscribeEditorSurface(params: {
   );
 
   if (callbacks.input) {
-    addRootListener('input', () => {
+    const undoReconciler = createUndoClearArtifactReconciler({
+      root,
+      adapter,
+      invalidateSnapshotCache,
+    });
+
+    addRootListener('input', (event) => {
       invalidateSnapshotCache();
       normalizeEditorTextSpacing(root);
+      undoReconciler.reconcile(event);
       callbacks.input?.();
+      undoReconciler.record();
     });
   }
 

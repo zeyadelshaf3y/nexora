@@ -10,6 +10,7 @@
 
 export { MentionDirective } from './lib/directives/mention.directive';
 export { MentionPanelDirective } from './lib/directives/mention-panel.directive';
+export { MentionChipDirective } from './lib/directives/mention-chip.directive';
 export { MentionHeaderDirective } from './lib/directives/mention-header.directive';
 export { MentionFooterDirective } from './lib/directives/mention-footer.directive';
 export { MentionScrollIntoViewDirective } from './lib/directives/mention-scroll-into-view.directive';
@@ -26,6 +27,7 @@ export type {
   MentionPointerHighlight,
   MentionEntity,
   MentionDocument,
+  MentionChipContext,
   MentionChipInteractionEvent,
   MentionSelectEvent,
   MentionSelectHandler,
@@ -34,6 +36,14 @@ export type {
   MentionBeforePasteHandler,
   MentionPasteEvent,
   MentionInsertOptions,
+  MentionEntityPredicate,
+  MentionEntityTarget,
+  MentionUpsertOptions,
+  MentionReplaceOptions,
+  MentionFocusOptions,
+  MentionUpdateDocumentOptions,
+  MentionAttributesUpdate,
+  MentionDocumentUpdater,
 } from './lib/types/mention-types';
 export type { MentionPanelContext } from './lib/directives/mention-panel.directive';
 export { NXR_MENTION_OVERLAY_PANE_CLASS } from './lib/constants/mention-overlay-constants';

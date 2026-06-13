@@ -39,6 +39,17 @@ function createMockOverlayRef(
     attach: () => Promise.resolve(true),
     detach: () => {},
     dispose: () => {},
+    isOpen: () => true,
+    afterOpened: () =>
+      ({
+        subscribe: () => ({ unsubscribe: () => {} }),
+        pipe: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
+      }) as ReturnType<OverlayRef['afterOpened']>,
+    beforeClosed: () =>
+      ({
+        subscribe: () => ({ unsubscribe: () => {} }),
+        pipe: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
+      }) as ReturnType<OverlayRef['beforeClosed']>,
     afterClosed: () =>
       ({
         subscribe: () => ({ unsubscribe: () => {} }),
@@ -47,6 +58,10 @@ function createMockOverlayRef(
     reposition: () => {},
     setZIndex: () => {},
     setCloseAnimationDurationMs: () => {},
+    updateSize: () => {},
+    addPanelClass: () => {},
+    removePanelClass: () => {},
+    addCloseGuard: () => () => {},
   } as OverlayRef;
 }
 

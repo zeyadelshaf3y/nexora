@@ -33,6 +33,10 @@ function overlayRefWithDispose(dispose: OverlayRef['dispose']): OverlayRef {
     dispose,
     close: noopFn.mockImplementation(noopAsync) as OverlayRef['close'],
     setCloseAnimationDurationMs: noopFn as OverlayRef['setCloseAnimationDurationMs'],
+    isOpen: (() => true) as OverlayRef['isOpen'],
+    afterOpened: (() => new Subject<void>().asObservable()) as OverlayRef['afterOpened'],
+    beforeClosed: ((): Observable<CloseReason | undefined> =>
+      afterClosed$.asObservable()) as OverlayRef['beforeClosed'],
     afterClosed: ((): Observable<CloseReason | undefined> =>
       afterClosed$.asObservable()) as OverlayRef['afterClosed'],
     getPaneElement: (): null => null,
@@ -44,6 +48,10 @@ function overlayRefWithDispose(dispose: OverlayRef['dispose']): OverlayRef {
     notifyOutsideClickAttempted: noopFn as OverlayRef['notifyOutsideClickAttempted'],
     reposition: noopFn as OverlayRef['reposition'],
     setZIndex: noopFn as OverlayRef['setZIndex'],
+    updateSize: noopFn as OverlayRef['updateSize'],
+    addPanelClass: noopFn as OverlayRef['addPanelClass'],
+    removePanelClass: noopFn as OverlayRef['removePanelClass'],
+    addCloseGuard: noopFn.mockReturnValue(noopFn) as unknown as OverlayRef['addCloseGuard'],
   };
 }
 

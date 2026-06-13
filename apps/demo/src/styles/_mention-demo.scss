@@ -151,6 +151,28 @@ app-mention-page .demo-placeholder,
   font-weight: 500;
 }
 
+/* ─── Custom chip template (avatar + name via ng-template[nxrMentionChip]) ─── */
+.demo-chip-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-inline-end: 0.25rem;
+  border-radius: 50%;
+  background: var(--nxr-primary, #6366f1);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.demo-chip-name {
+  vertical-align: middle;
+}
+
 /* ─── Portaled overlay (global) ─── */
 .nxr-mention-overlay-pane {
   overflow: visible;
@@ -293,7 +315,35 @@ app-mention-page .mention-doc-actions {
   align-items: center;
 }
 
-app-mention-page .mention-doc-actions button {
+app-mention-page .mention-api-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.75rem;
+  max-width: 48rem;
+}
+
+app-mention-page .mention-api-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--nxr-border-subtle, #f1f5f9);
+  border-radius: var(--nxr-radius, 8px);
+  background: var(--nxr-bg-subtle, #f8fafc);
+}
+
+app-mention-page .mention-api-group-title {
+  flex: 1 0 100%;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--nxr-text-muted, #64748b);
+  text-transform: uppercase;
+}
+
+app-mention-page .mention-doc-actions button,
+app-mention-page .mention-api-group button {
   padding: 0.5rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -310,12 +360,14 @@ app-mention-page .mention-doc-actions button {
     box-shadow var(--nxr-duration-fast, 0.15s) ease;
 }
 
-app-mention-page .mention-doc-actions button:hover {
+app-mention-page .mention-doc-actions button:hover,
+app-mention-page .mention-api-group button:hover {
   border-color: var(--nxr-border-strong, #cbd5e1);
   background: var(--nxr-bg-subtle, #f8fafc);
 }
 
-app-mention-page .mention-doc-actions button:active {
+app-mention-page .mention-doc-actions button:active,
+app-mention-page .mention-api-group button:active {
   box-shadow: none;
 }
 

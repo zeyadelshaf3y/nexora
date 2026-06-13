@@ -13,13 +13,14 @@ import {
   ATTR_CONTENTEDITABLE,
   ATTR_MENTION_ID,
   ATTR_MENTION_LABEL,
+  ATTR_MENTION_TEXT,
 } from './contenteditable-dom-constants';
 import { emitEditorInputEvent } from './contenteditable-events';
 import { walkSelectionModel } from './contenteditable-selection';
 
 export type MentionReplacement = string | MentionInsertion;
 
-function isAllowedMentionAttributeName(name: string): boolean {
+export function isAllowedMentionAttributeName(name: string): boolean {
   const lower = name.toLowerCase();
   if (lower === 'class' || lower === 'title') return true;
   if (lower.startsWith('data-') || lower.startsWith('aria-')) return true;
@@ -27,12 +28,13 @@ function isAllowedMentionAttributeName(name: string): boolean {
   return false;
 }
 
-function isProtectedMentionAttributeName(name: string): boolean {
+export function isProtectedMentionAttributeName(name: string): boolean {
   const lower = name.toLowerCase();
 
   return (
     lower === ATTR_MENTION_ID.toLowerCase() ||
     lower === ATTR_MENTION_LABEL.toLowerCase() ||
+    lower === ATTR_MENTION_TEXT.toLowerCase() ||
     lower === ATTR_CONTENTEDITABLE.toLowerCase() ||
     lower === 'spellcheck'
   );
@@ -65,6 +67,10 @@ export function createMentionChipElement(
   const mentionSpan = doc.createElement('span');
   mentionSpan.setAttribute(ATTR_MENTION_ID, options.id ?? '');
   if (options.label) mentionSpan.setAttribute(ATTR_MENTION_LABEL, options.label);
+  // Canonical logical text lives in an attribute so a custom chip template can replace the
+  // inner DOM without affecting the document/offset model. `textContent` is the no-template
+  // fallback rendering.
+  mentionSpan.setAttribute(ATTR_MENTION_TEXT, options.text);
   mentionSpan.textContent = options.text;
   mentionSpan.setAttribute(ATTR_CONTENTEDITABLE, 'false');
   mentionSpan.setAttribute('spellcheck', 'false');
@@ -95,6 +101,43 @@ export function createMentionChipElement(
   }
 
   return mentionSpan;
+}
+
+export function applyMentionChipAttributes(
+  mentionSpan: HTMLElement,
+  attributes: Record<string, string> | undefined,
+  baseChipClass?: string,
+): void {
+  for (const attr of Array.from(mentionSpan.attributes)) {
+    if (!isAllowedMentionAttributeName(attr.name)) continue;
+    if (isProtectedMentionAttributeName(attr.name)) continue;
+    mentionSpan.removeAttribute(attr.name);
+  }
+
+  const baseClass = baseChipClass ?? '';
+  const attrClass = readClassFromAttrMap(attributes) ?? '';
+  const classParts: string[] = [];
+
+  if (baseClass) classParts.push(baseClass);
+  if (attrClass) classParts.push(attrClass);
+
+  const mergedClass = classParts.join(' ');
+
+  if (mergedClass) {
+    mentionSpan.setAttribute('class', mergedClass);
+  } else {
+    mentionSpan.removeAttribute('class');
+  }
+
+  if (!attributes) return;
+
+  for (const key in attributes) {
+    if (!Object.prototype.hasOwnProperty.call(attributes, key)) continue;
+    if (key === 'class') continue;
+    if (!isAllowedMentionAttributeName(key)) continue;
+    if (isProtectedMentionAttributeName(key)) continue;
+    mentionSpan.setAttribute(key, attributes[key]);
+  }
 }
 
 export function replaceTextRangeInEditor(params: {

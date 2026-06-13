@@ -253,3 +253,27 @@ export interface MentionDocument {
   readonly bodyText: string;
   readonly mentions: readonly MentionEntity[];
 }
+
+/**
+ * Context passed to a custom chip template (`ng-template[nxrMentionChip]`).
+ *
+ * The template renders the *visual* contents of a chip; the surrounding chip span (the atomic
+ * mention boundary and its canonical `data-mention-text`) is always owned by the library. The
+ * context is intentionally item-free: chip hydration is DOM-driven and also runs on document
+ * restore where the original selected item no longer exists. Put any presentational data (avatar
+ * URL, initials, icon kind, color) into the mention `attributes` via `getMentionAttributes` /
+ * `insertWith` so it round-trips and renders identically on insert and restore.
+ *
+ * Note: the entity `start`/`end` are **not** resolved to document offsets during template
+ * rendering (they are `0`); use `MentionDirective.getDocument()` / `getMentions()` for positions.
+ */
+export interface MentionChipContext {
+  /** The chip entity. Same object as {@link MentionChipContext.mention}. */
+  readonly $implicit: MentionEntity;
+  /** The chip entity (id, label, canonical text, attributes). */
+  readonly mention: MentionEntity;
+  /** Canonical chip text (the document `bodyText` slice this chip represents). */
+  readonly text: string;
+  /** Trigger character the chip was created from (e.g. `@`, `#`); `''` when unknown. */
+  readonly trigger: string;
+}

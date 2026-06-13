@@ -6,6 +6,7 @@ import type {
   MentionTriggerConfig,
 } from '@nexora-ui/mention';
 import {
+  MentionChipDirective,
   MentionDirective,
   MentionFooterDirective,
   MentionHeaderDirective,
@@ -85,6 +86,30 @@ const DEMO_COMMANDS: readonly Command[] = [
   { id: 'pin', name: '/pin', description: 'Pin a message' },
 ];
 
+const AVATAR_COLORS = [
+  '#6366f1',
+  '#ec4899',
+  '#f59e0b',
+  '#10b981',
+  '#3b82f6',
+  '#8b5cf6',
+  '#ef4444',
+  '#14b8a6',
+] as const;
+
+function userInitials(displayName: string): string {
+  const parts = displayName.trim().split(/\s+/);
+  const first = parts[0]?.[0] ?? '';
+  const second = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : '';
+  return (first + second).toUpperCase();
+}
+
+function userColor(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length] as string;
+}
+
 function filterUsers(query: string): User[] {
   const q = query.toLowerCase().trim();
   if (!q) return DEMO_USERS.slice(0, 5);
@@ -146,6 +171,7 @@ function cloneMentionDocument(d: MentionDocument): MentionDocument {
   imports: [
     MentionDirective,
     MentionPanelDirective,
+    MentionChipDirective,
     MentionHeaderDirective,
     MentionFooterDirective,
     MentionScrollIntoViewDirective,
@@ -202,6 +228,12 @@ export class MentionPageComponent {
       }),
 
       getMentionClass: () => 'demo-chip-user',
+      // Presentational data for the custom chip template. Lives in attributes so it round-trips
+      // through getDocument()/setDocument() and renders identically on insert and restore.
+      getMentionAttributes: (u) => ({
+        'data-initials': userInitials(u.displayName),
+        'data-color': userColor(u.id),
+      }),
       selectOnEnter: true,
       selectOnTab: true,
       closeOnSelect: true,
@@ -516,6 +548,47 @@ export class MentionPageComponent {
     this.apiResultJson.set(JSON.stringify(editor.getPlainText()));
   }
 
+  apiSetDocument(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    const bodyText = 'Review with Alice and Bob';
+    const aliceStart = bodyText.indexOf('Alice');
+    const bobStart = bodyText.indexOf('Bob');
+
+    editor.setDocument({
+      bodyText,
+      mentions: [
+        {
+          id: '1',
+          label: 'Alice Smith',
+          text: 'Alice',
+          start: aliceStart,
+          end: aliceStart + 'Alice'.length,
+          attributes: this.userMentionAttributes(DEMO_USERS[0]),
+        },
+        {
+          id: '2',
+          label: 'Bob Jones',
+          text: 'Bob',
+          start: bobStart,
+          end: bobStart + 'Bob'.length,
+          attributes: this.userMentionAttributes(DEMO_USERS[1]),
+        },
+      ],
+    });
+    this.setApiResult('setDocument()', editor.getDocument());
+  }
+
+  apiUpdateDocument(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    const doc = editor.updateDocument((current) => ({
+      bodyText: `${current.bodyText}${current.bodyText ? '\n' : ''}Follow up tomorrow.`,
+      mentions: current.mentions,
+    }));
+    this.setApiResult('updateDocument()', doc);
+  }
+
   apiClear(): void {
     this.apiEditor()?.clear();
     this.apiResultJson.set('');
@@ -529,7 +602,124 @@ export class MentionPageComponent {
     const editor = this.apiEditor();
     const alice = DEMO_USERS[0];
     if (!editor || !alice) return;
-    editor.insertMention(alice);
+    const ok = editor.insertMention(alice, { trigger: '@', at: 'end' });
+    this.setApiResult('insertMention(alice)', { ok, document: editor.getDocument() });
+  }
+
+  apiInsertTrigger(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    editor.focus();
+    editor.insertTextAtCaret('@');
+    editor.detectMentions();
+    this.setApiResult('insertTextAtCaret("@") + detectMentions()', {
+      query: editor.currentQuery(),
+      isOpen: editor.isOpen(),
+    });
+  }
+
+  apiClosePanel(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    editor.closeMentionPanel();
+    this.setApiResult('closeMentionPanel()', { isOpen: editor.isOpen() });
+  }
+
+  apiBlur(): void {
+    this.apiEditor()?.blur();
+    this.setApiResult('blur()', 'Editor blurred');
+  }
+
+  apiReplaceAlice(): void {
+    const editor = this.apiEditor();
+    const diana = DEMO_USERS[3];
+    if (!editor || !diana) return;
+    const ok = editor.replaceMention('1', diana, { trigger: '@' });
+    this.setApiResult('replaceMention("1", diana)', { ok, document: editor.getDocument() });
+  }
+
+  apiUpsertBob(): void {
+    const editor = this.apiEditor();
+    const bob = DEMO_USERS[1];
+    if (!editor || !bob) return;
+    const ok = editor.upsertMention(bob, { trigger: '@', mentionId: bob.id, fallbackAt: 'end' });
+    this.setApiResult('upsertMention(bob)', { ok, document: editor.getDocument() });
+  }
+
+  apiRemoveBob(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    const ok = editor.removeMention('2');
+    this.setApiResult('removeMention("2")', { ok, document: editor.getDocument() });
+  }
+
+  apiUpdateAliceAttributes(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    const ok = editor.updateMentionAttributes('1', (attrs) => ({
+      ...(attrs ?? {}),
+      'data-initials': 'API',
+      'data-color': '#ef4444',
+      title: 'Updated through updateMentionAttributes()',
+    }));
+    this.setApiResult('updateMentionAttributes("1")', { ok, document: editor.getDocument() });
+  }
+
+  apiSelectAliceRange(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    const ok = editor.selectMentionRange('1');
+    this.setApiResult('selectMentionRange("1")', { ok });
+  }
+
+  apiFocusBob(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    const ok = editor.focusMention('2', { select: 'after', scrollIntoView: true });
+    this.setApiResult('focusMention("2", after)', { ok });
+  }
+
+  apiGetAliceChip(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    const chip = editor.getChipElement('1');
+    this.setApiResult('getChipElement("1")', {
+      found: !!chip,
+      text: chip?.textContent ?? null,
+      attributes: chip
+        ? Array.from(chip.attributes).reduce<Record<string, string>>((acc, attr) => {
+            acc[attr.name] = attr.value;
+            return acc;
+          }, {})
+        : null,
+    });
+  }
+
+  apiGetChipElements(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    this.setApiResult(
+      'getChipElements()',
+      editor.getChipElements().map((chip) => ({
+        id: chip.getAttribute('data-mention-id'),
+        text: chip.textContent,
+      })),
+    );
+  }
+
+  private userMentionAttributes(user: User | undefined): Record<string, string> | undefined {
+    if (!user) return undefined;
+
+    return {
+      'data-mention-trigger': '@',
+      'data-initials': userInitials(user.displayName),
+      'data-color': userColor(user.id),
+      class: 'demo-chip-user',
+    };
+  }
+
+  private setApiResult(label: string, value: unknown): void {
+    this.apiResultJson.set(JSON.stringify({ api: label, value }, null, 2));
   }
 
   get lastSelectLabel(): string {

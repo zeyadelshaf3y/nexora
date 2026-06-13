@@ -1,7 +1,6 @@
 import { createRafThrottled, observeResize } from '@nexora-ui/core';
 
 import type { OverlayConfig } from './overlay-config';
-import { overlayHasAnchorOption } from './overlay-resolve-elements';
 import { createRepositionListeners } from './reposition-listeners';
 
 export interface OverlayRepositionRegistrations {
@@ -28,7 +27,7 @@ export function createOverlayRepositionRegistrations(args: {
     getAnchorElement: args.getAnchorElement,
   });
 
-  if (overlayHasAnchorOption(args.config) && args.pane) {
+  if (args.pane) {
     restCleanups.push(observeResize(args.pane, throttled.run));
   }
 
