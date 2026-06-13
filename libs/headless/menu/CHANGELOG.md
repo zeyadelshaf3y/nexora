@@ -1,3 +1,10 @@
+## 0.2.9 (2026-06-13)
+
+### 🧱 Updated Dependencies
+
+- Updated overlay to 0.2.0
+- Updated dropdown to 0.1.5
+
 ## 0.2.8 (2026-06-10)
 
 ### 🧱 Updated Dependencies
