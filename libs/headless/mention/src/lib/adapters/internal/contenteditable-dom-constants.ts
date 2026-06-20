@@ -17,6 +17,13 @@ export const ATTR_MENTION_TEXT = 'data-mention-text';
  */
 export const ATTR_MENTION_TRIGGER = 'data-mention-trigger';
 export const ATTR_CONTENTEDITABLE = 'contenteditable';
+/**
+ * Reserved chip attribute holding the JSON-encoded structured `data` payload of a mention entity
+ * (see `MentionEntity.data`). It is the round-trip channel for `data`, kept separate from the
+ * string `attributes` bag. Reserved: it must not collide with user-supplied `attributes` keys and
+ * is excluded from the entity `attributes` map on read.
+ */
+export const ATTR_MENTION_DATA = 'data-mention-data';
 
 /**
  * Resolves the canonical logical text for a mention chip element. Falls back to `textContent`
@@ -24,6 +31,38 @@ export const ATTR_CONTENTEDITABLE = 'contenteditable';
  */
 export function readMentionLogicalText(el: Element): string {
   return el.getAttribute(ATTR_MENTION_TEXT) ?? el.textContent ?? '';
+}
+
+/**
+ * Parses the structured `data` payload from a chip's reserved `data-mention-data` attribute.
+ * Guarded: a missing or malformed value yields `undefined` (never throws). `JSON.parse('null')`
+ * legitimately yields `null`, so an explicit `null` payload round-trips as `null`.
+ */
+export function readMentionData(el: Element): unknown {
+  const raw = el.getAttribute(ATTR_MENTION_DATA);
+  if (raw == null) return undefined;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Serializes a structured `data` payload for the reserved `data-mention-data` attribute.
+ * Returns `null` when the attribute should be omitted: `undefined` input (=> read back as
+ * `undefined`) or a non-serializable value (cycles, BigInt, …) which is dropped rather than
+ * throwing. An explicit `null` serializes to `'null'` and round-trips as `null`.
+ */
+export function serializeMentionData(value: unknown): string | null {
+  if (value === undefined) return null;
+
+  try {
+    return JSON.stringify(value) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function isLineBlockTag(tagName: string): boolean {

@@ -79,6 +79,7 @@ import type {
   MentionChipContext,
   MentionChipInteractionEvent,
   MentionBeforePasteHandler,
+  MentionDataUpdate,
   MentionDocument,
   MentionDocumentUpdater,
   MentionEntity,
@@ -140,7 +141,9 @@ import type { MentionSessionCheckScheduler } from './mention-session-check-sched
   },
   providers: [{ provide: MENTION_CHIP_TEMPLATES_HOST, useExisting: MentionDirective }],
 })
-export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, OnDestroy {
+export class MentionDirective<T = unknown, D = unknown>
+  implements MentionChipTemplatesHost, OnDestroy
+{
   private readonly viewContainerRef = inject(ViewContainerRef);
   private readonly injector = inject(Injector);
   private readonly ngZone = inject(NgZone);
@@ -182,7 +185,7 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
   readonly nxrMentionAriaControlsPanelId = input<string | undefined>(undefined);
   /** Optional id of the currently active option for `aria-activedescendant`. */
   readonly nxrMentionAriaActiveDescendantId = input<string | undefined>(undefined);
-  readonly nxrMentionDocument = input<MentionDocument | null>(null);
+  readonly nxrMentionDocument = input<MentionDocument<D> | null>(null);
 
   /** Same contract as combobox: return false to prevent opening. */
   readonly nxrMentionBeforeOpen = input<BeforeOpenCallback | undefined>(undefined);
@@ -216,15 +219,15 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
   readonly mentionOpenChange = output<boolean>();
   readonly mentionQueryChange = output<string>();
   readonly mentionValueChange = output<string>();
-  readonly mentionDocumentChange = output<MentionDocument>();
+  readonly mentionDocumentChange = output<MentionDocument<D>>();
   readonly mentionFocus = output();
   readonly mentionBlur = output();
-  /** See {@link MentionChipInteractionEvent} — `entity.start`/`end` are placeholders, not document offsets. */
-  readonly mentionChipMouseEnter = output<MentionChipInteractionEvent>();
-  /** See {@link MentionChipInteractionEvent} — `entity.start`/`end` are placeholders, not document offsets. */
-  readonly mentionChipMouseLeave = output<MentionChipInteractionEvent>();
-  /** See {@link MentionChipInteractionEvent} — `entity.start`/`end` are placeholders, not document offsets. */
-  readonly mentionChipClick = output<MentionChipInteractionEvent>();
+  /** See {@link MentionChipInteractionEvent} — `entity.start`/`end` are placeholders, not document offsets; `entity.data` is available. */
+  readonly mentionChipMouseEnter = output<MentionChipInteractionEvent<D>>();
+  /** See {@link MentionChipInteractionEvent} — `entity.start`/`end` are placeholders, not document offsets; `entity.data` is available. */
+  readonly mentionChipMouseLeave = output<MentionChipInteractionEvent<D>>();
+  /** See {@link MentionChipInteractionEvent} — `entity.start`/`end` are placeholders, not document offsets; `entity.data` is available. */
+  readonly mentionChipClick = output<MentionChipInteractionEvent<D>>();
 
   // ── Public signals ──────────────────────────────────────────────────
 
@@ -351,9 +354,9 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
     this.syncContentValueFromAdapter();
   }
 
-  /** Returns all mention entities currently in the editor. */
-  getMentions(): readonly MentionEntity[] {
-    return this.adapter?.getDocument().mentions ?? [];
+  /** Returns all mention entities currently in the editor (including their `data` payload). */
+  getMentions(): readonly MentionEntity<D>[] {
+    return (this.adapter?.getDocument().mentions ?? []) as readonly MentionEntity<D>[];
   }
 
   /** Returns the plain text content of the editor (mentions resolved to their text). */
@@ -361,13 +364,16 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
     return this.adapter?.getValue() ?? '';
   }
 
-  /** Returns the full structured document (text + mention entities). */
-  getDocument(): MentionDocument {
-    return this.adapter?.getDocument() ?? { bodyText: '', mentions: [] };
+  /**
+   * Returns the full structured document (text + mention entities, including each entity's typed
+   * `data`). The internal adapter is `data`-opaque (`unknown`); this narrows to the directive's `D`.
+   */
+  getDocument(): MentionDocument<D> {
+    return (this.adapter?.getDocument() ?? { bodyText: '', mentions: [] }) as MentionDocument<D>;
   }
 
-  /** Programmatically sets the editor document. */
-  setDocument(doc: MentionDocument): void {
+  /** Programmatically sets the editor document (entity `data` round-trips via `data-mention-data`). */
+  setDocument(doc: MentionDocument<D>): void {
     if (!this.adapter) return;
 
     this.applyDocumentWithSuppressedEmit(doc);
@@ -415,7 +421,7 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
 
   /** Replaces an existing mention by id/matcher. Returns false when no target is found. */
   replaceMention(
-    target: MentionEntityTarget,
+    target: MentionEntityTarget<D>,
     item: T,
     options: MentionReplaceOptions = {},
   ): boolean {
@@ -430,7 +436,7 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
   }
 
   /** Replaces an existing mention or inserts a new one at `fallbackAt`. */
-  upsertMention(item: T, options: MentionUpsertOptions = {}): boolean {
+  upsertMention(item: T, options: MentionUpsertOptions<D> = {}): boolean {
     const mention = findMentionEntityForUpsert({
       document: this.getDocument(),
       mentionId: options.mentionId,
@@ -444,7 +450,7 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
   }
 
   /** Removes an existing mention by id/matcher. */
-  removeMention(target: MentionEntityTarget): boolean {
+  removeMention(target: MentionEntityTarget<D>): boolean {
     if (!this.adapter || this.nxrMentionDisabled()) return false;
 
     const mention = findMentionEntity(this.getDocument(), target);
@@ -458,9 +464,9 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
 
   /** Applies a document update. Emits value/document outputs by default when content changes. */
   updateDocument(
-    updater: MentionDocumentUpdater,
+    updater: MentionDocumentUpdater<D>,
     options: MentionUpdateDocumentOptions = {},
-  ): MentionDocument {
+  ): MentionDocument<D> {
     const nextDocument = updater(this.getDocument());
 
     if (!this.adapter) return nextDocument;
@@ -475,7 +481,10 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
   }
 
   /** Updates safe attributes for an existing mention chip. */
-  updateMentionAttributes(target: MentionEntityTarget, update: MentionAttributesUpdate): boolean {
+  updateMentionAttributes(
+    target: MentionEntityTarget<D>,
+    update: MentionAttributesUpdate<D>,
+  ): boolean {
     if (!this.adapter || this.nxrMentionDisabled()) return false;
 
     const document = this.getDocument();
@@ -506,8 +515,34 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
     return true;
   }
 
+  /**
+   * Updates the structured `data` payload of an existing mention chip (round-trips via the reserved
+   * `data-mention-data` attribute). Mirrors {@link updateMentionAttributes}; pass a value or an
+   * updater receiving the current `data`. Returning/passing `undefined` clears the payload.
+   * Returns false when disabled or no target matches. Fully equivalent to a targeted `updateDocument`.
+   */
+  updateMentionData(target: MentionEntityTarget<D>, update: MentionDataUpdate<D>): boolean {
+    if (!this.adapter?.updateMentionData || this.nxrMentionDisabled()) return false;
+
+    const document = this.getDocument();
+    const mention = findMentionEntity(document, target);
+
+    if (!mention) return false;
+
+    const index = document.mentions.indexOf(mention);
+    const nextData = this.resolveMentionDataUpdate(mention, update);
+
+    if (!this.adapter.updateMentionData(mention.id, nextData, index)) return false;
+
+    const chip = this.getChipElements()[index] ?? this.getChipElement(mention.id);
+    if (chip) this.chipRenderer?.refreshChip(chip);
+    this.syncContentValueFromAdapter();
+
+    return true;
+  }
+
   /** Selects an existing mention or explicit linear range in the editor. */
-  selectMentionRange(target: MentionEntityTarget | MentionLinearRange): boolean {
+  selectMentionRange(target: MentionEntityTarget<D> | MentionLinearRange): boolean {
     if (!this.adapter?.setSelectionRange) return false;
 
     const range = this.resolveMentionSelectionTarget(target);
@@ -726,9 +761,13 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
       mentionIdAttr: ATTR_MENTION_ID,
       mentionLabelAttr: ATTR_MENTION_LABEL,
       getLeaveDelayMs: () => this.nxrMentionChipLeaveDelayMs(),
-      emitEnter: (event) => this.mentionChipMouseEnter.emit(event),
-      emitLeave: (event) => this.mentionChipMouseLeave.emit(event),
-      emitClick: (event) => this.mentionChipClick.emit(event),
+      // The dispatcher reads `data` as the runtime payload (`unknown`); narrow to the directive's
+      // `D` at the output boundary (valid down-cast).
+      emitEnter: (event) =>
+        this.mentionChipMouseEnter.emit(event as MentionChipInteractionEvent<D>),
+      emitLeave: (event) =>
+        this.mentionChipMouseLeave.emit(event as MentionChipInteractionEvent<D>),
+      emitClick: (event) => this.mentionChipClick.emit(event as MentionChipInteractionEvent<D>),
     });
   }
 
@@ -793,7 +832,8 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
         this.editorHostLifecycle.setInput('contentValue', value);
       },
       emitValueChange: (value) => this.mentionValueChange.emit(value),
-      emitDocumentChange: (doc) => this.mentionDocumentChange.emit(doc),
+      // The adapter-derived document is `data`-opaque (`unknown`); narrow to `<D>` at the output.
+      emitDocumentChange: (doc) => this.mentionDocumentChange.emit(doc as MentionDocument<D>),
       isSameDocument: (a, b) => isSameMentionDocument(a, b),
     });
   }
@@ -802,7 +842,9 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
     this.documentState.applyIncomingDocument({
       adapter: this.adapter,
       inputDoc: this.nxrMentionDocument(),
-      applyDocument: (doc) => this.applyDocumentWithSuppressedEmit(doc),
+      // `documentState` is `data`-opaque (`MentionDocument<unknown>`); the doc it hands back is the
+      // `<D>` input we passed in, so narrow it back to `<D>`.
+      applyDocument: (doc) => this.applyDocumentWithSuppressedEmit(doc as MentionDocument<D>),
     });
   }
 
@@ -814,7 +856,7 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
     setMentionEditorHostClass(this.editorHostLifecycle, this.normalizedEditorClass());
   }
 
-  private applyDocumentWithSuppressedEmit(doc: MentionDocument): void {
+  private applyDocumentWithSuppressedEmit(doc: MentionDocument<D>): void {
     applyMentionDocumentWithSuppressedEmit({
       adapter: this.adapter,
       documentState: this.documentState,
@@ -827,7 +869,7 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
     });
   }
 
-  private applyDocumentFromEdit(doc: MentionDocument): void {
+  private applyDocumentFromEdit(doc: MentionDocument<D>): void {
     if (!this.adapter) return;
 
     this.adapter.setDocument(doc);
@@ -837,8 +879,8 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
   }
 
   private resolveMentionAttributesUpdate(
-    mention: MentionEntity,
-    update: MentionAttributesUpdate,
+    mention: MentionEntity<D>,
+    update: MentionAttributesUpdate<D>,
   ): MentionAttributes {
     if (typeof update === 'function') return update(mention.attributes, mention);
 
@@ -848,8 +890,22 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
     };
   }
 
+  private resolveMentionDataUpdate(
+    mention: MentionEntity<D>,
+    update: MentionDataUpdate<D>,
+  ): D | undefined {
+    if (typeof update === 'function') {
+      return (update as (data: D | undefined, mention: MentionEntity<D>) => D | undefined)(
+        mention.data,
+        mention,
+      );
+    }
+
+    return update;
+  }
+
   private resolveMentionSelectionTarget(
-    target: MentionEntityTarget | MentionLinearRange,
+    target: MentionEntityTarget<D> | MentionLinearRange,
   ): { readonly start: number; readonly end?: number } | null {
     if (typeof target === 'object' && target != null) return target;
 
@@ -858,7 +914,7 @@ export class MentionDirective<T = unknown> implements MentionChipTemplatesHost, 
     return mention ? toMentionLinearRange(mention) : null;
   }
 
-  private getMentionReplacementRange(mention: MentionEntity): MentionLinearRange {
+  private getMentionReplacementRange(mention: MentionEntity<D>): MentionLinearRange {
     const value = this.getPlainText();
     const nextChar = value[mention.end];
 

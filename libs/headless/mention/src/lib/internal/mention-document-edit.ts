@@ -6,14 +6,14 @@ import type {
   MentionLinearRange,
 } from '../types/mention-types';
 
-function isPredicate(target: MentionEntityTarget): target is MentionEntityPredicate {
+function isPredicate<D>(target: MentionEntityTarget<D>): target is MentionEntityPredicate<D> {
   return typeof target === 'function';
 }
 
-export function findMentionEntity(
-  document: MentionDocument,
-  target: MentionEntityTarget,
-): MentionEntity | null {
+export function findMentionEntity<D>(
+  document: MentionDocument<D>,
+  target: MentionEntityTarget<D>,
+): MentionEntity<D> | null {
   const mentions = document.mentions;
 
   for (let i = 0; i < mentions.length; i += 1) {
@@ -27,11 +27,11 @@ export function findMentionEntity(
   return null;
 }
 
-export function findMentionEntityForUpsert(params: {
-  readonly document: MentionDocument;
+export function findMentionEntityForUpsert<D>(params: {
+  readonly document: MentionDocument<D>;
   readonly mentionId?: string;
-  readonly matchBy?: MentionEntityPredicate;
-}): MentionEntity | null {
+  readonly matchBy?: MentionEntityPredicate<D>;
+}): MentionEntity<D> | null {
   const { document, mentionId, matchBy } = params;
 
   if (mentionId) {

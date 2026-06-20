@@ -15,11 +15,14 @@ import type {
  * **`entity` is not a full document slice:** `id`, `label`, and chip text are taken from the DOM.
  * `start` and `end` are **placeholders (`0`)** — they are not resolved to linear offsets in the
  * serialized document. Use `MentionDirective.getDocument()` / `getMentions()` when you need
- * positions in `bodyText`.
+ * positions in `bodyText`. Unlike `start`/`end`, the structured `data` payload IS available
+ * (parsed from the chip's reserved `data-mention-data` attribute), so handlers can read it. Type
+ * the handler with `MentionChipInteractionEvent<MyData>` (or read via the directive's `D`) for a
+ * concrete `data` type; otherwise it is `unknown`.
  */
-export interface MentionChipInteractionEvent {
+export interface MentionChipInteractionEvent<D = unknown> {
   readonly element: HTMLElement;
-  readonly entity: MentionEntity;
+  readonly entity: MentionEntity<D>;
   readonly nativeEvent: MouseEvent;
 }
 
@@ -57,19 +60,22 @@ export interface MentionInsertOptions {
 }
 
 /** Predicate used by programmatic APIs to resolve a mention from the current document snapshot. */
-export type MentionEntityPredicate = (mention: MentionEntity, index: number) => boolean;
+export type MentionEntityPredicate<D = unknown> = (
+  mention: MentionEntity<D>,
+  index: number,
+) => boolean;
 
 /** Shared target accepted by APIs that operate on an existing mention. */
-export type MentionEntityTarget = string | MentionEntityPredicate;
+export type MentionEntityTarget<D = unknown> = string | MentionEntityPredicate<D>;
 
 /** Programmatic mention upsert options. */
-export interface MentionUpsertOptions {
+export interface MentionUpsertOptions<D = unknown> {
   /** Trigger to use when inserting/replacing through trigger config. */
   readonly trigger?: string;
   /** Mention id to replace when present. */
   readonly mentionId?: string;
   /** Custom matcher for existing mentions. Checked after `mentionId` when both are provided. */
-  readonly matchBy?: MentionEntityPredicate;
+  readonly matchBy?: MentionEntityPredicate<D>;
   /** Where to insert when no existing mention matches. Defaults to the current selection. */
   readonly fallbackAt?: 'selection' | 'start' | 'end' | MentionLinearRange;
 }
@@ -97,9 +103,21 @@ export interface MentionUpdateDocumentOptions {
 }
 
 /** Attribute patch or updater for `MentionDirective.updateMentionAttributes(...)`. */
-export type MentionAttributesUpdate =
+export type MentionAttributesUpdate<D = unknown> =
   | MentionAttributes
-  | ((attributes: MentionAttributes | undefined, mention: MentionEntity) => MentionAttributes);
+  | ((attributes: MentionAttributes | undefined, mention: MentionEntity<D>) => MentionAttributes);
+
+/**
+ * Structured-`data` patch or updater for `MentionDirective.updateMentionData(...)`. Mirrors
+ * {@link MentionAttributesUpdate}. Return `undefined` (or an updater that returns `undefined`) to
+ * clear the payload. See {@link MentionEntity.data} for the serialization contract.
+ */
+export type MentionDataUpdate<D = unknown> =
+  | D
+  | undefined
+  | ((data: D | undefined, mention: MentionEntity<D>) => D | undefined);
 
 /** Document updater for `MentionDirective.updateDocument(...)`. */
-export type MentionDocumentUpdater = (document: MentionDocument) => MentionDocument;
+export type MentionDocumentUpdater<D = unknown> = (
+  document: MentionDocument<D>,
+) => MentionDocument<D>;

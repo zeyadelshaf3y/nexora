@@ -24,6 +24,7 @@ export type {
   MentionAttributesUpdate,
   MentionBeforePasteHandler,
   MentionChipInteractionEvent,
+  MentionDataUpdate,
   MentionDocumentUpdater,
   MentionEntityPredicate,
   MentionEntityTarget,

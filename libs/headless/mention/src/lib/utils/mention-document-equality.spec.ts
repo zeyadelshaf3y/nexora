@@ -102,6 +102,30 @@ describe('isSameMentionDocument', () => {
     expect(isSameMentionDocument(a, b)).toBe(true);
   });
 
+  it('returns false when only the structured data payload differs', () => {
+    const a: MentionDocument = {
+      bodyText: 'A',
+      mentions: [{ id: 'u1', text: 'A', start: 0, end: 1, data: { kind: 'user', refId: 'u1' } }],
+    };
+    const b: MentionDocument = {
+      bodyText: 'A',
+      mentions: [{ id: 'u1', text: 'A', start: 0, end: 1, data: { kind: 'user', refId: 'u2' } }],
+    };
+    expect(isSameMentionDocument(a, b)).toBe(false);
+  });
+
+  it('returns true when the data payload is deep-equal (different object identity)', () => {
+    const a: MentionDocument = {
+      bodyText: 'A',
+      mentions: [{ id: 'u1', text: 'A', start: 0, end: 1, data: { kind: 'user', refId: 'u1' } }],
+    };
+    const b: MentionDocument = {
+      bodyText: 'A',
+      mentions: [{ id: 'u1', text: 'A', start: 0, end: 1, data: { kind: 'user', refId: 'u1' } }],
+    };
+    expect(isSameMentionDocument(a, b)).toBe(true);
+  });
+
   it('handles large equivalent documents', () => {
     const mentions = Array.from({ length: 1200 }, (_, i) => {
       const text = `U${i}`;

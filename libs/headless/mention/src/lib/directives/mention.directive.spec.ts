@@ -1,7 +1,11 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import type { MentionDocument, MentionTriggerConfig } from '../types/mention-types';
+import type {
+  MentionChipInteractionEvent,
+  MentionDocument,
+  MentionTriggerConfig,
+} from '../types/mention-types';
 
 import { MentionChipDirective } from './mention-chip.directive';
 import { MentionPanelDirective } from './mention-panel.directive';
@@ -18,6 +22,7 @@ import { MentionDirective } from './mention.directive';
       nxrMentionChipClass="demo-chip"
       (mentionValueChange)="onValue($event)"
       (mentionDocumentChange)="onDocument($event)"
+      (mentionChipClick)="onChipClick($event)"
     >
       <ng-template nxrMentionPanel let-state="state" let-select="select">
         @for (item of state.items; track item.id) {
@@ -41,12 +46,14 @@ class MentionHostComponent {
         mentionId: item.id,
         mentionLabel: item.label,
         mentionAttributes: { 'data-mention-trigger': '@' },
+        mentionData: { kind: 'user', refId: item.id },
       }),
     },
   ];
 
   valueEvents: string[] = [];
   documentEvents: MentionDocument[] = [];
+  chipClicks: MentionChipInteractionEvent[] = [];
 
   onValue(value: string): void {
     this.valueEvents.push(value);
@@ -54,6 +61,10 @@ class MentionHostComponent {
 
   onDocument(doc: MentionDocument): void {
     this.documentEvents.push(doc);
+  }
+
+  onChipClick(event: MentionChipInteractionEvent): void {
+    this.chipClicks.push(event);
   }
 }
 
@@ -235,6 +246,93 @@ describe('MentionDirective', () => {
 
     expect(host.documentEvents.length).toBe(afterEmittingUpdate);
     expect(mention.getPlainText()).toBe('Hello again');
+  });
+
+  it('insertMention forwards insertWith mentionData to the document', () => {
+    const fixture = TestBed.createComponent(MentionHostComponent);
+    fixture.detectChanges();
+    const mention = fixture.componentInstance.mention();
+
+    expect(mention.insertMention({ id: 'u1', label: 'Alice' }, { at: 'end' })).toBe(true);
+    expect(mention.getDocument().mentions[0]?.data).toEqual({ kind: 'user', refId: 'u1' });
+  });
+
+  it('round-trips a structured data payload through setDocument/getMentions and re-serialize', () => {
+    const fixture = TestBed.createComponent(MentionHostComponent);
+    fixture.detectChanges();
+    const mention = fixture.componentInstance.mention();
+
+    const data = { kind: 'team', refId: 't1', handle: 'eng' };
+    mention.setDocument({
+      bodyText: 'Hello Alice',
+      mentions: [{ id: 'u1', label: 'Alice', text: 'Alice', start: 6, end: 11, data }],
+    });
+
+    expect(mention.getMentions()[0]?.data).toEqual(data);
+
+    // Serialize -> restore -> still present.
+    const serialized = mention.getDocument();
+    mention.setDocument(serialized);
+    expect(mention.getMentions()[0]?.data).toEqual(data);
+  });
+
+  it('emits mentionDocumentChange when only data changes, and suppresses an identical update', () => {
+    const fixture = TestBed.createComponent(MentionHostComponent);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const mention = host.mention();
+
+    mention.setDocument({
+      bodyText: 'Hello Alice',
+      mentions: [{ id: 'u1', label: 'Alice', text: 'Alice', start: 6, end: 11, data: { v: 1 } }],
+    });
+    const baseline = host.documentEvents.length;
+
+    mention.updateDocument((doc) => ({
+      ...doc,
+      mentions: doc.mentions.map((m) => ({ ...m, data: { v: 2 } })),
+    }));
+    expect(host.documentEvents.length).toBeGreaterThan(baseline);
+
+    const afterChange = host.documentEvents.length;
+    mention.updateDocument((doc) => ({
+      ...doc,
+      mentions: doc.mentions.map((m) => ({ ...m, data: { v: 2 } })),
+    }));
+    expect(host.documentEvents.length).toBe(afterChange);
+  });
+
+  it('updateMentionData patches the payload in place', () => {
+    const fixture = TestBed.createComponent(MentionHostComponent);
+    fixture.detectChanges();
+    const mention = fixture.componentInstance.mention();
+
+    mention.setDocument({
+      bodyText: 'Hello Alice',
+      mentions: [{ id: 'u1', label: 'Alice', text: 'Alice', start: 6, end: 11, data: { v: 1 } }],
+    });
+
+    expect(mention.updateMentionData('u1', { v: 2, extra: true })).toBe(true);
+    expect(mention.getMentions()[0]?.data).toEqual({ v: 2, extra: true });
+  });
+
+  it('exposes data on the mentionChipClick interaction event', () => {
+    const fixture = TestBed.createComponent(MentionHostComponent);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const mention = host.mention();
+
+    mention.setDocument({
+      bodyText: 'Hello Alice',
+      mentions: [
+        { id: 'u1', label: 'Alice', text: 'Alice', start: 6, end: 11, data: { kind: 'user' } },
+      ],
+    });
+
+    const chip = mention.getChipElement('u1');
+    chip?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(host.chipClicks.at(-1)?.entity.data).toEqual({ kind: 'user' });
   });
 });
 

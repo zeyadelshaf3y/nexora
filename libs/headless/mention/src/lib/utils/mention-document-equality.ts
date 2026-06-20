@@ -1,3 +1,4 @@
+import { serializeMentionData } from '../adapters/internal/contenteditable-dom-constants';
 import type { MentionDocument, MentionEntity } from '../types/mention-types';
 
 function isSameMentionIdentity(a: MentionEntity, b: MentionEntity): boolean {
@@ -8,8 +9,21 @@ function isSameMention(a: MentionEntity, b: MentionEntity): boolean {
   return (
     isSameMentionIdentity(a, b) &&
     a.label === b.label &&
-    hasSameAttributes(a.attributes, b.attributes)
+    hasSameAttributes(a.attributes, b.attributes) &&
+    hasSameData(a.data, b.data)
   );
+}
+
+/**
+ * Compares structured `data` payloads by their serialized form so a data-only edit is detected as
+ * a change (and an identical-data update is not). Uses the same guarded JSON path as DOM
+ * serialization, so two values that serialize identically (including both being dropped to `null`)
+ * are treated as equal.
+ */
+function hasSameData(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+
+  return serializeMentionData(a) === serializeMentionData(b);
 }
 
 function hasSameAttributes(
