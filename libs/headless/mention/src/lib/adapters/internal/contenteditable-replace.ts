@@ -11,9 +11,11 @@ import { readClassFromAttrMap } from '../../utils/mention-attr-map';
 
 import {
   ATTR_CONTENTEDITABLE,
+  ATTR_MENTION_DATA,
   ATTR_MENTION_ID,
   ATTR_MENTION_LABEL,
   ATTR_MENTION_TEXT,
+  serializeMentionData,
 } from './contenteditable-dom-constants';
 import { emitEditorInputEvent } from './contenteditable-events';
 import { walkSelectionModel } from './contenteditable-selection';
@@ -35,6 +37,7 @@ export function isProtectedMentionAttributeName(name: string): boolean {
     lower === ATTR_MENTION_ID.toLowerCase() ||
     lower === ATTR_MENTION_LABEL.toLowerCase() ||
     lower === ATTR_MENTION_TEXT.toLowerCase() ||
+    lower === ATTR_MENTION_DATA.toLowerCase() ||
     lower === ATTR_CONTENTEDITABLE.toLowerCase() ||
     lower === 'spellcheck'
   );
@@ -61,6 +64,7 @@ export function createMentionChipElement(
     id?: string;
     label?: string;
     attributes?: Record<string, string>;
+    data?: unknown;
     baseChipClass?: string;
   },
 ): HTMLSpanElement {
@@ -100,6 +104,13 @@ export function createMentionChipElement(
     }
   }
 
+  // Write the structured `data` payload last so it is authoritative over any same-named user
+  // attribute (which is skipped above as a protected key). Omitted when not serializable.
+  const serializedData = serializeMentionData(options.data);
+  if (serializedData != null) {
+    mentionSpan.setAttribute(ATTR_MENTION_DATA, serializedData);
+  }
+
   return mentionSpan;
 }
 
@@ -137,6 +148,21 @@ export function applyMentionChipAttributes(
     if (!isAllowedMentionAttributeName(key)) continue;
     if (isProtectedMentionAttributeName(key)) continue;
     mentionSpan.setAttribute(key, attributes[key]);
+  }
+}
+
+/**
+ * Writes (or clears) a chip's reserved `data-mention-data` attribute from a structured payload.
+ * Mirrors {@link applyMentionChipAttributes} for the `data` channel: a non-serializable or
+ * `undefined` payload removes the attribute (read back as `undefined`).
+ */
+export function applyMentionChipData(mentionSpan: HTMLElement, data: unknown): void {
+  const serialized = serializeMentionData(data);
+
+  if (serialized != null) {
+    mentionSpan.setAttribute(ATTR_MENTION_DATA, serialized);
+  } else {
+    mentionSpan.removeAttribute(ATTR_MENTION_DATA);
   }
 }
 
@@ -190,6 +216,7 @@ export function replaceTextRangeInEditor(params: {
     const hasMention =
       insertion.mentionId != null ||
       insertion.mentionLabel != null ||
+      insertion.mentionData !== undefined ||
       (insertion.mentionAttributes != null && Object.keys(insertion.mentionAttributes).length > 0);
     let caretRange: { node: Node; offset: number } | null = null;
 
@@ -200,6 +227,7 @@ export function replaceTextRangeInEditor(params: {
         label: insertion.mentionLabel,
         text: displayText,
         attributes: insertion.mentionAttributes,
+        data: insertion.mentionData,
         baseChipClass,
       });
       range.insertNode(mentionSpan);

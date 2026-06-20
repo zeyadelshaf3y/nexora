@@ -25,10 +25,12 @@ import type { EmbeddedViewRef, NgZone, TemplateRef, ViewContainerRef } from '@an
 
 import {
   ATTR_CONTENTEDITABLE,
+  ATTR_MENTION_DATA,
   ATTR_MENTION_ID,
   ATTR_MENTION_LABEL,
   ATTR_MENTION_TEXT,
   ATTR_MENTION_TRIGGER,
+  readMentionData,
   readMentionLogicalText,
 } from '../adapters/internal/contenteditable-dom-constants';
 import type { MentionChipContext, MentionEntity } from '../types/mention-types';
@@ -40,6 +42,7 @@ const INTERNAL_CHIP_ATTRS = new Set<string>([
   ATTR_MENTION_ID,
   ATTR_MENTION_LABEL,
   ATTR_MENTION_TEXT,
+  ATTR_MENTION_DATA,
   ATTR_CONTENTEDITABLE,
   'spellcheck',
 ]);
@@ -287,6 +290,7 @@ export class MentionChipRenderer {
       start: 0,
       end: 0,
       attributes,
+      data: readMentionData(chip),
     };
 
     return { $implicit: mention, mention, text, trigger };

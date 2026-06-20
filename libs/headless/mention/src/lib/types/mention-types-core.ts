@@ -45,6 +45,13 @@ export interface MentionInsertion {
    * Prefer `mentionId`/`mentionLabel` for core metadata.
    */
   readonly mentionAttributes?: MentionAttributes;
+  /**
+   * Structured, typed payload stored on the inserted mention (see {@link MentionEntity.data}).
+   * Serialized to the reserved `data-mention-data` attribute and round-trips through the document.
+   * Must be JSON-serializable; non-serializable values are dropped. Typed `unknown` here so any
+   * `insertWith` can supply it; the directive's `D` generic types it when read back.
+   */
+  readonly mentionData?: unknown;
 }
 
 /** Runtime session enriched from MentionMatch; has id for stale async protection. */
@@ -238,20 +245,39 @@ export interface MentionControllerState<T = unknown> {
   readonly activeIndex: number;
 }
 
-/** Mention entity serialized for persistence/editing round-trips. */
-export interface MentionEntity {
+/**
+ * Mention entity serialized for persistence/editing round-trips.
+ *
+ * The generic `D` defaults to `unknown` (NOT `MentionAttributes`): `data` is a structured, typed
+ * payload, so defaulting it to the string `attributes` map would be misleading. Existing consumers
+ * that never read `data` are unaffected.
+ *
+ * **`data` serialization contract.** `data` is the place for structured, typed metadata (e.g.
+ * `{ kind, refId }`) — persist mentions as references and resolve display at read time. It rides
+ * the reserved `data-mention-data` attribute as JSON and round-trips through `getDocument()` ->
+ * `setDocument()` and chip re-render/restore (the same guarantee as `attributes`, which remains the
+ * place for DOM/styling). Rules:
+ * - `data` must be JSON-serializable.
+ * - `undefined` => no attribute is written and `data` reads back as `undefined`.
+ * - explicit `null` round-trips as `null` (asymmetry with `undefined`).
+ * - non-serializable values (cycles, `BigInt`, …) are dropped on write (read back as `undefined`);
+ *   parsing is guarded, so a malformed attribute never throws and never corrupts the document.
+ */
+export interface MentionEntity<D = unknown> {
   readonly id: string;
   readonly label?: string;
   readonly text: string;
   readonly start: number;
   readonly end: number;
   readonly attributes?: MentionAttributes;
+  /** Structured, typed payload. See the interface docs for the round-trip/serialization contract. */
+  readonly data?: D;
 }
 
-/** Serializable editor document sent to/from backend. */
-export interface MentionDocument {
+/** Serializable editor document sent to/from backend. Generic over the entity `data` payload `D`. */
+export interface MentionDocument<D = unknown> {
   readonly bodyText: string;
-  readonly mentions: readonly MentionEntity[];
+  readonly mentions: readonly MentionEntity<D>[];
 }
 
 /**
@@ -266,12 +292,18 @@ export interface MentionDocument {
  *
  * Note: the entity `start`/`end` are **not** resolved to document offsets during template
  * rendering (they are `0`); use `MentionDirective.getDocument()` / `getMentions()` for positions.
+ * Unlike `start`/`end`, the structured `data` payload IS available here (parsed from the chip's
+ * reserved `data-mention-data` attribute), so chip templates can read it.
+ *
+ * Typing limitation: Angular does not infer template context generics, so inside a
+ * `[nxrMentionChip]` template `mention.data` is the runtime payload typed `unknown` (the default
+ * `D`), not your concrete type — narrow/cast it at the call site.
  */
-export interface MentionChipContext {
+export interface MentionChipContext<D = unknown> {
   /** The chip entity. Same object as {@link MentionChipContext.mention}. */
-  readonly $implicit: MentionEntity;
-  /** The chip entity (id, label, canonical text, attributes). */
-  readonly mention: MentionEntity;
+  readonly $implicit: MentionEntity<D>;
+  /** The chip entity (id, label, canonical text, attributes, data). */
+  readonly mention: MentionEntity<D>;
   /** Canonical chip text (the document `bodyText` slice this chip represents). */
   readonly text: string;
   /** Trigger character the chip was created from (e.g. `@`, `#`); `''` when unknown. */

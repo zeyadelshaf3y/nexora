@@ -67,6 +67,7 @@ export function buildMentionInsertion<T>(
     mentionId: base.mentionId ?? mentionAttrs?.['data-mention-id'],
     mentionLabel: base.mentionLabel ?? mentionAttrs?.['data-mention-label'] ?? fallbackMentionLabel,
     mentionAttributes: mergedMentionAttributes,
+    mentionData: base.mentionData,
   };
 
   const caretOffset = resolveCaretOffset(insertion);

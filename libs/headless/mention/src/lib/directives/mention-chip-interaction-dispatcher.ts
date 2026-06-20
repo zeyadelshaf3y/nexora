@@ -1,4 +1,7 @@
-import { readMentionLogicalText } from '../adapters/internal/contenteditable-dom-constants';
+import {
+  readMentionData,
+  readMentionLogicalText,
+} from '../adapters/internal/contenteditable-dom-constants';
 import type { MentionChipInteractionEvent, MentionEntity } from '../types/mention-types';
 
 export interface MentionChipInteractionDispatcherOptions {
@@ -34,6 +37,7 @@ export class MentionChipInteractionDispatcher {
       text: readMentionLogicalText(chip),
       start: 0,
       end: 0,
+      data: readMentionData(chip),
     });
 
     const emitEnter = (chip: HTMLElement, me: MouseEvent): void => {

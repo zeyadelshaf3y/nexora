@@ -23,6 +23,18 @@ interface User {
   readonly role?: string;
 }
 
+/**
+ * Structured, typed reference payload attached to user mention chips via `MentionEntity.data`.
+ * Round-trips through `getDocument()`/`setDocument()` on the reserved `data-mention-data` attribute,
+ * so a persisted mention can be stored as a reference and resolved to display values at read time.
+ */
+interface UserMentionData {
+  readonly kind: 'user';
+  readonly refId: string;
+  readonly username: string;
+  readonly note?: string;
+}
+
 interface Tag {
   readonly id: string;
   readonly slug: string;
@@ -208,7 +220,7 @@ export class MentionPageComponent {
   readonly chipHoverAnchor = signal<HTMLElement | null>(null);
   readonly apiResultJson = signal('');
 
-  readonly apiEditor = viewChild<MentionDirective<User>>('apiEditor');
+  readonly apiEditor = viewChild<MentionDirective<User, UserMentionData>>('apiEditor');
   readonly chipHoverPopover = viewChild<PopoverTriggerDirective>('chipHoverPopover');
 
   readonly userTriggers: readonly MentionTriggerConfig<User>[] = [
@@ -225,6 +237,9 @@ export class MentionPageComponent {
         caretPlacement: 'end',
         mentionId: u.id,
         mentionLabel: u.displayName,
+        // Typed, structured reference payload. Round-trips via the reserved `data-mention-data`
+        // attribute, so persisted mentions carry a reference instead of just a display string.
+        mentionData: { kind: 'user', refId: u.id, username: u.username } satisfies UserMentionData,
       }),
 
       getMentionClass: () => 'demo-chip-user',
@@ -663,6 +678,19 @@ export class MentionPageComponent {
       title: 'Updated through updateMentionAttributes()',
     }));
     this.setApiResult('updateMentionAttributes("1")', { ok, document: editor.getDocument() });
+  }
+
+  apiUpdateAliceData(): void {
+    const editor = this.apiEditor();
+    if (!editor) return;
+    // `data` is typed as `UserMentionData | undefined` here thanks to `MentionDirective<User, UserMentionData>`.
+    const ok = editor.updateMentionData('1', (data) => ({
+      kind: 'user',
+      refId: data?.refId ?? '1',
+      username: data?.username ?? 'alice',
+      note: 'Updated through updateMentionData()',
+    }));
+    this.setApiResult('updateMentionData("1")', { ok, document: editor.getDocument() });
   }
 
   apiSelectAliceRange(): void {

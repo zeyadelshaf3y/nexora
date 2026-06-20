@@ -1,3 +1,13 @@
+import { ATTR_MENTION_DATA } from '../adapters/internal/contenteditable-dom-constants';
+
+/**
+ * Reserved chip attribute (value: `data-mention-data`) that carries a mention entity's
+ * JSON-encoded structured `data` payload across serialize/restore. It is reserved: do NOT use it
+ * as a key in a mention's string `attributes` bag, or it will be ignored in favor of the encoded
+ * `data`.
+ */
+export const NXR_MENTION_RESERVED_DATA_ATTR = ATTR_MENTION_DATA;
+
 /**
  * Host/editor class hooks used by app-level styling.
  */

@@ -128,6 +128,32 @@ Key rules:
 - Custom interactive controls inside a chip should `stopPropagation()` so they don't trigger chip click/hover outputs. Keep a meaningful `label`/`aria-label` when visuals are icon-only.
 - With no matching template the chip keeps its plain-text rendering (fully backward compatible).
 
+## Structured `data` payload
+
+Alongside the string `attributes` bag (for DOM/styling) and `label`, each mention can carry a typed, structured **`data`** payload — persist mentions as references (e.g. `{ kind: 'user' | 'team'; refId: string; handle?: string }`) and resolve display values at read time.
+
+```ts
+// Supply data at insert time
+insertWith: ((item) => ({
+  replacementText: item.name,
+  mentionId: item.id,
+  mentionData: { kind: 'user', refId: item.id, handle: item.handle },
+}),
+  // Or set/restore it on the document
+  mention.setDocument({
+    bodyText,
+    mentions: [{ id, text, start, end, data: { kind: 'user', refId } }],
+  }));
+mention.getMentions()[0].data; // -> { kind: 'user', refId }
+mention.updateMentionData('u1', (data) => ({ ...data, handle: 'alice' }));
+```
+
+- Type it with the directive's second generic: `MentionDirective<Item, MyData>` (so `getDocument()`, `getMentions()`, chip interaction events, etc. are typed). The default is `unknown`.
+- `data` is read from chip interaction events (`mentionChipClick`/`MouseEnter`/`Leave`) and the `[nxrMentionChip]` template context (`mention.data`). Note: Angular does not infer template context generics, so inside the template `mention.data` is `unknown` — narrow/cast it at the call site.
+- **Round-trip:** `data` survives `getDocument()` -> `setDocument()` and chip re-render/restore, the same guarantee as `attributes`. It rides ONE reserved attribute, **`data-mention-data`** (exported as `NXR_MENTION_RESERVED_DATA_ATTR`), encoded as JSON; it never appears in the `attributes` map. Like the rest of the document, mentions are resolved to plain text on a (plain-text) paste.
+- **Serialization contract:** `data` must be JSON-serializable. `undefined` => no attribute is written (reads back `undefined`); explicit `null` round-trips as `null`; non-serializable values (cycles, `BigInt`, …) are dropped on write and read back as `undefined`. Parsing is guarded — a malformed value never throws and never corrupts the document.
+- Reserved key: do not use `data-mention-data` as an `attributes` key; it is ignored in favor of the encoded `data`.
+
 ## Trigger text vs chip (e.g. Facebook)
 
 The parser replaces the whole range **from trigger through query** (`rangeStart`–`rangeEnd`).  
@@ -160,6 +186,7 @@ Use the template ref (`#mention="nxrMention"`) for editor/document operations:
 - `upsertMention(item, { mentionId, matchBy, trigger, fallbackAt })` replaces a matching mention or inserts at `fallbackAt`.
 - `removeMention(idOrMatcher)` removes one mention.
 - `updateMentionAttributes(idOrMatcher, patchOrUpdater)` patches safe chip attributes (`class`, `title`, `data-*`, `aria-*`) and refreshes chip templates.
+- `updateMentionData(idOrMatcher, valueOrUpdater)` patches the structured `data` payload in place (returning `undefined` clears it); equivalent to a targeted `updateDocument`.
 - `selectMentionRange(idOrMatcherOrRange)` and `focusMention(id, options?)` help build edit/inspect flows.
 
 `replaceMention` and `upsertMention` reuse the same insertion path as panel selection, including `insertWith`, `getMentionAttributes`, `beforeInsert`, `afterInsert`, chip classes, and `mentionSelect`. When replacing a library-created chip, they consume one following space if present so repeated upserts do not accumulate separators.

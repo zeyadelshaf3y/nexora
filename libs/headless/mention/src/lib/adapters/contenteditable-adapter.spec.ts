@@ -568,6 +568,84 @@ describe('createContenteditableAdapter', () => {
     expect(adapter.getDocument().mentions[0]?.attributes?.['data-initials']).toBe('AA');
   });
 
+  it('setDocument -> getDocument round-trips a structured data payload via data-mention-data', () => {
+    const data = { kind: 'user', refId: 'u1', handle: 'alice' };
+    adapter.setDocument({
+      bodyText: 'Hello @alice',
+      mentions: [{ id: 'u1', label: 'Alice', text: '@alice', start: 6, end: 12, data }],
+    });
+
+    const chip = root.querySelector<HTMLElement>('[data-mention-id="u1"]');
+    expect(chip?.getAttribute('data-mention-data')).toBe(JSON.stringify(data));
+
+    const roundTrip = adapter.getDocument();
+    expect(roundTrip.mentions[0]?.data).toEqual(data);
+    // The reserved attribute is not leaked into the string `attributes` bag.
+    expect(roundTrip.mentions[0]?.attributes?.['data-mention-data']).toBeUndefined();
+  });
+
+  it('replaceTextRange with mentionData stores it and getDocument returns it', () => {
+    root.appendChild(document.createTextNode('@a'));
+    adapter.replaceTextRange(0, 2, {
+      replacementText: '@alice',
+      caretPlacement: 'end',
+      mentionId: 'u1',
+      mentionLabel: 'Alice',
+      mentionData: { kind: 'team', refId: 't9' },
+    });
+
+    expect(adapter.getDocument().mentions[0]?.data).toEqual({ kind: 'team', refId: 't9' });
+  });
+
+  it('getDocument yields undefined data for a malformed data-mention-data attribute (no throw)', () => {
+    const mention = document.createElement('span');
+    mention.setAttribute('data-mention-id', 'u1');
+    mention.setAttribute('data-mention-data', '{not json');
+    mention.setAttribute('contenteditable', 'false');
+    mention.textContent = '@alice';
+    root.appendChild(mention);
+
+    let doc!: ReturnType<typeof adapter.getDocument>;
+    expect(() => {
+      doc = adapter.getDocument();
+    }).not.toThrow();
+    expect(doc.mentions[0]?.data).toBeUndefined();
+  });
+
+  it('omits the data attribute when no data is provided; explicit null round-trips as null', () => {
+    adapter.setDocument({
+      bodyText: '@a @b',
+      mentions: [
+        { id: 'a', text: '@a', start: 0, end: 2 },
+        { id: 'b', text: '@b', start: 3, end: 5, data: null },
+      ],
+    });
+
+    const chipA = root.querySelector<HTMLElement>('[data-mention-id="a"]');
+    const chipB = root.querySelector<HTMLElement>('[data-mention-id="b"]');
+    expect(chipA?.hasAttribute('data-mention-data')).toBe(false);
+    expect(chipB?.getAttribute('data-mention-data')).toBe('null');
+
+    const roundTrip = adapter.getDocument();
+    expect(roundTrip.mentions[0]?.data).toBeUndefined();
+    expect(roundTrip.mentions[1]?.data).toBeNull();
+  });
+
+  it('updateMentionData patches and clears the structured payload', () => {
+    adapter.setDocument({
+      bodyText: 'Hello @alice',
+      mentions: [{ id: 'u1', text: '@alice', start: 6, end: 12, data: { kind: 'user' } }],
+    });
+
+    expect(adapter.updateMentionData?.('u1', { kind: 'team', refId: 't1' })).toBe(true);
+    expect(adapter.getDocument().mentions[0]?.data).toEqual({ kind: 'team', refId: 't1' });
+
+    expect(adapter.updateMentionData?.('u1', undefined)).toBe(true);
+    const chip = root.querySelector<HTMLElement>('[data-mention-id="u1"]');
+    expect(chip?.hasAttribute('data-mention-data')).toBe(false);
+    expect(adapter.getDocument().mentions[0]?.data).toBeUndefined();
+  });
+
   it('getValue/getDocument preserve consecutive spaces around mentions', () => {
     root.appendChild(document.createTextNode('hello\u00A0\u00A0'));
     const mention = document.createElement('span');

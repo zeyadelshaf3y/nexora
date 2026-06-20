@@ -43,6 +43,7 @@ export type {
   MentionFocusOptions,
   MentionUpdateDocumentOptions,
   MentionAttributesUpdate,
+  MentionDataUpdate,
   MentionDocumentUpdater,
 } from './lib/types/mention-types';
 export type { MentionPanelContext } from './lib/directives/mention-panel.directive';
@@ -54,4 +55,5 @@ export {
   NXR_MENTION_PANEL_HOST_SELECTOR,
   NXR_MENTION_DEFAULT_PANEL_OFFSET,
   NXR_MENTION_DEFAULT_ARIA_LABEL,
+  NXR_MENTION_RESERVED_DATA_ATTR,
 } from './lib/constants/mention-constants';

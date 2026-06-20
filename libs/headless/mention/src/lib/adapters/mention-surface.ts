@@ -86,6 +86,12 @@ export interface MentionTextSurfaceAdapter {
     baseChipClass?: string,
     index?: number,
   ): boolean;
+  /**
+   * Optional: patch an existing mention chip's structured `data` payload by mention id, using the
+   * same chip-resolution as {@link updateMentionAttributes}. `data` is serialized to the reserved
+   * `data-mention-data` attribute (cleared when not serializable / `undefined`).
+   */
+  updateMentionData?(mentionId: string, data: unknown, index?: number): boolean;
   isFocused(): boolean;
   subscribe(callbacks: MentionSurfaceCallbacks): () => void;
   /** Optional: insert a new line block (div > br) and place caret there. */
