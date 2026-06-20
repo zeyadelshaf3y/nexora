@@ -1,3 +1,9 @@
+## 0.2.12 (2026-06-20)
+
+### 🧱 Updated Dependencies
+
+- Updated mention to 0.5.0
+
 ## 0.2.11 (2026-06-13)
 
 ### 🧱 Updated Dependencies
