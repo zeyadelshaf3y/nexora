@@ -9,6 +9,7 @@ import {
   runOverlayPositionCycle,
   shouldFollowAnchorOffViewport,
 } from './overlay-position-cycle';
+import { applyOverlayPaneSizingFromConfig } from './overlay-pane-from-config';
 
 describe('shouldFollowAnchorOffViewport', () => {
   const vp = new DOMRect(0, 0, 800, 600);
@@ -129,5 +130,27 @@ describe('runOverlayPositionCycle', () => {
     expect(pane.style.left).toMatch(/\d/);
 
     document.body.removeChild(pane);
+  });
+
+  it('refreshes viewport-capped max sizes on reposition for unanchored overlays', () => {
+    const pane = document.createElement('div');
+    applyOverlayPaneSizingFromConfig(pane, { height: '100vh' }, () => new DOMRect(0, 0, 400, 500));
+    expect(pane.style.maxHeight).toBe('500px');
+
+    runOverlayPositionCycle(
+      pane,
+      {
+        positionStrategy: new GlobalCenterStrategy(),
+        scrollStrategy: new NoopScrollStrategy(),
+        anchor: undefined,
+      },
+      {
+        getViewportRect: () => new DOMRect(0, 0, 400, 800),
+        getAnchorElement: () => undefined,
+        currentPlacement: undefined,
+      },
+    );
+
+    expect(pane.style.maxHeight).toBe('800px');
   });
 });

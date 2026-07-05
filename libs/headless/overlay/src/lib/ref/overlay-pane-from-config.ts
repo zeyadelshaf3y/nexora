@@ -54,6 +54,27 @@ export function clearOverlayPaneSizing(pane: HTMLElement): void {
 }
 
 /**
+ * Re-applies viewport-capped `max-width` / `max-height` from the current layout viewport.
+ *
+ * Used on open and on every reposition for unanchored overlays (drawer, dialog) so a pane sized
+ * with `100vh`/`100vw` is not stuck behind a `max-*` cap computed at open time when the viewport
+ * grows (e.g. devtools console closed).
+ */
+export function applyViewportCappedMaxSizes(
+  pane: HTMLElement,
+  config: Pick<OverlayPaneSizingFromConfig, 'maxWidth' | 'maxHeight' | 'host' | 'boundaries'>,
+  getViewportRect: () => DOMRect = getViewportRectFromCore,
+): void {
+  if (overlayHasHostOption(config)) return;
+
+  const effective = applyBoundariesToRect(getViewportRect(), config.boundaries);
+  const s = pane.style;
+
+  s.setProperty('max-width', formatMaxSize(config.maxWidth, effective.width));
+  s.setProperty('max-height', formatMaxSize(config.maxHeight, effective.height));
+}
+
+/**
  * Applies width/height/min* on the pane. When **`overlayHasHostOption(config)`** is false, sets max-*
  * capped to the effective viewport (optionally inset by `boundaries`). Host-scoped max sizes are
  * applied separately.
@@ -72,9 +93,5 @@ export function applyOverlayPaneSizingFromConfig(
   if (config.minWidth) s.setProperty('min-width', config.minWidth);
   if (config.minHeight) s.setProperty('min-height', config.minHeight);
 
-  if (!overlayHasHostOption(config)) {
-    const effective = applyBoundariesToRect(getViewportRect(), config.boundaries);
-    s.setProperty('max-width', formatMaxSize(config.maxWidth, effective.width));
-    s.setProperty('max-height', formatMaxSize(config.maxHeight, effective.height));
-  }
+  applyViewportCappedMaxSizes(pane, config, getViewportRect);
 }

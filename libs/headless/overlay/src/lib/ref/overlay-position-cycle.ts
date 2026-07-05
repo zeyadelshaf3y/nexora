@@ -6,6 +6,7 @@ import { NoopScrollStrategy } from '../scroll/noop-scroll-strategy';
 import { RepositionScrollStrategy } from '../scroll/reposition-scroll-strategy';
 
 import type { OverlayConfig } from './overlay-config';
+import { applyViewportCappedMaxSizes } from './overlay-pane-from-config';
 import { applyPositionResult } from './overlay-position-applier';
 import { overlayHasAnchorOption } from './overlay-resolve-elements';
 import { formatMaxSize } from './overlay-viewport-bounds';
@@ -20,7 +21,10 @@ type PositionCycleConfig = Pick<
   | 'anchor'
   | 'scrollStrategy'
   | 'maintainInViewport'
+  | 'maxWidth'
   | 'maxHeight'
+  | 'host'
+  | 'boundaries'
 >;
 
 /**
@@ -104,12 +108,13 @@ export function runOverlayPositionCycle(
   config: PositionCycleConfig,
   ctx: OverlayPositionCycleContext,
 ): Placement {
-  resetPaneMaxHeightBeforePositionMeasure(
-    pane,
-    overlayHasAnchorOption(config),
-    ctx.getViewportRect,
-    config.maxHeight,
-  );
+  const hasAnchor = overlayHasAnchorOption(config);
+
+  if (!hasAnchor) {
+    applyViewportCappedMaxSizes(pane, config, ctx.getViewportRect);
+  }
+
+  resetPaneMaxHeightBeforePositionMeasure(pane, hasAnchor, ctx.getViewportRect, config.maxHeight);
 
   const viewportRect = ctx.getViewportRect();
   const anchorEl = ctx.getAnchorElement();
@@ -134,7 +139,7 @@ export function runOverlayPositionCycle(
   const followOff = shouldFollowAnchorOffViewport(config, viewportRect, anchorRect ?? undefined);
   applyPaneMaxHeightAfterPosition(
     pane,
-    overlayHasAnchorOption(config),
+    hasAnchor,
     config.maxHeight,
     result.y,
     viewportRect,
