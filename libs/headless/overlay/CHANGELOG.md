@@ -1,3 +1,17 @@
+## 0.2.1 (2026-07-05)
+
+### 🩹 Fixes
+
+- Fix drawer and dialog viewport sizing after the layout viewport grows. ([bab5ba4](https://github.com/zeyadelshaf3y/nexora/commit/bab5ba4))
+
+  ### @nexora-ui/overlay (patch)
+  - Fix: refresh viewport-capped `max-width` / `max-height` on reposition for unanchored overlays (drawer, dialog). Previously the open-time pixel cap could outlive a taller viewport (e.g. devtools console closed), so start/end drawers with default `height: 100vh` stayed short instead of filling the screen.
+
+### ❤️ Thank You
+
+- Cursor @cursoragent
+- Zeyad Alshafey
+
 ## 0.2.0 (2026-06-13)
 
 ### 🚀 Features
