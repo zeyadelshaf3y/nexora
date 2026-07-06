@@ -65,4 +65,27 @@ describe('applyOverlayPaneSizingFromConfig', () => {
     );
     expect(pane.style.maxWidth).toBe('480px');
   });
+
+  it('uses max-content width for anchored overlays without explicit width', () => {
+    const pane = document.createElement('div');
+    applyOverlayPaneSizingFromConfig(pane, {
+      anchor: document.createElement('button'),
+    });
+    expect(pane.style.width).toBe('max-content');
+  });
+
+  it('keeps explicit width for anchored overlays', () => {
+    const pane = document.createElement('div');
+    applyOverlayPaneSizingFromConfig(pane, {
+      anchor: document.createElement('button'),
+      width: '240px',
+    });
+    expect(pane.style.width).toBe('240px');
+  });
+
+  it('does not set max-content width for unanchored overlays', () => {
+    const pane = document.createElement('div');
+    applyOverlayPaneSizingFromConfig(pane, {});
+    expect(pane.style.width).toBe('');
+  });
 });

@@ -1,7 +1,7 @@
 import { getViewportRect as getViewportRectFromCore } from '@nexora-ui/core';
 
 import type { OverlayConfig } from './overlay-config';
-import { overlayHasHostOption } from './overlay-resolve-elements';
+import { overlayHasAnchorOption, overlayHasHostOption } from './overlay-resolve-elements';
 import { applyBoundariesToRect, formatMaxSize } from './overlay-viewport-bounds';
 
 /** Subset of {@link OverlayConfig} used for initial pane ARIA attributes. */
@@ -28,7 +28,15 @@ export function applyOverlayPaneA11yFromConfig(
 /** Subset of {@link OverlayConfig} for initial width/height and viewport-capped max sizes. */
 export type OverlayPaneSizingFromConfig = Pick<
   OverlayConfig,
-  'width' | 'height' | 'minWidth' | 'minHeight' | 'maxWidth' | 'maxHeight' | 'host' | 'boundaries'
+  | 'width'
+  | 'height'
+  | 'minWidth'
+  | 'minHeight'
+  | 'maxWidth'
+  | 'maxHeight'
+  | 'host'
+  | 'boundaries'
+  | 'anchor'
 >;
 
 /** Pane sizing properties managed by {@link applyOverlayPaneSizingFromConfig}. */
@@ -88,7 +96,15 @@ export function applyOverlayPaneSizingFromConfig(
 ): void {
   const s = pane.style;
 
-  if (config.width) s.setProperty('width', config.width);
+  if (config.width) {
+    s.setProperty('width', config.width);
+  } else if (overlayHasAnchorOption(config)) {
+    // Fixed panes default to shrink-to-fit in the space right of `left`, which wraps tooltip/popover
+    // copy at viewport edges even when there is room to grow the other way. max-content sizes to
+    // the intrinsic width; clampToViewport and max-width caps handle overflow.
+    s.setProperty('width', 'max-content');
+  }
+
   if (config.height) s.setProperty('height', config.height);
   if (config.minWidth) s.setProperty('min-width', config.minWidth);
   if (config.minHeight) s.setProperty('min-height', config.minHeight);
