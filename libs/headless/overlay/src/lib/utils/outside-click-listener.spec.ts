@@ -82,4 +82,14 @@ describe('createOutsideClickListener', () => {
     expect(onOutsideClick).not.toHaveBeenCalled();
     document.body.removeChild(outside);
   });
+
+  it('does not call onOutsideClick on right-click outside anchor and pane', () => {
+    const remove = createOutsideClickListener(anchor, getPane, onOutsideClick);
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    outside.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 2 }));
+    expect(onOutsideClick).not.toHaveBeenCalled();
+    remove();
+    document.body.removeChild(outside);
+  });
 });

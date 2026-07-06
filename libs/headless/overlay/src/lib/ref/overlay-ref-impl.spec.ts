@@ -3,8 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { OverlayContainerService } from '../container/overlay-container.service';
+import { setOverlayDragging } from '../drag/overlay-drag-state';
 import { DefaultFocusStrategy } from '../focus/default-focus-strategy';
 import { TemplatePortal } from '../portal/template-portal';
+import { DrawerStrategy } from '../position/drawer-strategy';
 import { GlobalCenterStrategy } from '../position/global-center-strategy';
 import { BlockScrollStrategy } from '../scroll/block-scroll-strategy';
 import { OverlayStackService } from '../stack/overlay-stack.service';
@@ -96,6 +98,79 @@ describe('OverlayRefImpl', () => {
     ref.updateSize({ width: '480px' });
     expect(pane?.style.width).toBe('480px');
     expect(pane?.style.height).toBe('600px');
+  });
+
+  it('updateSize() repositions bottom drawers while dragging', async () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const portal = new TemplatePortal(host.templateRef, host.vcr);
+
+    const ref = createRef({
+      positionStrategy: new DrawerStrategy('bottom'),
+    });
+    await ref.attach(portal);
+
+    const pane = ref.getPaneElement();
+    expect(pane).not.toBeNull();
+    if (!pane) return;
+    Object.defineProperty(pane, 'offsetWidth', {
+      configurable: true,
+      get: () => 320,
+    });
+    Object.defineProperty(pane, 'offsetHeight', {
+      configurable: true,
+      get: () => parseFloat(pane.style.height) || 0,
+    });
+
+    ref.updateSize({ height: '200px', width: '320px' });
+    setOverlayDragging(ref, true);
+
+    const topBefore = parseFloat(pane.style.top);
+
+    ref.updateSize({ height: '400px' });
+
+    expect(pane.style.height).toBe('400px');
+    expect(parseFloat(pane.style.top)).toBeLessThan(topBefore);
+
+    setOverlayDragging(ref, false);
+  });
+
+  it('updateSize() repositions end drawers while dragging', async () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const portal = new TemplatePortal(host.templateRef, host.vcr);
+
+    const ref = createRef({
+      positionStrategy: new DrawerStrategy('end'),
+    });
+    await ref.attach(portal);
+
+    const pane = ref.getPaneElement();
+    expect(pane).not.toBeNull();
+    if (!pane) return;
+
+    Object.defineProperty(pane, 'offsetWidth', {
+      configurable: true,
+      get: () => parseFloat(pane.style.width) || 0,
+    });
+    Object.defineProperty(pane, 'offsetHeight', {
+      configurable: true,
+      get: () => 640,
+    });
+
+    ref.updateSize({ width: '280px', height: '640px' });
+    setOverlayDragging(ref, true);
+
+    const leftBefore = parseFloat(pane.style.left);
+
+    ref.updateSize({ width: '360px' });
+
+    expect(pane.style.width).toBe('360px');
+    expect(parseFloat(pane.style.left)).toBeLessThan(leftBefore);
+
+    setOverlayDragging(ref, false);
   });
 
   it('updateSize() before attach is a no-op (no throw)', () => {

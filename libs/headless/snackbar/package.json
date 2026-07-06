@@ -1,11 +1,11 @@
 {
   "name": "@nexora-ui/snackbar",
-  "version": "0.1.3",
+  "version": "0.1.8",
   "peerDependencies": {
     "@angular/common": "^21.1.0",
     "@angular/core": "^21.1.0",
-    "@nexora-ui/core": "^0.1.0",
-    "@nexora-ui/overlay": "^0.1.2",
+    "@nexora-ui/core": "^0.1.1",
+    "@nexora-ui/overlay": "^0.2.2",
     "rxjs": "^7.0.0"
   },
   "sideEffects": false

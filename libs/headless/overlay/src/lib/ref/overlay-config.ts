@@ -1,3 +1,4 @@
+import type { DragToCloseConfig } from '../drag/drag-to-close-config';
 import type { FocusStrategy } from '../focus/focus-strategy';
 import type { PositionStrategy } from '../position/position-strategy';
 import type { ScrollStrategy } from '../scroll/scroll-strategy';
@@ -161,6 +162,12 @@ export interface OverlayConfig extends PanelDimensionOptions, PanelStylingOption
    * E.g. maxHeight = viewport.height - (top ?? 0) - (bottom ?? 0).
    */
   readonly boundaries?: ViewportBoundaries;
+  /**
+   * Drawer-only: enables drag-to-close when combined with `nxrDrawerDragHandle` in content.
+   * Ignored by dialog and other overlay types.
+   * @internal Drawer service forwards this; not part of generic overlay public API.
+   */
+  readonly dragToClose?: boolean | DragToCloseConfig;
 }
 
 export interface ArrowSize {

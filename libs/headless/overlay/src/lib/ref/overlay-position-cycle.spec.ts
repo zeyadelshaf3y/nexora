@@ -2,6 +2,7 @@ import { GlobalCenterStrategy } from '../position/global-center-strategy';
 import { NoopScrollStrategy } from '../scroll/noop-scroll-strategy';
 import { RepositionScrollStrategy } from '../scroll/reposition-scroll-strategy';
 
+import { applyOverlayPaneSizingFromConfig } from './overlay-pane-from-config';
 import {
   applyPaneMaxHeightAfterPosition,
   OVERLAY_POSITION_VIEWPORT_EDGE_PADDING,
@@ -9,7 +10,6 @@ import {
   runOverlayPositionCycle,
   shouldFollowAnchorOffViewport,
 } from './overlay-position-cycle';
-import { applyOverlayPaneSizingFromConfig } from './overlay-pane-from-config';
 
 describe('shouldFollowAnchorOffViewport', () => {
   const vp = new DOMRect(0, 0, 800, 600);

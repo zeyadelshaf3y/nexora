@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
 import { OverlayContainerService } from '../container/overlay-container.service';
+import { setOverlayDragging } from '../drag/overlay-drag-state';
 import type { ClosePolicy } from '../ref/close-policy';
 import type { OverlayRef } from '../ref/overlay-ref';
 import { OverlayStackService } from '../stack/overlay-stack.service';
@@ -226,6 +227,30 @@ describe('OverlayEventsService', () => {
       document.body.removeChild(pane);
     });
 
+    it('does not close on backdrop click while overlay is dragging', async () => {
+      const closeSpy = vi.fn().mockResolvedValue(true);
+      const pane = document.createElement('div');
+      const backdrop = document.createElement('div');
+
+      const ref = createMockOverlayRef({
+        close: closeSpy,
+        getPaneElement: () => pane,
+        getBackdropElement: () => backdrop,
+        getClosePolicy: () => ({ escape: 'top', outside: 'top', backdrop: 'self' }),
+      });
+
+      stack.register(ref);
+      setOverlayDragging(ref, true);
+      document.body.appendChild(backdrop);
+
+      backdrop.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+      await Promise.resolve();
+
+      expect(closeSpy).not.toHaveBeenCalled();
+      setOverlayDragging(ref, false);
+      document.body.removeChild(backdrop);
+    });
+
     it('closes only the ref (popover) when outside click is on parent pane', async () => {
       const dialogPane = document.createElement('div');
       const dialogBackdrop = document.createElement('div');
@@ -407,6 +432,59 @@ describe('OverlayEventsService', () => {
 
       document.body.removeChild(topPane);
       document.body.removeChild(lowerPane);
+    });
+
+    it('does not close on right-click outside or on backdrop', async () => {
+      const closeSpy = vi.fn();
+      const pane = document.createElement('div');
+      const backdrop = document.createElement('div');
+
+      const ref = createMockOverlayRef({
+        close: closeSpy,
+        getPaneElement: () => pane,
+        getBackdropElement: () => backdrop,
+        getClosePolicy: () => ({ escape: 'top', outside: 'top', backdrop: 'self' }),
+      });
+
+      stack.register(ref);
+      document.body.appendChild(backdrop);
+      document.body.appendChild(pane);
+
+      document.body.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 2 }),
+      );
+      backdrop.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 2 }),
+      );
+      await Promise.resolve();
+
+      expect(closeSpy).not.toHaveBeenCalled();
+
+      document.body.removeChild(backdrop);
+      document.body.removeChild(pane);
+    });
+
+    it('does not notify outside click attempted on right-click when outside policy is "none"', async () => {
+      const notifySpy = vi.fn();
+      const pane = document.createElement('div');
+
+      const ref = createMockOverlayRef({
+        getPaneElement: () => pane,
+        getClosePolicy: () => ({ escape: 'top', outside: 'none', backdrop: 'none' }),
+        notifyOutsideClickAttempted: notifySpy,
+      });
+
+      stack.register(ref);
+      document.body.appendChild(pane);
+
+      document.body.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 2 }),
+      );
+      await Promise.resolve();
+
+      expect(notifySpy).not.toHaveBeenCalled();
+
+      document.body.removeChild(pane);
     });
   });
 });

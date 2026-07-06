@@ -9,6 +9,7 @@ import type {
   WritableSignal,
 } from '@angular/core';
 
+import type { DragToCloseConfig } from '../drag/drag-to-close-config';
 import type { FocusStrategy } from '../focus/focus-strategy';
 import type { DialogPlacement } from '../position/dialog-strategy';
 import type { DrawerPlacement } from '../position/drawer-strategy';
@@ -210,4 +211,9 @@ export interface DialogOpenOptions extends ContentOpenOptionsBase, OverlayPanelO
 export interface DrawerOpenOptions extends ContentOpenOptionsBase, OverlayPanelOptions {
   /** Edge to attach drawer to. Default: `'end'`. */
   readonly placement?: DrawerPlacement;
+  /**
+   * Enables drag-to-close when combined with {@link DrawerDragHandleDirective} (`nxrDrawerDragHandle`)
+   * in drawer content. Default: `false`.
+   */
+  readonly dragToClose?: boolean | DragToCloseConfig;
 }

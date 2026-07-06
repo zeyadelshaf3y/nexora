@@ -146,6 +146,91 @@
       transition: transform 0.25s ease;
     }
   }
+
+  .tpl-drawer {
+    position: relative;
+  }
+
+  .nxr-drawer-drag-handle,
+  .drawer-handle {
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: var(--nxr-border, #ccc);
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  /* Top drawer: handle at block end (bottom edge) */
+  .nxr-drawer-drag-handle[data-nxr-drawer-drag-edge='block-end'],
+  &[data-placement='drawer-top'] .drawer-handle {
+    width: 2.5rem;
+    height: 0.25rem;
+    margin-block: auto 0.75rem;
+    margin-inline: auto;
+  }
+
+  /* Bottom drawer: handle at block start (top edge) */
+  .nxr-drawer-drag-handle[data-nxr-drawer-drag-edge='block-start'],
+  &[data-placement='drawer-bottom'] .drawer-handle {
+    width: 2.5rem;
+    height: 0.25rem;
+    order: -1;
+    margin-block: 0.75rem 0.5rem;
+    margin-inline: auto;
+  }
+
+  /* Start drawer: handle at inline end */
+  .nxr-drawer-drag-handle[data-nxr-drawer-drag-edge='inline-end'],
+  &[data-placement='drawer-start'] .drawer-handle {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: 1.5rem;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    background: transparent;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      inset-inline-end: 0.375rem;
+      transform: translateY(-50%);
+      width: 0.25rem;
+      height: 2.5rem;
+      border-radius: 999px;
+      background: var(--nxr-border, #ccc);
+    }
+  }
+
+  /* End drawer: handle at inline start */
+  .nxr-drawer-drag-handle[data-nxr-drawer-drag-edge='inline-start'],
+  &[data-placement='drawer-end'] .drawer-handle {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 1.5rem;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    background: transparent;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      inset-inline-start: 0.375rem;
+      transform: translateY(-50%);
+      width: 0.25rem;
+      height: 2.5rem;
+      border-radius: 999px;
+      background: var(--nxr-border, #ccc);
+    }
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════ */

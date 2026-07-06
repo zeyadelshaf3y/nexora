@@ -103,7 +103,7 @@ ref?.afterClosed().subscribe(() => this.cleanup());
 
 - **Bad**: `open(content, placement, hasBackdrop, scrollStrategy, focusStrategy, ...)`.
 - **Good**: `open(content, { placement, hasBackdrop, scrollStrategy, focusStrategy, ... })`.
-- **Extend shared types**: Dialog and drawer share `ContentOpenOptionsBase` and overlay panel options (placement-specific part in each). Reduces duplication and keeps behavior consistent.
+- **Extend shared types**: Dialog and drawer share `ContentOpenOptionsBase` and overlay panel options (placement-specific part in each). Drawer adds optional **`dragToClose`** (boolean or `{ threshold, minVelocity, snap? }`) plus **`nxrDrawerDragHandle`** in content for gesture dismiss. **`snap`** opens at `initialSize`, drag-to-expand, snap-back, then dismiss-to-close. Reduces duplication and keeps behavior consistent.
 
 ## Defaults
 

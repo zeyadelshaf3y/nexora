@@ -21,6 +21,7 @@ export const DEFAULT_DIALOG_DEFAULTS_CONFIG: DialogDefaultsConfig = {
 export const DEFAULT_DRAWER_DEFAULTS_CONFIG: DrawerDefaultsConfig = {
   placement: 'end',
   hasBackdrop: true,
+  dragToClose: false,
 };
 
 export const DIALOG_DEFAULTS_CONFIG = new InjectionToken<DialogDefaultsConfig>(

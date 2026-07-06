@@ -6,9 +6,11 @@ import { inject, Injectable } from '@angular/core';
 import type { OnDestroy } from '@angular/core';
 import { canUseDOM, listen, ownerDocument } from '@nexora-ui/core';
 
+import { isOverlayDragging } from '../drag/overlay-drag-state';
 import type { CloseReason } from '../ref/close-reason';
 import type { OverlayRef } from '../ref/overlay-ref';
 import { OverlayStackService } from '../stack/overlay-stack.service';
+import { isPrimaryPointerButton } from '../utils/is-primary-pointer-button';
 
 /**
  * Global Escape and pointerdown handling for overlays.
@@ -86,6 +88,7 @@ export class OverlayEventsService implements OnDestroy {
   // ─── Pointer (stack order: top-first so topmost overlay handles the click) ─
 
   private async handlePointerDown(event: PointerEvent): Promise<void> {
+    if (!isPrimaryPointerButton(event)) return;
     if (!(event.target instanceof Node)) return;
     const target = event.target;
     const stack = this.stack.getStack();
@@ -126,6 +129,8 @@ export class OverlayEventsService implements OnDestroy {
   }
 
   private async onBackdropClick(ref: OverlayRef, event: PointerEvent): Promise<void> {
+    if (isOverlayDragging(ref)) return;
+
     const policy = ref.getClosePolicy().backdrop;
 
     if (policy === 'self') {
@@ -142,6 +147,8 @@ export class OverlayEventsService implements OnDestroy {
     target: Node,
     event: PointerEvent,
   ): Promise<boolean> {
+    if (isOverlayDragging(ref)) return false;
+
     const { outside } = ref.getClosePolicy();
 
     if (outside === 'none') {

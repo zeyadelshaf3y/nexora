@@ -4,6 +4,7 @@ export {
   CLOSE_REASON_SCROLL,
   CLOSE_REASON_SELECTION,
   CLOSE_REASON_OUTSIDE,
+  CLOSE_REASON_GESTURE,
 } from './lib/ref/close-reason';
 export { type ClosePolicy, DEFAULT_CLOSE_POLICY, mergeClosePolicy } from './lib/ref/close-policy';
 export {
@@ -96,6 +97,8 @@ export {
   PANE_ID_PREFIX_TOOLTIP,
 } from './lib/defaults/overlay-attributes';
 
+export type { DragToCloseConfig, DrawerSnapConfig } from './lib/drag/drag-to-close-config';
+export type { DrawerDragHandleEdge } from './lib/drag/drawer-drag-dismiss-vector';
 export type {
   ComponentOutputRef,
   ContentOpenOptionsBase,
@@ -148,6 +151,7 @@ export { OverlayTriggerDirective } from './lib/directives/overlay-trigger.direct
 export { OverlayViewContainerDirective } from './lib/directives/overlay-view-container.directive';
 export { OverlayArrowDirective } from './lib/directives/overlay-arrow.directive';
 export { getContainingOverlayRef, CloseDialogDirective, CloseDrawerDirective } from './lib/close';
+export { DrawerDragHandleDirective } from './lib/drag/drawer-drag-handle.directive';
 
 export type { GapRect, HoverBridgeConfig } from './lib/hover/hover-bridge';
 export {

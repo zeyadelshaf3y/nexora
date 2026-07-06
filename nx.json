@@ -75,7 +75,9 @@
     }
   },
   "release": {
-    "versionPlans": true,
+    "versionPlans": {
+      "ignorePatternsForPlanCheck": ["**/package.json"]
+    },
     "groups": {
       "nexora-headless": {
         "projects": [
@@ -95,7 +97,9 @@
           "headless"
         ],
         "projectsRelationship": "independent",
-        "versionPlans": true
+        "versionPlans": {
+          "ignorePatternsForPlanCheck": ["**/package.json"]
+        }
       }
     },
     "version": {

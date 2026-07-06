@@ -1,11 +1,11 @@
 {
   "name": "@nexora-ui/popover",
-  "version": "0.1.7",
+  "version": "0.1.10",
   "peerDependencies": {
     "@angular/common": "^21.1.0",
     "@angular/core": "^21.1.0",
-    "@nexora-ui/core": "^0.1.0",
-    "@nexora-ui/overlay": "^0.1.2"
+    "@nexora-ui/core": "^0.1.1",
+    "@nexora-ui/overlay": "^0.2.2"
   },
   "sideEffects": false
 }

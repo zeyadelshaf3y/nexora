@@ -79,12 +79,34 @@ ref = await this.overlay.open(MyDialogComponent, {
 **Drawer** (4 positions: `top`, `bottom`, `start`, `end`; **RTL-aware** for `start`/`end` — placement follows document/anchor `dir`):
 
 ```ts
-ref = await this.overlay.open(MyDrawerComponent, {
-  type: 'drawer',
+ref = await this.drawerService.open(MyDrawerComponent, {
   placement: 'end',
-  drawerSize: '320px',
+  dragToClose: true,
+  minWidth: '280px',
+  maxWidth: 'min(400px, 80vw)',
 });
 ```
+
+**Drag to close:** Set `dragToClose: true` (or `{ threshold, minVelocity }`) and add a handle in template content:
+
+```html
+<div class="drawer-handle" nxrDrawerDragHandle aria-hidden="true"></div>
+```
+
+**Snap / expand (bottom sheet style):** Use `dragToClose: { snap: { initialSize: '200px', expandedSize: '60vh' } }` to open at a partial size, drag to expand, snap back on a small dismiss drag, or close on a full dismiss. `expandedSize` is optional (defaults to max height/width cap or viewport). Applies to all placements (height for top/bottom, width for start/end).
+
+The directive sets `data-nxr-drawer-drag-edge` on the handle for placement-aware styling:
+
+| Drawer placement | Handle edge attribute | Position                 |
+| ---------------- | --------------------- | ------------------------ |
+| `top`            | `block-end`           | Bottom edge              |
+| `bottom`         | `block-start`         | Top edge                 |
+| `start`          | `inline-end`          | Inline end (RTL-aware)   |
+| `end`            | `inline-start`        | Inline start (RTL-aware) |
+
+Style with `[data-nxr-drawer-drag-edge='block-end']` etc. Place the handle element once in your template; CSS positions it on the dismiss edge.
+
+Slide animations should target the **pane** (`panelClass`); the engine applies inline `transform` on the pane during drag. Closes with reason `'gesture'`.
 
 **Template:**
 
@@ -188,12 +210,12 @@ The overlay pane has `data-placement` set (e.g. `dialog-center`, `drawer-end`) a
 
 ## API surface
 
-| Kind         | Symbols                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Notes                                                                                                                 |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| **Stable**   | `OverlayService`, `OverlayRef`, `OVERLAY_REF`, `OverlayConfig`, `DialogService`, `DrawerService`, `ClosePolicy`, position/scroll/focus strategies, `getContainingOverlayRef`, `createAnchoredOverlayConfig`, `createDropdownAnchoredConfig`, `createMenuAnchoredConfig`, `BaseAnchoredPresetParams`, `composeBeforeOpenCallbacks`, `composeBeforeCloseCallbacks`, `TemplatePortal`, `ComponentPortal`, close reasons, directives (`nxrOverlay`, `nxrDialogClose`, etc.) | Safe for app and other Nexora libs; we avoid breaking these in minor/patch releases.                                  |
-| **Internal** | `handleCloseClick`, `closestCloseableRef`, `registerCloseableRef`, `unregisterCloseableRef`                                                                                                                                                                                                                                                                                                                                                                             | Used by close directives and overlay impl. Prefer `getContainingOverlayRef` when you need the containing overlay ref. |
-| **Internal** | `applyComponentInputs`, `subscribeComponentOutputs`, `isComponent`                                                                                                                                                                                                                                                                                                                                                                                                      | Used by overlay and snackbar services for component content; may change.                                              |
-| **Internal** | Strategy/ref implementation classes, positioning helpers (e.g. placement-utils)                                                                                                                                                                                                                                                                                                                                                                                         | Not exported; only strategies and config builders are part of the public API so the package stays tree-shakeable.     |
+| Kind         | Symbols                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Notes                                                                                                                 |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Stable**   | `OverlayService`, `OverlayRef`, `OVERLAY_REF`, `OverlayConfig`, `DialogService`, `DrawerService`, `ClosePolicy`, position/scroll/focus strategies, `getContainingOverlayRef`, `createAnchoredOverlayConfig`, `createDropdownAnchoredConfig`, `createMenuAnchoredConfig`, `BaseAnchoredPresetParams`, `composeBeforeOpenCallbacks`, `composeBeforeCloseCallbacks`, `TemplatePortal`, `ComponentPortal`, close reasons, directives (`nxrOverlay`, `nxrDialogClose`, `nxrDrawerClose`, `nxrDrawerDragHandle`, etc.) | Safe for app and other Nexora libs; we avoid breaking these in minor/patch releases.                                  |
+| **Internal** | `handleCloseClick`, `closestCloseableRef`, `registerCloseableRef`, `unregisterCloseableRef`                                                                                                                                                                                                                                                                                                                                                                                                                      | Used by close directives and overlay impl. Prefer `getContainingOverlayRef` when you need the containing overlay ref. |
+| **Internal** | `applyComponentInputs`, `subscribeComponentOutputs`, `isComponent`                                                                                                                                                                                                                                                                                                                                                                                                                                               | Used by overlay and snackbar services for component content; may change.                                              |
+| **Internal** | Strategy/ref implementation classes, positioning helpers (e.g. placement-utils)                                                                                                                                                                                                                                                                                                                                                                                                                                  | Not exported; only strategies and config builders are part of the public API so the package stays tree-shakeable.     |
 
 ## Conventions
 
@@ -205,6 +227,7 @@ The overlay pane has `data-placement` set (e.g. `dialog-center`, `drawer-end`) a
 - **Listeners**: Document-level Escape and pointerdown are attached once when the overlay stack is first used. Reposition listeners (resize, scroll) are registered per overlay and cleared on close.
 - **Cleanup**: Each overlay tears down its reposition throttler and listeners in `close()` before detach; no listener leaks when overlays are closed or disposed.
 - **Re-entrancy**: Open/close guards (e.g. `if (this.closed) return false`) prevent double-close or attach-after-close. Focus is restored on close so rapid open/close does not leave focus in a detached pane.
+- **Drawer drag**: Pointer listeners are scoped per handle; document listeners attach only during an active drag and are removed on release. Reposition and backdrop/outside dismiss are skipped while dragging.
 
 ## Internal structure
 
@@ -216,6 +239,7 @@ Layout of `src/lib/` for contributors:
 | **position/**  | Positioning only: `PositionStrategy`, context → result; strategies (anchored, dialog, drawer, global center), placement utils. No DOM.                                                                                                                                                                                                                            |
 | **events/**    | Document-level behavior: Escape and outside-click via overlay stack (one service).                                                                                                                                                                                                                                                                                |
 | **close/**     | Closeable ref registry and close directives (base, dialog, drawer).                                                                                                                                                                                                                                                                                               |
+| **drag/**      | Shared drag-to-close core (`drag-dismiss-core`, `drag-pane-transform`, `gesture-close-animation`) and drawer wiring (`drawer-drag-controller`, `drawer-drag-handle`, `drawer-drag-lifecycle`, `drawer-snap-metrics`, `drawer-snap-drag`). Snackbar will reuse the shared core later.                                                                              |
 | **portal/**    | Content attachment: `Portal`, `TemplatePortal`, `ComponentPortal`.                                                                                                                                                                                                                                                                                                |
 | **scroll/**    | Scroll strategies (noop, block, close-on-scroll).                                                                                                                                                                                                                                                                                                                 |
 | **focus/**     | Focus strategies (default, noop).                                                                                                                                                                                                                                                                                                                                 |

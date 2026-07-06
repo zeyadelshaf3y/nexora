@@ -9,7 +9,8 @@ export type CloseReason =
   | 'outside'
   | 'programmatic'
   | 'scroll'
-  | 'selection';
+  | 'selection'
+  | 'gesture';
 
 /** Constants for close reasons. Use these instead of string literals to avoid typos and allow refactors. */
 export const CLOSE_REASON_ESCAPE: CloseReason = 'escape';
@@ -18,3 +19,4 @@ export const CLOSE_REASON_OUTSIDE: CloseReason = 'outside';
 export const CLOSE_REASON_PROGRAMMATIC: CloseReason = 'programmatic';
 export const CLOSE_REASON_SCROLL: CloseReason = 'scroll';
 export const CLOSE_REASON_SELECTION: CloseReason = 'selection';
+export const CLOSE_REASON_GESTURE: CloseReason = 'gesture';

@@ -8,7 +8,7 @@ Canonical **required behavior** for the overlay engine, **anchored** primitives 
 
 - **Stack**: Overlays are registered in order; top of stack gets highest z-index and is the one affected by Escape and by “outside click” when the click is on a backdrop.
 - **Escape**: Closes the **top** overlay only (configurable via close policy). No bubbling to parent overlays.
-- **Outside click**: If the click is on a **backdrop**, the overlay that owns that backdrop and all its **nested** overlays close. If the click is on a **pane** (e.g. dialog content), only the **top** overlay (e.g. popover) closes; parent stays open.
+- **Outside click**: If the click is on a **backdrop**, the overlay that owns that backdrop and all its **nested** overlays close. If the click is on a **pane** (e.g. dialog content), only the **top** overlay (e.g. popover) closes; parent stays open. Only the **primary pointer button** (left click / tap) dismisses; right-click and middle-click are ignored so context menus and auxiliary clicks do not close overlays.
 - **Close policy**: Configurable per overlay (escape: top/none, outside: top/none, backdrop: self/none). Default: close on escape, outside, and backdrop.
 - **Nested overlays**: When opening from inside another overlay (e.g. popover inside dialog), set `parentRef` so closing the parent closes children. Directives set `parentRef` automatically when the trigger is inside an overlay pane.
 - **Focus**: Default strategy focuses first focusable in pane on open and **restores focus** to the previously focused element on close.
@@ -107,6 +107,8 @@ Chip attributes merged onto mention DOM are **allowlisted** for safety; see [SEC
 - **Sizing**: start/end: height 100vh by default, width from options. top/bottom: width 100vw by default, height from options.
 - **Backdrop, scroll, focus, ARIA**: Same as dialog (backdrop default on, block scroll, focus restore, `role="dialog"` / `aria-modal="true"`). Consumer provides `aria-label` or `aria-labelledby`.
 - **Content**: Template or component; consumer owns structure and styles.
+- **Drag to close**: Opt-in via `dragToClose: true` (or config) on open plus `nxrDrawerDragHandle` on a handle element in content. Dismiss axis follows placement (and RTL for start/end). Closes with reason `'gesture'`. Escape, backdrop, and close button still work. Handle edge is exposed as `data-nxr-drawer-drag-edge` (`block-end` | `block-start` | `inline-end` | `inline-start`). Reposition and backdrop dismiss are suppressed during an active drag.
+- **Snap / expand (mobile sheet)**: Optional `dragToClose: { snap: { initialSize, expandedSize? } }`. Opens at `initialSize` along the expand axis (height for top/bottom, width for start/end). Drag toward expand grows to `expandedSize` or the pane max/viewport cap; partial drag back snaps to initial; further drag dismisses and closes. Works for all four placements; without `snap`, behavior is dismiss-only (transform-only drag).
 
 ---
 
@@ -163,7 +165,7 @@ Chip attributes merged onto mention DOM are **allowlisted** for safety; see [SEC
 | Component              | Open API                        | Close (user)                                | Focus                   | ARIA (pane)                           | Special                                                                                           |
 | ---------------------- | ------------------------------- | ------------------------------------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | **Dialog**             | `DialogService.open(...)`       | Escape, backdrop, outside                   | Restore + optional trap | role=dialog, aria-modal               | 9 positions, block scroll                                                                         |
-| **Drawer**             | `DrawerService.open(...)`       | Same as dialog                              | Same                    | Same                                  | 4 positions, RTL start/end                                                                        |
+| **Drawer**             | `DrawerService.open(...)`       | Same as dialog                              | Same                    | Same                                  | 4 positions, RTL start/end; optional `dragToClose` + `nxrDrawerDragHandle`                        |
 | **Popover**            | `[nxrPopover]="tpl"`            | Outside, Escape, (blur for focus)           | Restore                 | role=dialog, aria-controls on trigger | Click/focus/hover, 12 placements                                                                  |
 | **Tooltip**            | `nxrTooltip="text"`             | Leave / blur / outside pointer / doc hidden | No trap                 | role=tooltip, aria-describedby        | Hover/focus, delays, optional arrow; closes while popup open on same anchor (default)             |
 | **Snackbar**           | `SnackbarService.open(...)`     | Button/duration/group replace               | No trap                 | Consumer                              | Stack, groupId, close with value                                                                  |

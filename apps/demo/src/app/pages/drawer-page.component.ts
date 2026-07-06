@@ -11,6 +11,7 @@ import {
   CloseDialogDirective,
   CloseDrawerDirective,
   DialogService,
+  DrawerDragHandleDirective,
   DrawerService,
   type DrawerPlacement,
   type OverlayRef,
@@ -24,13 +25,20 @@ import { IconComponent } from '../core/icons';
   standalone: true,
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FocusTrapDirective, CloseDrawerDirective, CloseDialogDirective, IconComponent],
+  imports: [
+    FocusTrapDirective,
+    CloseDrawerDirective,
+    CloseDialogDirective,
+    DrawerDragHandleDirective,
+    IconComponent,
+  ],
   template: `
     <!-- All 4 Placements -->
     <section class="page-section">
       <h2 class="page-section-title">Drawer Placements</h2>
       <p class="page-section-desc">
-        Slide-out panels from all four edges. Close with Escape, backdrop, or the close button.
+        Slide-out panels from all four edges. Close with Escape, backdrop, the close button, or drag
+        the handle to dismiss.
       </p>
       <div class="btn-row">
         @for (p of drawerPlacements; track p) {
@@ -60,7 +68,7 @@ import { IconComponent } from '../core/icons';
     <ng-template #drawerTpl>
       <div class="tpl-drawer" nxrFocusTrap>
         <h2>Drawer Panel</h2>
-        <p>Slide-out panel. Close with Escape, backdrop, or the button.</p>
+        <p>Slide-out panel. Close with Escape, backdrop, the button, or drag the handle.</p>
         <nav class="drawer-nav">
           <a class="drawer-nav-item" href="#">
             <app-icon name="grid" [size]="16" />
@@ -86,6 +94,7 @@ import { IconComponent } from '../core/icons';
         <div class="tpl-drawer-footer">
           <button class="btn btn-ghost" nxrDrawerClose>Close</button>
         </div>
+        <div class="drawer-handle" nxrDrawerDragHandle aria-hidden="true"></div>
       </div>
     </ng-template>
 
@@ -170,13 +179,17 @@ export class DrawerPageComponent {
 
   async openDrawer(placement: DrawerPlacement): Promise<void> {
     if (this.drawerRef) return;
+    const isHorizontal = placement === 'start' || placement === 'end';
     this.drawerRef = await this.drawerSvc.open(this.drawerTpl, {
       placement,
+      dragToClose: {
+        snap: { initialSize: isHorizontal ? '480px' : '300px' },
+      },
       hasBackdrop: true,
       panelClass: 'demo-drawer-pane',
-      ...(placement === 'start' || placement === 'end'
-        ? { minWidth: '280px', maxWidth: 'min(400px, 80vw)' }
-        : { minHeight: '200px', maxHeight: '60vh' }),
+      ...(isHorizontal
+        ? { minWidth: '480px', maxWidth: 'min(600px, 80vw)' }
+        : { minHeight: '300px', maxHeight: '100vh' }),
     });
     bindClearOverlayOnClose(
       this.drawerRef,

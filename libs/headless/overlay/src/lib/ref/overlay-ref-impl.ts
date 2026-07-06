@@ -3,6 +3,12 @@ import { ReplaySubject, Subject } from 'rxjs';
 
 import { registerCloseableRef, unregisterCloseableRef } from '../close/closeable-ref-registry';
 import type { OverlayContainerService } from '../container/overlay-container.service';
+import {
+  setupDrawerDragIfEnabled,
+  applyDrawerSnapInitialSizeIfEnabled,
+  teardownDrawerDrag,
+} from '../drag/drawer-drag-lifecycle';
+import { isOverlayDragging } from '../drag/overlay-drag-state';
 import type { Portal } from '../portal/portal';
 import type { Placement } from '../position/position-result';
 import type { IOverlayStack } from '../stack/overlay-stack.service';
@@ -123,6 +129,7 @@ export class OverlayRefImpl implements OverlayRef {
     this.applyContainedHostStyles(pane);
 
     this.attachPortalAndRegisterCloseable(pane, portal);
+    applyDrawerSnapInitialSizeIfEnabled(pane);
     this.attachStrategiesAndStartEnterAnimation(pane, backdrop);
 
     this.afterOpened$.next();
@@ -162,6 +169,9 @@ export class OverlayRefImpl implements OverlayRef {
   }
 
   private attachPortalAndRegisterCloseable(pane: HTMLElement, portal: Portal): void {
+    // Position before drag setup and content attach so `data-placement` is available.
+    this.applyPosition();
+    setupDrawerDragIfEnabled(this, pane, this.backdrop, this.config);
     portal.attach(pane);
     this.portal = portal;
 
@@ -223,6 +233,7 @@ export class OverlayRefImpl implements OverlayRef {
     this.detachPortalScrollAndStack();
 
     if (pane && host) {
+      teardownDrawerDrag(pane);
       unregisterCloseableRef(pane);
       this.removeFromDom(host, pane, backdrop);
     }
@@ -291,7 +302,8 @@ export class OverlayRefImpl implements OverlayRef {
     if (!pane) return;
 
     this.applyCurrentSizing(pane);
-    this.applyPosition();
+    // Size changes must re-anchor bottom/end drawers even mid drag (transform-only dismiss skips updateSize).
+    this.applyPosition({ force: true });
   }
 
   /**
@@ -412,6 +424,8 @@ export class OverlayRefImpl implements OverlayRef {
 
   /** Re-applies the position strategy (e.g. after viewport or anchor change). */
   reposition(): void {
+    if (isOverlayDragging(this)) return;
+
     if (this.pane) this.applyPosition();
   }
 
@@ -538,10 +552,10 @@ export class OverlayRefImpl implements OverlayRef {
   // Private: position
   // ---------------------------------------------------------------------------
 
-  private applyPosition(): void {
+  private applyPosition(options?: { force?: boolean }): void {
     const pane = this.pane;
 
-    if (!pane) return;
+    if (!pane || (isOverlayDragging(this) && !options?.force)) return;
 
     this.lastPlacement = runOverlayPositionCycle(
       pane,

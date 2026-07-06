@@ -11,6 +11,8 @@
 
 import { listen } from '@nexora-ui/core';
 
+import { isPrimaryPointerButton } from './is-primary-pointer-button';
+
 export interface OutsideClickOptions {
   /** When true for the resolved target element, the click is treated as inside and onOutsideClick is not called. */
   readonly considerInside?: (target: Element) => boolean;
@@ -38,6 +40,8 @@ export function createOutsideClickListener(
     doc,
     'pointerdown',
     (e: Event) => {
+      if (!(e instanceof PointerEvent) || !isPrimaryPointerButton(e)) return;
+
       const el = resolveEventElement(e);
       if (!el) return;
 
