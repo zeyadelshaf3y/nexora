@@ -1,3 +1,17 @@
+## 0.3.0 (2026-07-06)
+
+### 🚀 Features
+
+- Add drawer drag-to-dismiss and optional snap-to-size gestures. ([ac5f1fd](https://github.com/zeyadelshaf3y/nexora/commit/ac5f1fd))
+  - `DrawerDragHandleDirective` (`nxrDrawerDragHandle`) for drag handles on drawer panes
+  - `dragToClose` drawer open options with configurable threshold, velocity, and snap sizing (`DragToCloseConfig`, `DrawerSnapConfig`)
+  - `CLOSE_REASON_GESTURE` close reason for gesture-dismissed overlays
+  - Public type `DrawerDragHandleEdge` for handle placement
+
+### ❤️ Thank You
+
+- Zeyad Alshafey
+
 ## 0.2.2 (2026-07-06)
 
 ### 🩹 Fixes

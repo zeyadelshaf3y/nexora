@@ -1,3 +1,11 @@
+## 0.3.5 (2026-07-06)
+
+### 🧱 Updated Dependencies
+
+- Updated overlay to 0.3.0
+- Updated listbox-cdk to 0.1.13
+- Updated dropdown to 0.1.8
+
 ## 0.3.4 (2026-07-06)
 
 ### 🧱 Updated Dependencies
