@@ -1,3 +1,17 @@
+## 0.2.2 (2026-07-06)
+
+### 🩹 Fixes
+
+- Fix anchored overlay text wrapping at viewport edges. ([9096c07](https://github.com/zeyadelshaf3y/nexora/commit/9096c07))
+
+  ### @nexora-ui/overlay (patch)
+  - Fix: set `width: max-content` on anchored overlay panes when no explicit width is configured. Fixed-position panes with `width: auto` shrink to the space right of `left`, which caused tooltips and similar anchored panels near viewport edges to wrap text even when room was available on the other side.
+
+### ❤️ Thank You
+
+- Cursor @cursoragent
+- Zeyad Alshafey
+
 ## 0.2.1 (2026-07-05)
 
 ### 🩹 Fixes
