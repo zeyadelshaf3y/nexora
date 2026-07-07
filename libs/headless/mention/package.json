@@ -1,6 +1,6 @@
 {
   "name": "@nexora-ui/mention",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "peerDependencies": {
     "@angular/common": "^21.1.0",
     "@angular/core": "^21.1.0",
