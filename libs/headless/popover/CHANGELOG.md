@@ -1,3 +1,9 @@
+## 0.1.12 (2026-07-07)
+
+### 🧱 Updated Dependencies
+
+- Updated overlay to 0.4.0
+
 ## 0.1.11 (2026-07-06)
 
 ### 🧱 Updated Dependencies

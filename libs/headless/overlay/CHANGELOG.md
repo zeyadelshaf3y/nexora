@@ -1,3 +1,19 @@
+## 0.4.0 (2026-07-07)
+
+### 🚀 Features
+
+- ## Drawer `dragFrom: 'pane'` option ([59af28a](https://github.com/zeyadelshaf3y/nexora/commit/59af28a))
+
+  Add optional `dragFrom: 'pane'` to drawer `dragToClose` config so consumers can drag the whole drawer surface (skipping buttons, links, and inputs) in addition to the existing handle-based drag (`dragFrom: 'handle'`, default).
+
+  **Usage notes**
+  - Prefer `dragFrom: 'handle'` with `nxrDrawerDragHandle` for touch devices and scrollable drawer content.
+  - `dragFrom: 'pane'` suits pointer-driven, mostly non-scrollable drawers (e.g. desktop).
+
+### ❤️ Thank You
+
+- Zeyad Alshafey
+
 ## 0.3.0 (2026-07-06)
 
 ### 🚀 Features
