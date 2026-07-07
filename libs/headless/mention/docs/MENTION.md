@@ -13,6 +13,7 @@ The library does **not** ship a built-in `nxrMentionPlaceholder` input. The edit
 
 - The editor is **contenteditable**. Choosing a suggestion must not steal focus in a way that drops the selection before `select()` runs.
 - **Use `(mousedown)` on options**, not only `click`, so selection runs before the browser moves focus away from the editor.
+- **`[nxrMentionOption]`** on each row also selects on **touch `pointerup`** (panel host `preventDefault` on `touchstart` suppresses compatibility `mousedown`/`click` on mobile).
 - **`nxr-mention-panel-host`** registers **`mousedown` (capture)** and **`touchstart` (capture, non-passive)** on the panel subtree. For targets that are not native text fields, it calls `preventDefault()` so the editor stays focused until your handler runs.
 - **Do not** rely on `preventDefault()` on `touchstart` for real `<input>`, `<textarea>`, `<select>`, links, or nested **contenteditable** inside your custom panel — those paths are skipped so native behavior still works.
 
@@ -25,7 +26,7 @@ This matches tap/click flows where blur fires before the option’s `mousedown` 
 ## Mobile
 
 - **`touch-action: manipulation`** is applied on `.nxr-mention-editor` to reduce tap delay on many browsers.
-- Prefer **`mousedown`** (and keyboard) for selection; **`touchstart`** on the host is an extra safety net for iOS-style focus ordering.
+- Prefer **`mousedown`** (and keyboard) for selection on desktop; mark each row with **`[nxrMentionOption]`** so touch taps select via **`pointerup`** (the panel host `touchstart` `preventDefault` blocks emulated mouse events).
 - Test with **virtual keyboard** open: panel positioning uses the overlay stack; very small viewports may need your panel template to scroll or constrain height.
 
 ## Styling custom panels

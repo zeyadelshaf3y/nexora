@@ -30,7 +30,7 @@ Headless, unstyled panel template; contenteditable line model with safe chip del
 
 ### Mobile
 
-- Use **`(mousedown)`** on options (same as desktop).
+- Use **`(mousedown)`** on options (desktop) and **`[nxrMentionOption]`** on each row (touch selection via `pointerup`).
 - The internal **`nxr-mention-panel-host`** uses capture **`touchstart`** (non-passive) where appropriate so taps can still reach `select()` before the editor loses focus.
 - Editor surface uses **`touch-action: manipulation`** for snappier taps.
 

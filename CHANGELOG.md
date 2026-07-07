@@ -98,6 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **@nexora-ui/mention**: Touch tap on a suggestion row now selects the mention when `[nxrMentionOption]` is present (`MentionOptionDirective` handles touch `pointerup`; panel host `touchstart` `preventDefault` had blocked emulated `mousedown`/`click` on mobile).
 - **@nexora-ui/listbox-cdk**: Virtual viewport “nearest” scroll uses `parentElement.closest('[role="listbox"]')` for the visible strip so the CDK viewport element is never mistaken for the listbox root.
 - **@nexora-ui/mention**: Chip hover `mouseout` from a chip to non-chip content **inside** the editor no longer uses the leave delay (immediate `mentionChipMouseLeave`).
 - Lint errors in listbox, snackbar, and dropdown so all headless libs pass `nx run-many -t lint`.
