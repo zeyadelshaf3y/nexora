@@ -16,6 +16,7 @@
     "release:publish:headless": "for p in core overlay interactions listbox-cdk listbox dropdown popover menu tooltip snackbar select combobox mention headless; do npm publish \"dist/libs/headless/$p\" --access public; done",
     "release:sync-tags": "bash scripts/sync-headless-release-tags.sh",
     "release:sync-npm-dist-tags": "bash scripts/sync-npm-dist-tags.sh",
+    "release:verify-versions": "bash scripts/verify-headless-versions.sh",
     "release:nx": "nx release --yes",
     "release:nx:dry-run": "nx release --dry-run --yes",
     "release:headless": "npm run release:build:headless && npm run release:publish:headless"

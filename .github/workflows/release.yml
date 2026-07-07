@@ -55,5 +55,8 @@ jobs:
       - name: Sync npm latest dist-tags
         run: npm run release:sync-npm-dist-tags
 
+      - name: Verify headless package versions
+        run: npm run release:verify-versions
+
       - name: Push release commit and tags
         run: git push origin HEAD:main --follow-tags

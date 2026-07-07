@@ -1,12 +1,12 @@
 {
   "name": "@nexora-ui/menu",
-  "version": "0.2.11",
+  "version": "0.2.13",
   "peerDependencies": {
     "@angular/common": "^21.1.0",
     "@angular/core": "^21.1.0",
     "@nexora-ui/core": "^0.1.1",
-    "@nexora-ui/dropdown": "^0.1.7",
-    "@nexora-ui/overlay": "^0.2.2",
+    "@nexora-ui/dropdown": "^0.1.9",
+    "@nexora-ui/overlay": "^0.4.0",
     "@nexora-ui/listbox": "^0.3.4"
   },
   "sideEffects": false

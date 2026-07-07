@@ -23,10 +23,12 @@ packages=(
   headless
 )
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 highest_version() {
   local pkg="$1"
   npm view "@nexora-ui/${pkg}" versions --json \
-    | node -e "const v=JSON.parse(require('fs').readFileSync(0,'utf8')); const a=[].concat(v); a.sort((x,y)=>x.localeCompare(y,{numeric:true})); console.log(a.at(-1));"
+    | node "${script_dir}/highest-semver.mjs"
 }
 
 echo "Fetching npm versions (highest published semver)..."

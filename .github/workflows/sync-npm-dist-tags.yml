@@ -1,0 +1,29 @@
+name: Sync npm dist-tags
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          scope: '@nexora-ui'
+
+      - name: Sync npm latest dist-tags
+        run: npm run release:sync-npm-dist-tags
+
+      - name: Verify headless package versions
+        run: npm run release:verify-versions
