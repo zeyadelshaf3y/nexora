@@ -29,6 +29,7 @@ describe('DrawerDragHandleDirective', () => {
     attachDrawerDragController({ close: vi.fn() } as never, pane, null, {
       threshold: 0.25,
       minVelocity: 0.4,
+      dragFrom: 'handle',
     });
 
     fixture.detectChanges();

@@ -12,14 +12,25 @@ export interface DrawerSnapConfig {
   readonly expandedSize?: string;
 }
 
+export type DrawerDragFrom = 'handle' | 'pane';
+
 export interface DragToCloseConfig {
   /** Fraction of pane size along dismiss axis (0–1). Default: 0.25 */
   readonly threshold?: number;
   /** Min velocity (px/ms) along dismiss axis to close. Default: 0.4 */
   readonly minVelocity?: number;
   /**
+   * Where drag may start.
+   *
+   * - `'handle'` (default): requires `nxrDrawerDragHandle` in content. Recommended for touch and
+   *   scrollable drawers.
+   * - `'pane'`: drag from anywhere on the drawer except interactive elements. Best for pointer/mouse
+   *   on non-scrollable content; does not coexist reliably with touch scrolling inside the pane.
+   */
+  readonly dragFrom?: DrawerDragFrom;
+  /**
    * Enables mobile-style snap: open at `initialSize`, drag to expand, partial dismiss snaps back,
-   * full dismiss closes. Requires `nxrDrawerDragHandle`.
+   * full dismiss closes. Works with `dragFrom: 'handle'` or `'pane'`.
    */
   readonly snap?: DrawerSnapConfig;
 }
@@ -27,6 +38,7 @@ export interface DragToCloseConfig {
 export interface ResolvedDragToCloseConfig {
   readonly threshold: number;
   readonly minVelocity: number;
+  readonly dragFrom: DrawerDragFrom;
   readonly snap?: DrawerSnapConfig;
 }
 
@@ -44,15 +56,18 @@ export function resolveDragToCloseConfig(
       ? {
           threshold: DEFAULT_DRAG_TO_CLOSE_THRESHOLD,
           minVelocity: DEFAULT_DRAG_TO_CLOSE_MIN_VELOCITY,
+          dragFrom: 'handle' as const,
         }
       : {
           threshold: value.threshold ?? DEFAULT_DRAG_TO_CLOSE_THRESHOLD,
           minVelocity: value.minVelocity ?? DEFAULT_DRAG_TO_CLOSE_MIN_VELOCITY,
+          dragFrom: value.dragFrom ?? ('handle' as const),
         };
 
   return {
     threshold: clampThreshold(resolved.threshold),
     minVelocity: Math.max(0, resolved.minVelocity),
+    dragFrom: resolved.dragFrom,
     ...(value !== true && value.snap ? { snap: value.snap } : {}),
   };
 }

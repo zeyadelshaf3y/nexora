@@ -97,7 +97,11 @@ export {
   PANE_ID_PREFIX_TOOLTIP,
 } from './lib/defaults/overlay-attributes';
 
-export type { DragToCloseConfig, DrawerSnapConfig } from './lib/drag/drag-to-close-config';
+export type {
+  DragToCloseConfig,
+  DrawerDragFrom,
+  DrawerSnapConfig,
+} from './lib/drag/drag-to-close-config';
 export type { DrawerDragHandleEdge } from './lib/drag/drawer-drag-dismiss-vector';
 export type {
   ComponentOutputRef,

@@ -212,8 +212,10 @@ export interface DrawerOpenOptions extends ContentOpenOptionsBase, OverlayPanelO
   /** Edge to attach drawer to. Default: `'end'`. */
   readonly placement?: DrawerPlacement;
   /**
-   * Enables drag-to-close when combined with {@link DrawerDragHandleDirective} (`nxrDrawerDragHandle`)
-   * in drawer content. Default: `false`.
+   * Enables drag-to-close. Default `dragFrom: 'handle'` with {@link DrawerDragHandleDirective}
+   * (`nxrDrawerDragHandle`) in content — recommended for touch and scrollable drawers.
+   * `dragFrom: 'pane'` drags from anywhere except interactive elements; best for pointer/mouse.
+   * Default: `false`.
    */
   readonly dragToClose?: boolean | DragToCloseConfig;
 }

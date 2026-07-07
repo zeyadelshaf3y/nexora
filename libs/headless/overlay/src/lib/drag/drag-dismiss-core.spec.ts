@@ -40,7 +40,7 @@ describe('createDragDismissCore', () => {
     const core = createDragDismissCore({
       pane,
       strategy: createStrategy(),
-      config: { threshold: 0.25, minVelocity: 0.4 },
+      config: { threshold: 0.25, minVelocity: 0.4, dragFrom: 'handle' },
       callbacks: {
         onDragStart: vi.fn(),
         onDragEnd: vi.fn(),
@@ -73,7 +73,7 @@ describe('createDragDismissCore', () => {
     const core = createDragDismissCore({
       pane,
       strategy: createStrategy(),
-      config: { threshold: 0.25, minVelocity: 999 },
+      config: { threshold: 0.25, minVelocity: 999, dragFrom: 'handle' },
       callbacks: {
         onDragStart: vi.fn(),
         onDragEnd: vi.fn(),
@@ -106,7 +106,7 @@ describe('createDragDismissCore', () => {
     const core = createDragDismissCore({
       pane,
       strategy: createStrategy(),
-      config: { threshold: 0.5, minVelocity: 999 },
+      config: { threshold: 0.5, minVelocity: 999, dragFrom: 'handle' },
       callbacks: {
         onDragStart: vi.fn(),
         onDragEnd: vi.fn(),

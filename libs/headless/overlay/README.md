@@ -87,11 +87,31 @@ ref = await this.drawerService.open(MyDrawerComponent, {
 });
 ```
 
-**Drag to close:** Set `dragToClose: true` (or `{ threshold, minVelocity }`) and add a handle in template content:
+**Drag to close:** Set `dragToClose: true` (or `{ threshold, minVelocity, dragFrom }`). Default **`dragFrom: 'handle'`** — add a handle in template content (recommended for touch and scrollable drawers):
 
 ```html
 <div class="drawer-handle" nxrDrawerDragHandle aria-hidden="true"></div>
 ```
+
+**Handle drag (default):**
+
+```ts
+ref = await this.drawerService.open(MyDrawerComponent, {
+  placement: 'bottom',
+  dragToClose: { snap: { initialSize: '200px', expandedSize: '60vh' } },
+});
+```
+
+**Whole-drawer drag (pointer/mouse, non-scrollable content):**
+
+```ts
+ref = await this.drawerService.open(MyDrawerComponent, {
+  placement: 'bottom',
+  dragToClose: { dragFrom: 'pane', snap: { initialSize: '200px', expandedSize: '60vh' } },
+});
+```
+
+With `dragFrom: 'pane'`, buttons, links, and inputs remain clickable; drag starts from other areas. For touch devices or scrollable drawer content, use the handle instead.
 
 **Snap / expand (bottom sheet style):** Use `dragToClose: { snap: { initialSize: '200px', expandedSize: '60vh' } }` to open at a partial size, drag to expand, snap back on a small dismiss drag, or close on a full dismiss. `expandedSize` is optional (defaults to max height/width cap or viewport). Applies to all placements (height for top/bottom, width for start/end).
 
@@ -105,6 +125,8 @@ The directive sets `data-nxr-drawer-drag-edge` on the handle for placement-aware
 | `end`            | `inline-start`        | Inline start (RTL-aware) |
 
 Style with `[data-nxr-drawer-drag-edge='block-end']` etc. Place the handle element once in your template; CSS positions it on the dismiss edge.
+
+**Touch sizing:** The draggable element should be at least **44×44px** (use padding or a transparent hit area larger than the visible pill). The demo styles in `apps/demo` show a full-width band for top/bottom sheets and a ~44px edge strip for side drawers.
 
 Slide animations should target the **pane** (`panelClass`); the engine applies inline `transform` on the pane during drag. Closes with reason `'gesture'`.
 

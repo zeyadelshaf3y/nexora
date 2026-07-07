@@ -11,8 +11,8 @@ import {
   CloseDialogDirective,
   CloseDrawerDirective,
   DialogService,
-  DrawerDragHandleDirective,
   DrawerService,
+  DrawerDragHandleDirective,
   type DrawerPlacement,
   type OverlayRef,
 } from '@nexora-ui/overlay';
@@ -38,7 +38,7 @@ import { IconComponent } from '../core/icons';
       <h2 class="page-section-title">Drawer Placements</h2>
       <p class="page-section-desc">
         Slide-out panels from all four edges. Close with Escape, backdrop, the close button, or drag
-        the handle to dismiss.
+        the handle to expand or dismiss.
       </p>
       <div class="btn-row">
         @for (p of drawerPlacements; track p) {
@@ -67,8 +67,12 @@ import { IconComponent } from '../core/icons';
     <!-- Drawer -->
     <ng-template #drawerTpl>
       <div class="tpl-drawer" nxrFocusTrap>
+        <div class="drawer-handle" nxrDrawerDragHandle aria-hidden="true"></div>
         <h2>Drawer Panel</h2>
-        <p>Slide-out panel. Close with Escape, backdrop, the button, or drag the handle.</p>
+        <p>
+          Slide-out panel. Close with Escape, backdrop, the button, or drag the handle to expand or
+          dismiss.
+        </p>
         <nav class="drawer-nav">
           <a class="drawer-nav-item" href="#">
             <app-icon name="grid" [size]="16" />
@@ -94,7 +98,6 @@ import { IconComponent } from '../core/icons';
         <div class="tpl-drawer-footer">
           <button class="btn btn-ghost" nxrDrawerClose>Close</button>
         </div>
-        <div class="drawer-handle" nxrDrawerDragHandle aria-hidden="true"></div>
       </div>
     </ng-template>
 
@@ -183,6 +186,7 @@ export class DrawerPageComponent {
     this.drawerRef = await this.drawerSvc.open(this.drawerTpl, {
       placement,
       dragToClose: {
+        dragFrom: 'handle',
         snap: { initialSize: isHorizontal ? '480px' : '300px' },
       },
       hasBackdrop: true,

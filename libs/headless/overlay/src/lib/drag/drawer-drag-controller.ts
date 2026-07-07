@@ -10,6 +10,7 @@ import type { OverlayRef } from '../ref/overlay-ref';
 
 import { createDragDismissCore, type DragDismissCore } from './drag-dismiss-core';
 import type { DragDismissStrategy, DragDismissVector } from './drag-dismiss-vector';
+import type { DragHandleRegisterOptions } from './drag-handle-options';
 import { applyDragTransform } from './drag-pane-transform';
 import type { ResolvedDragToCloseConfig, DragToCloseConfig } from './drag-to-close-config';
 import { resolveDragToCloseConfig } from './drag-to-close-config';
@@ -31,6 +32,7 @@ import {
   runSnapBackAnimation,
 } from './gesture-close-animation';
 import { setOverlayDragging } from './overlay-drag-state';
+import { shouldInitiateDrawerDrag } from './should-initiate-drawer-drag';
 
 const SNAP_BACK_DURATION_MS = 200;
 const GESTURE_CLOSE_DURATION_MS = 200;
@@ -60,6 +62,7 @@ export class DrawerDragController {
   private readonly baseConfig: ResolvedDragToCloseConfig;
   private readonly handleUnregisters = new Map<HTMLElement, () => void>();
   private handleCount = 0;
+  private paneHandleRegistered = false;
   private missingHandleWarned = false;
   private destroyed = false;
 
@@ -82,15 +85,22 @@ export class DrawerDragController {
     if (this.handleUnregisters.has(handle)) return;
 
     this.ensureDragHandlerInitialized();
+    this.registerHandleOnHandler(handle, configOverride);
+  }
 
+  private registerHandleOnHandler(
+    handle: HTMLElement,
+    configOverride?: Partial<DragToCloseConfig>,
+    options?: DragHandleRegisterOptions,
+  ): void {
     const handleConfig = resolveHandleConfig(
       this.baseConfig,
       configOverride ? (resolveDragToCloseConfig(configOverride) ?? undefined) : undefined,
     );
 
     const unregister = this.snapHandler
-      ? this.snapHandler.registerHandle(handle, handleConfig)
-      : this.dismissCore?.registerHandle(handle, handleConfig);
+      ? this.snapHandler.registerHandle(handle, handleConfig, options)
+      : this.dismissCore?.registerHandle(handle, handleConfig, options);
 
     if (!unregister) return;
 
@@ -127,9 +137,17 @@ export class DrawerDragController {
   }
 
   private ensureDragHandlerInitialized(): void {
-    if (this.destroyed || this.snapHandler || this.dismissCore) return;
+    if (this.destroyed || this.snapHandler || this.dismissCore) {
+      this.registerPaneHandleIfEnabled();
 
-    if (this.baseConfig.snap && this.tryInitSnapHandler()) return;
+      return;
+    }
+
+    if (this.baseConfig.snap && this.tryInitSnapHandler()) {
+      this.registerPaneHandleIfEnabled();
+
+      return;
+    }
 
     const placement = resolveDrawerDragDismissVectorFromPane(this.pane);
 
@@ -144,6 +162,23 @@ export class DrawerDragController {
     }
 
     this.initDismissCore();
+    this.registerPaneHandleIfEnabled();
+  }
+
+  private registerPaneHandleIfEnabled(): void {
+    if (
+      this.destroyed ||
+      this.paneHandleRegistered ||
+      this.baseConfig.dragFrom !== 'pane' ||
+      (!this.snapHandler && !this.dismissCore)
+    ) {
+      return;
+    }
+
+    this.registerHandleOnHandler(this.pane, undefined, {
+      shouldInitiateDrag: shouldInitiateDrawerDrag,
+    });
+    this.paneHandleRegistered = true;
   }
 
   private tryInitSnapHandler(): boolean {
@@ -198,7 +233,14 @@ export class DrawerDragController {
   private warnIfNoHandleRegistered(): void {
     this.ensureDragHandlerInitialized();
 
-    if (this.destroyed || this.missingHandleWarned || this.handleCount > 0) return;
+    if (
+      this.destroyed ||
+      this.missingHandleWarned ||
+      this.handleCount > 0 ||
+      this.baseConfig.dragFrom === 'pane'
+    ) {
+      return;
+    }
 
     this.missingHandleWarned = true;
 

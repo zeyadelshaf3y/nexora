@@ -6,6 +6,7 @@
 import { listen, prefersReducedMotion } from '@nexora-ui/core';
 
 import type { DragDismissStrategy, DragDismissVector } from './drag-dismiss-vector';
+import type { DragHandleRegisterOptions } from './drag-handle-options';
 import { applyDragTransform } from './drag-pane-transform';
 import type { ResolvedDragToCloseConfig } from './drag-to-close-config';
 import { PANE_DRAGGING_CLASS } from './gesture-close-animation';
@@ -18,7 +19,11 @@ export interface DragDismissCoreCallbacks {
 }
 
 export interface DragDismissCore {
-  registerHandle(handle: HTMLElement, config?: ResolvedDragToCloseConfig): () => void;
+  registerHandle(
+    handle: HTMLElement,
+    config?: ResolvedDragToCloseConfig,
+    options?: DragHandleRegisterOptions,
+  ): () => void;
   destroy(): void;
 }
 
@@ -144,6 +149,10 @@ export function createDragDismissCore(args: {
 
     if (!(handle instanceof HTMLElement)) return;
 
+    const shouldInitiateDrag = handleInitiateChecks.get(handle);
+
+    if (shouldInitiateDrag && !shouldInitiateDrag(event)) return;
+
     event.preventDefault();
 
     const vector = strategy.resolveDismissVector(pane);
@@ -179,6 +188,7 @@ export function createDragDismissCore(args: {
   };
 
   const handleConfigs = new WeakMap<HTMLElement, ResolvedDragToCloseConfig>();
+  const handleInitiateChecks = new WeakMap<HTMLElement, (event: PointerEvent) => boolean>();
 
   const getHandleConfig = (handle: HTMLElement): ResolvedDragToCloseConfig =>
     handleConfigs.get(handle) ?? defaultConfig;
@@ -186,8 +196,14 @@ export function createDragDismissCore(args: {
   const registerHandle = (
     handle: HTMLElement,
     config: ResolvedDragToCloseConfig = defaultConfig,
+    options?: DragHandleRegisterOptions,
   ): (() => void) => {
     handleConfigs.set(handle, config);
+
+    if (options?.shouldInitiateDrag) {
+      handleInitiateChecks.set(handle, options.shouldInitiateDrag);
+    }
+
     handle.style.touchAction = 'none';
 
     const cleanup = listen(handle, 'pointerdown', onPointerDown as EventListener, {
@@ -200,6 +216,7 @@ export function createDragDismissCore(args: {
       cleanup();
       handleCleanups.delete(handle);
       handleConfigs.delete(handle);
+      handleInitiateChecks.delete(handle);
       handle.style.removeProperty('touch-action');
 
       if (activeDrag?.handle === handle) {

@@ -163,7 +163,8 @@ export interface OverlayConfig extends PanelDimensionOptions, PanelStylingOption
    */
   readonly boundaries?: ViewportBoundaries;
   /**
-   * Drawer-only: enables drag-to-close when combined with `nxrDrawerDragHandle` in content.
+   * Drawer-only: enables drag-to-close. Default `dragFrom: 'handle'` with `nxrDrawerDragHandle`.
+   * Optional `dragFrom: 'pane'` for whole-drawer pointer drag (skips interactive elements).
    * Ignored by dialog and other overlay types.
    * @internal Drawer service forwards this; not part of generic overlay public API.
    */

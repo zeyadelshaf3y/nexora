@@ -8,6 +8,7 @@ import { listen, prefersReducedMotion } from '@nexora-ui/core';
 import type { OverlayRef } from '../ref/overlay-ref';
 
 import type { DragDismissVector } from './drag-dismiss-vector';
+import type { DragHandleRegisterOptions } from './drag-handle-options';
 import { applyDragTransform } from './drag-pane-transform';
 import type { ResolvedDragToCloseConfig } from './drag-to-close-config';
 import {
@@ -20,7 +21,11 @@ import { PANE_DRAGGING_CLASS, clearDragInlineStyles } from './gesture-close-anim
 const SNAP_ANIMATION_MS = 200;
 
 interface DrawerSnapDragHandler {
-  registerHandle(handle: HTMLElement, config?: ResolvedDragToCloseConfig): () => void;
+  registerHandle(
+    handle: HTMLElement,
+    config?: ResolvedDragToCloseConfig,
+    options?: DragHandleRegisterOptions,
+  ): () => void;
   applyInitialSize(): void;
   destroy(): void;
 }
@@ -63,6 +68,7 @@ export function createDrawerSnapDragHandler(args: {
   } = args;
   const handleCleanups = new Map<HTMLElement, () => void>();
   const handleConfigs = new WeakMap<HTMLElement, ResolvedDragToCloseConfig>();
+  const handleInitiateChecks = new WeakMap<HTMLElement, (event: PointerEvent) => boolean>();
   let activeDrag: ActiveSnapDrag | null = null;
   let isFinishing = false;
   let documentCleanups: Array<() => void> = [];
@@ -245,6 +251,10 @@ export function createDrawerSnapDragHandler(args: {
 
     if (!(handle instanceof HTMLElement)) return;
 
+    const shouldInitiateDrag = handleInitiateChecks.get(handle);
+
+    if (shouldInitiateDrag && !shouldInitiateDrag(event)) return;
+
     event.preventDefault();
 
     const vector = resolveVector();
@@ -285,8 +295,14 @@ export function createDrawerSnapDragHandler(args: {
   const registerHandle = (
     handle: HTMLElement,
     config: ResolvedDragToCloseConfig = defaultConfig,
+    options?: DragHandleRegisterOptions,
   ): (() => void) => {
     handleConfigs.set(handle, config);
+
+    if (options?.shouldInitiateDrag) {
+      handleInitiateChecks.set(handle, options.shouldInitiateDrag);
+    }
+
     handle.style.touchAction = 'none';
 
     const cleanup = listen(handle, 'pointerdown', onPointerDown as EventListener, {
@@ -299,6 +315,7 @@ export function createDrawerSnapDragHandler(args: {
       cleanup();
       handleCleanups.delete(handle);
       handleConfigs.delete(handle);
+      handleInitiateChecks.delete(handle);
       handle.style.removeProperty('touch-action');
 
       if (activeDrag?.handle === handle) {
