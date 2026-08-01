@@ -257,7 +257,7 @@ Navigation keys reset the typeahead buffer.
 1. `[nxrListboxOption]="item"` directive initializes → calls `registerOption(item, element)` on the parent controller.
 2. Registry assigns a stable id and appends the entry.
 3. On destroy → calls `unregisterOption(item)`. Registry removes the entry.
-4. When options change or the registry changes, the listbox reconciles the active option (re-applies initial highlight if the active option is no longer valid).
+4. When options change or the registry changes, the listbox reconciles the active option: seeds `initialHighlight` when options first appear (or return after the list was empty), and re-applies it when the current active option is no longer enabled. An intentional clear (`pointer` leave / `clearActiveOption`) stays cleared while options remain.
 
 ---
 
@@ -317,12 +317,12 @@ Call **`applyInitialHighlight(strategy?)`** on the exported listbox ref to re-ap
 
 When set to `'hover'` (opt-in; default `'off'`):
 
-- **`pointermove`** on the listbox host sets the active option under the cursor (enabled options only); moving over non-option areas clears active.
-- **`pointerleave`** clears active when the pointer exits the listbox.
-- **`pointerdown`** on non-option areas clears active (e.g. panel padding).
+- **`pointermove`** on the listbox host sets the active option under the cursor (enabled options only).
+- **`role="menu"`** (Radix-style): moving over non-option areas, leaving the listbox, or pointerdown on non-option chrome clears active.
+- **`role="listbox"`** (select/combobox): the last hovered option stays active when the pointer leaves, so keyboard navigation continues from that item.
 - Option **`mousedown`** no longer sets active (hover drives highlight); **`click`** still activates.
 
-Used by **`@nexora-ui/menu`** for Radix-style menu highlight. Select/combobox can opt in later; default `'off'` preserves mousedown-to-highlight.
+Used by **`@nexora-ui/menu`** (`role="menu"`) and opt-in on select/combobox (`[pointerHighlight]="'hover'"`; default `'off'` preserves mousedown-to-highlight).
 
 ---
 

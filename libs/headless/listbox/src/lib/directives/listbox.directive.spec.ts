@@ -239,6 +239,7 @@ class CompareWithEquivalentHost {
     <div
       nxrListbox
       nxrListboxMode="action"
+      nxrListboxRole="menu"
       nxrListboxInitialHighlight="none"
       nxrListboxPointerHighlight="hover"
       (nxrListboxOptionActivated)="onActivated($event)"
@@ -258,6 +259,33 @@ class PointerHighlightHost {
   onActivated(e: { option: { id: number; label: string } }): void {
     this.activated.push(e.option);
   }
+}
+
+/** Mirrors select/combobox: listbox role + selected initial highlight + hover pointer. */
+@Component({
+  standalone: true,
+  imports: [ListboxDirective, ListboxOptionDirective],
+  template: `
+    <div
+      nxrListbox
+      [nxrListboxAccessors]="accessors"
+      nxrListboxInitialHighlight="selected"
+      nxrListboxPointerHighlight="hover"
+      data-listbox
+    >
+      <div [nxrListboxOption]="item1" data-option>One</div>
+      <div [nxrListboxOption]="item2" data-option>Two</div>
+      <div data-padding style="height: 24px"></div>
+    </div>
+  `,
+})
+class PointerHighlightWithSelectedInitialHost {
+  readonly item1 = { id: 1, name: 'One' };
+  readonly item2 = { id: 2, name: 'Two' };
+  readonly accessors = {
+    value: (o: { id: number; name: string }) => o.id,
+    label: (o: { id: number; name: string }) => o.name,
+  };
 }
 
 function dispatchKey(el: HTMLElement, key: string): void {
@@ -514,6 +542,41 @@ describe('ListboxDirective', () => {
       fixture.detectChanges();
 
       expect(host.querySelector('[data-option][data-active]')).toBeNull();
+    });
+
+    it('listbox role preserves last hovered option after pointerleave', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [PointerHighlightWithSelectedInitialHost] });
+      const selectedFixture = TestBed.createComponent(PointerHighlightWithSelectedInitialHost);
+      selectedFixture.detectChanges();
+      const selectedHost = selectedFixture.nativeElement as HTMLElement;
+      const selectedListboxEl = selectedHost.querySelector('[data-listbox]') as HTMLElement;
+      const listbox = selectedFixture.debugElement
+        .query(By.directive(ListboxDirective))
+        .injector.get(ListboxDirective);
+      const options = selectedHost.querySelectorAll('[data-option]');
+      const second = options[1] as HTMLElement;
+
+      selectedListboxEl.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      second.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      selectedFixture.detectChanges();
+      expect(second.hasAttribute('data-active')).toBe(true);
+
+      selectedListboxEl.dispatchEvent(
+        new PointerEvent('pointerleave', { bubbles: true, relatedTarget: document.body }),
+      );
+      const padding = selectedHost.querySelector('[data-padding]') as HTMLElement;
+      padding.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }),
+      );
+      selectedFixture.detectChanges();
+
+      expect(second.hasAttribute('data-active')).toBe(true);
+      expect(listbox.activeOption()).toBe(selectedFixture.componentInstance.item2);
     });
 
     it('pointerdown on non-option area clears data-active', () => {

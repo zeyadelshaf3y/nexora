@@ -2,7 +2,7 @@
  * Listbox option directive: registers with parent listbox, exposes ARIA state, handles click activation.
  */
 
-import { computed, Directive, effect, ElementRef, inject, input } from '@angular/core';
+import { computed, Directive, effect, ElementRef, inject, input, untracked } from '@angular/core';
 import type { OnDestroy } from '@angular/core';
 
 import { NXR_LISTBOX_CONTROLLER } from '../types';
@@ -60,18 +60,24 @@ export class ListboxOptionDirective<T = unknown> implements OnDestroy {
   });
 
   constructor() {
+    // Register/refresh only when the option item identity changes. `refreshOption` →
+    // reconcile reads `activeOption`; without `untracked`, clearing active (pointer leave)
+    // would re-run every option effect and re-apply `initialHighlight`.
     effect(() => {
       const item = this.nxrListboxOption();
-      if (!this.controller) return;
+      const controller = this.controller;
+      if (!controller) return;
 
-      if (this.registeredItem !== null && this.registeredItem !== item) {
-        this.controller.unregisterOption(this.registeredItem);
-      }
-      if (this.registeredItem !== item) {
-        this.controller.registerOption(item, this.elementRef.nativeElement);
-      }
-      this.registeredItem = item;
-      this.controller.refreshOption(item);
+      untracked(() => {
+        if (this.registeredItem !== null && this.registeredItem !== item) {
+          controller.unregisterOption(this.registeredItem);
+        }
+        if (this.registeredItem !== item) {
+          controller.registerOption(item, this.elementRef.nativeElement);
+        }
+        this.registeredItem = item;
+        controller.refreshOption(item);
+      });
     });
   }
 

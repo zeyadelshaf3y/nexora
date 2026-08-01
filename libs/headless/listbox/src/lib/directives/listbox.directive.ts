@@ -14,6 +14,7 @@ import {
   input,
   linkedSignal,
   output,
+  untracked,
 } from '@angular/core';
 import type { OnDestroy } from '@angular/core';
 import { createRafThrottled, getResolvedDir, idFactory, warnOnce } from '@nexora-ui/core';
@@ -147,9 +148,13 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
     this.state.applyInitialHighlight();
 
     effect(() => this.warnMultiMenuIfNeeded());
+    // Only re-sync disabled flags when accessors change. `refreshAllOptionDisabledStates`
+    // calls reconcile, which reads `activeOption`; without `untracked`, clearing active
+    // (pointer leave / clearActiveOption) would re-run this effect and re-apply
+    // `initialHighlight` (e.g. combobox `'selected'` → first item).
     effect(() => {
       this.nxrListboxAccessors();
-      this.refreshAllOptionDisabledStates();
+      untracked(() => this.refreshAllOptionDisabledStates());
     });
     effect(() => {
       const acc = this.nxrListboxAccessors();
@@ -471,6 +476,14 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
     return this.nxrListboxPointerHighlight() === 'hover';
   }
 
+  /**
+   * Menu (Radix-style) clears highlight when the pointer leaves options/panel.
+   * Listbox/combobox/select keep the last hovered option so keyboard nav continues from it.
+   */
+  private clearsActiveOnPointerExit(): boolean {
+    return this.nxrListboxRole() === 'menu';
+  }
+
   activateOption(item: T): void {
     this.state.activate(item);
   }
@@ -486,13 +499,13 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
       return;
     }
 
-    if (this.state.activeOption() != null) {
+    if (this.clearsActiveOnPointerExit() && this.state.activeOption() != null) {
       this.state.setActive(null, 'pointer');
     }
   }
 
   handlePointerLeave(event: Event): void {
-    if (!this.usesHoverPointerHighlight()) return;
+    if (!this.usesHoverPointerHighlight() || !this.clearsActiveOnPointerExit()) return;
 
     const related = (event as PointerEvent).relatedTarget;
     if (related instanceof Node && this.hostRef.nativeElement.contains(related)) return;
@@ -501,7 +514,7 @@ export class ListboxDirective<T = unknown> implements OnDestroy, NxrListboxContr
   }
 
   handlePointerDown(event: Event): void {
-    if (!this.usesHoverPointerHighlight()) return;
+    if (!this.usesHoverPointerHighlight() || !this.clearsActiveOnPointerExit()) return;
 
     if (this.resolveItemFromEventTarget(event.target) != null) return;
 

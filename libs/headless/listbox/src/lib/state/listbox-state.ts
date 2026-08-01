@@ -54,6 +54,12 @@ export class ListboxState<T> {
    */
   private selectionCache: ReadonlySet<unknown> | null = null;
   private selectionCacheSource: unknown = CACHE_UNSET;
+  /**
+   * Tracks whether the registry currently has enabled options. Used so reconcile only
+   * seeds `initialHighlight` when transitioning empty → non-empty — not after an
+   * intentional clear (pointer leave / clearActiveOption) while options remain.
+   */
+  private hasEnabledOptions = false;
 
   constructor(private readonly config: ListboxStateConfig<T>) {}
 
@@ -211,8 +217,11 @@ export class ListboxState<T> {
   }
 
   /**
-   * Re-applies initial highlight when the active option is no longer registered
-   * (e.g. option removed from DOM).
+   * Keeps active in sync with the registry:
+   * - empty registry → clear active (unless virtual-scroll keep-missing)
+   * - empty → first options → seed {@link applyInitialHighlight}
+   * - active missing from enabled list → re-seed (unless keep-missing)
+   * - active already null while options remain → leave cleared (pointer leave / clear)
    */
   reconcileAfterRegistryChange(): void {
     const active = this.activeOption();
@@ -221,19 +230,27 @@ export class ListboxState<T> {
     const enabled = registry.getEnabledEntries();
 
     if (enabled.length === 0) {
+      this.hasEnabledOptions = false;
       if (!keepWhenMissing) this.setActive(null, 'initial');
 
       return;
     }
 
+    const wasEmpty = !this.hasEnabledOptions;
+    this.hasEnabledOptions = true;
+
+    if (active == null) {
+      if (wasEmpty) this.applyInitialHighlight(enabled);
+
+      return;
+    }
+
     const registeredActive =
-      active != null
-        ? (registry.findEntry(active, (a, b) => this.itemsMatch(a, b))?.item ?? null)
-        : null;
+      registry.findEntry(active, (a, b) => this.itemsMatch(a, b))?.item ?? null;
     const activeInEnabledList =
       registeredActive != null && registry.getEnabledIndex(registeredActive) >= 0;
 
-    if (active == null || !activeInEnabledList) {
+    if (!activeInEnabledList) {
       if (keepWhenMissing) return;
       this.applyInitialHighlight(enabled);
     }
