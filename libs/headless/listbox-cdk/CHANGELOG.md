@@ -1,3 +1,9 @@
+## 0.1.15 (2026-08-01)
+
+### 🧱 Updated Dependencies
+
+- Updated listbox to 0.3.5
+
 ## 0.1.14 (2026-07-07)
 
 ### 🧱 Updated Dependencies
