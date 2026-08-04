@@ -1,3 +1,11 @@
+## 0.1.16 (2026-08-04)
+
+### 🧱 Updated Dependencies
+
+- Updated core to 0.1.2
+- Updated overlay to 0.4.1
+- Updated listbox to 0.3.6
+
 ## 0.1.15 (2026-08-01)
 
 ### 🧱 Updated Dependencies

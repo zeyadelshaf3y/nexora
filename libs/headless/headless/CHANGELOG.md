@@ -1,3 +1,21 @@
+## 0.2.19 (2026-08-04)
+
+### 🧱 Updated Dependencies
+
+- Updated core to 0.1.2
+- Updated overlay to 0.4.1
+- Updated interactions to 0.1.2
+- Updated listbox-cdk to 0.1.16
+- Updated listbox to 0.3.6
+- Updated dropdown to 0.1.10
+- Updated popover to 0.1.13
+- Updated menu to 0.2.15
+- Updated tooltip to 0.2.11
+- Updated snackbar to 0.1.11
+- Updated select to 0.3.8
+- Updated combobox to 0.3.8
+- Updated mention to 0.5.6
+
 ## 0.2.18 (2026-08-01)
 
 ### 🧱 Updated Dependencies

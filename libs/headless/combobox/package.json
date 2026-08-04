@@ -1,15 +1,15 @@
 {
   "name": "@nexora-ui/combobox",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "peerDependencies": {
     "@angular/common": "^21.1.0",
     "@angular/core": "^21.1.0",
     "@angular/forms": "^21.1.0",
-    "@nexora-ui/core": "^0.1.1",
-    "@nexora-ui/dropdown": "^0.1.9",
-    "@nexora-ui/listbox": "^0.3.5",
-    "@nexora-ui/overlay": "^0.4.0",
-    "@nexora-ui/listbox-cdk": "^0.1.15"
+    "@nexora-ui/core": "^0.1.2",
+    "@nexora-ui/dropdown": "^0.1.10",
+    "@nexora-ui/listbox": "^0.3.6",
+    "@nexora-ui/overlay": "^0.4.1",
+    "@nexora-ui/listbox-cdk": "^0.1.16"
   },
   "sideEffects": false
 }
