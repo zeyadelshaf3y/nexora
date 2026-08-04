@@ -43,14 +43,13 @@ export function setTransformOriginFromViewportPoint(
 /**
  * Clips a host element's bounding rect to the visible viewport rectangle.
  * When the intersection is empty, returns `visible` so positioning falls back to full viewport.
+ * Supports visual-viewport rects with a non-zero origin (mobile keyboard pan / pinch-zoom).
  */
 export function intersectHostRectWithVisibleViewport(hostRect: DOMRect, visible: DOMRect): DOMRect {
-  const vpRight = visible.width;
-  const vpBottom = visible.height;
-  const left = Math.max(0, hostRect.left);
-  const top = Math.max(0, hostRect.top);
-  const right = Math.min(vpRight, hostRect.right);
-  const bottom = Math.min(vpBottom, hostRect.bottom);
+  const left = Math.max(visible.left, hostRect.left);
+  const top = Math.max(visible.top, hostRect.top);
+  const right = Math.min(visible.right, hostRect.right);
+  const bottom = Math.min(visible.bottom, hostRect.bottom);
   const width = Math.max(0, right - left);
   const height = Math.max(0, bottom - top);
 

@@ -329,14 +329,50 @@ function rectFromCollapsedRange(range: Range): DOMRect | null {
   if (typeof range.getBoundingClientRect !== 'function') return null;
 
   const rect = range.getBoundingClientRect();
-  if (rect.width === 0 && rect.height === 0) {
-    const rects = range.getClientRects();
-    if (rects.length > 0) return rects.item(0);
+  if (rect.width !== 0 || rect.height !== 0) return rect;
 
+  const rects = range.getClientRects();
+  if (rects.length > 0) return rects.item(0);
+
+  // Mobile WebKit often reports a 0×0 caret; probe an adjacent character so the
+  // mention panel can still anchor to the typing line.
+  return probeCollapsedCaretRect(range);
+}
+
+/**
+ * When a collapsed range has no client rects, measure a 1-char neighbor and
+ * return a zero-width caret at that edge (non-mutating).
+ */
+function probeCollapsedCaretRect(range: Range): DOMRect | null {
+  const node = range.startContainer;
+  if (node.nodeType !== Node.TEXT_NODE) return null;
+
+  const text = node as Text;
+  const offset = range.startOffset;
+
+  try {
+    if (offset < text.length) {
+      const probe = range.cloneRange();
+      probe.setEnd(text, offset + 1);
+      const r = probe.getBoundingClientRect();
+      if (r.width !== 0 || r.height !== 0) {
+        return new DOMRect(r.left, r.top, 0, r.height || r.width);
+      }
+    }
+
+    if (offset > 0) {
+      const probe = range.cloneRange();
+      probe.setStart(text, offset - 1);
+      const r = probe.getBoundingClientRect();
+      if (r.width !== 0 || r.height !== 0) {
+        return new DOMRect(r.right, r.top, 0, r.height || r.width);
+      }
+    }
+  } catch {
     return null;
   }
 
-  return rect;
+  return null;
 }
 
 function setCollapsedRangeAtNodeOffset(range: Range, node: Node, off: number): boolean {

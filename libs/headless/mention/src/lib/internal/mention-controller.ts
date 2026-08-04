@@ -16,7 +16,7 @@ import {
   type TemplateRef,
   type ViewContainerRef,
 } from '@angular/core';
-import { createRafThrottled, listen } from '@nexora-ui/core';
+import { createRafThrottled } from '@nexora-ui/core';
 import {
   type OverlayRef,
   type OverlayService,
@@ -54,9 +54,9 @@ import type { MentionPanelContext } from './mention-panel-tokens';
 import { buildTriggerConfigLookup } from './mention-programmatic-insert';
 import {
   createMentionVirtualAnchorElement,
-  positionMentionVirtualAnchor,
   removeMentionVirtualAnchorElement,
 } from './mention-virtual-anchor';
+import { subscribeMentionViewportChanges } from './mention-viewport-tracking';
 
 export type {
   MentionController,
@@ -185,12 +185,9 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
   private readonly caretReposition = createRafThrottled(() => {
     if (this.isClosing) return;
 
+    // Live getBoundingClientRect on the virtual anchor supplies the current caret/trigger
+    // rect; only ask the overlay to re-measure (do not copy coords onto style.left/top).
     if (this.session && this.virtualAnchor) {
-      const caretRect = this.adapter.getCaretRect();
-      const rect = this.panelAnchorRect(this.session.match, caretRect);
-
-      positionMentionVirtualAnchor(this.virtualAnchor, rect);
-
       this.overlayRef?.reposition?.();
     }
   });
@@ -261,6 +258,13 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
     const r = this.adapter.getRectAtLinearOffset?.(match.rangeStart) ?? null;
 
     return r ?? caretFallback;
+  }
+
+  /** Live rect for the virtual anchor / overlay (trigger char or caret). */
+  private readLivePanelAnchorRect(): DOMRect | null {
+    if (!this.session) return null;
+
+    return this.panelAnchorRect(this.session.match, this.adapter.getCaretRect());
   }
 
   private resolveEditorDir(): string | undefined {
@@ -359,12 +363,12 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
     const dir = this.resolveEditorDir();
 
     if (!this.overlayRef) {
-      this.virtualAnchor = createMentionVirtualAnchorElement(anchorRect, dir);
+      this.virtualAnchor = createMentionVirtualAnchorElement(anchorRect, dir, () =>
+        this.readLivePanelAnchorRect(),
+      );
       const requestId = ++this.overlayOpenRequestId;
       void this.openOverlay(requestId);
-    } else if (this.virtualAnchor) {
-      positionMentionVirtualAnchor(this.virtualAnchor, anchorRect);
-
+    } else {
       this.overlayRef.reposition?.();
     }
 
@@ -436,18 +440,14 @@ export class MentionControllerImpl<T = unknown> implements MentionController<T> 
   }
 
   private startViewportTracking(): void {
-    if (this.viewportCleanup || typeof window === 'undefined') return;
+    if (this.viewportCleanup) return;
 
-    const onViewportChange = () => this.updateCaretPosition();
-    const offScroll = listen(window, 'scroll', onViewportChange, {
-      passive: true,
-      capture: true,
+    const unsubscribe = subscribeMentionViewportChanges(() => {
+      this.updateCaretPosition();
     });
-    const offResize = listen(window, 'resize', onViewportChange);
 
     this.viewportCleanup = () => {
-      offScroll();
-      offResize();
+      unsubscribe();
       this.viewportCleanup = null;
     };
   }

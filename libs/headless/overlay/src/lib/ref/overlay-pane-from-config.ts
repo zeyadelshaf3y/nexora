@@ -62,7 +62,7 @@ export function clearOverlayPaneSizing(pane: HTMLElement): void {
 }
 
 /**
- * Re-applies viewport-capped `max-width` / `max-height` from the current layout viewport.
+ * Re-applies viewport-capped `max-width` / `max-height` from the current visible viewport.
  *
  * Used on open and on every reposition for unanchored overlays (drawer, dialog) so a pane sized
  * with `100vh`/`100vw` is not stuck behind a `max-*` cap computed at open time when the viewport

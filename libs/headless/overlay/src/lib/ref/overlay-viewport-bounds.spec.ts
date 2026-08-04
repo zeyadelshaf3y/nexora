@@ -117,4 +117,14 @@ describe('intersectHostRectWithVisibleViewport', () => {
     expect(out.width).toBe(800);
     expect(out.height).toBe(200);
   });
+
+  it('clips against a visual viewport with non-zero origin', () => {
+    const visual = new DOMRect(0, 80, 390, 420);
+    const host = new DOMRect(10, 40, 300, 500);
+    const out = intersectHostRectWithVisibleViewport(host, visual);
+    expect(out.x).toBe(10);
+    expect(out.y).toBe(80);
+    expect(out.width).toBe(300);
+    expect(out.height).toBe(420);
+  });
 });

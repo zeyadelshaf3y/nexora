@@ -27,7 +27,7 @@ This matches tap/click flows where blur fires before the option’s `mousedown` 
 
 - **`touch-action: manipulation`** is applied on `.nxr-mention-editor` to reduce tap delay on many browsers.
 - Prefer **`mousedown`** (and keyboard) for selection on desktop; mark each row with **`[nxrMentionOption]`** so touch taps select via **`pointerup`** (the panel host `touchstart` `preventDefault` blocks emulated mouse events).
-- Test with **virtual keyboard** open: panel positioning uses the overlay stack; very small viewports may need your panel template to scroll or constrain height.
+- Test with **virtual keyboard** open: the virtual anchor exposes a **live** caret/trigger `getBoundingClientRect` (not a copied `position: fixed` box), tracks `visualViewport` scroll/resize, and the overlay clamps to the **visible** viewport so the panel stays tied to the `@`. Very small viewports may still need your panel template to scroll or constrain height.
 
 ## Styling custom panels
 
@@ -136,6 +136,8 @@ This intentionally blocks risky attributes (for example inline event handlers) f
 - `contenteditable-adapter.ts` orchestrates adapter behavior and event wiring.
 - `internal/contenteditable-line-model.ts` owns line-row normalization (`<div><br></div>` model), structural `<br>` upgrades, and selection-safe text-space normalization.
 - `internal/contenteditable-selection.ts` owns selection mapping (`walkSelectionModel`) and caret/offset geometry (`getCaretRectFromSelection`, `getBoundingRectAtLinearOffset`).
+- `internal/mention-virtual-anchor.ts` overrides `getBoundingClientRect` with the live caret/trigger rect so mobile keyboard pans cannot desync a styled fixed box from the `@`.
+- `internal/mention-viewport-tracking.ts` listens to window + `visualViewport` scroll/resize so the overlay remeasures when the soft keyboard opens.
 - `internal/contenteditable-subscribe.ts` wires DOM events (`input`, `keydown`, `paste`, composition, focus/blur, selection/scroll) to adapter callbacks.
 - `internal/contenteditable-replace.ts` owns range replacement, mention chip element construction, safe attribute allowlisting (see [SECURITY.md](../../../../docs/SECURITY.md) — Mention attribute safety), and caret restoration.
 
