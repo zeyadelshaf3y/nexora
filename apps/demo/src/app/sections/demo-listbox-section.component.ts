@@ -1,5 +1,5 @@
 import { JsonPipe } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   ListboxDirective,
   ListboxGroupDirective,
@@ -33,6 +33,7 @@ function asSingle<T>(v: T | null | readonly T[]): T | null {
     ListboxSeparatorDirective,
   ],
   templateUrl: './demo-listbox-section.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './demo-listbox-section.component.scss',
 })
 export class DemoListboxSectionComponent {

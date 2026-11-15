@@ -403,7 +403,7 @@ The directive reads `dir` from the host or its ancestors (falling back to the do
 
 ## 16. Dependencies
 
-- `@angular/core`
+- `@angular/common`, `@angular/core` **^22.0.0** (peer)
 - `@nexora-ui/core` (id generation, DOM utilities, debug helpers)
 
 No overlay, trigger, or styling dependencies. Filtering and search are consumer responsibility.

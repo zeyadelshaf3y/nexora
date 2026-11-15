@@ -1,4 +1,11 @@
-import { Component, computed, inject, input, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  ViewEncapsulation,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 const s = (d: string) =>
@@ -83,6 +90,7 @@ export const ICON_SVG: Record<string, string> = {
     '[style.height.px]': 'size()',
     class: 'app-icon',
   },
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       .app-icon {

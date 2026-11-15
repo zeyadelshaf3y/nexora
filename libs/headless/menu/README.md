@@ -21,6 +21,8 @@ Headless, accessible menu for Angular. Composes `@nexora-ui/listbox` (role=menu,
 npm install @nexora-ui/menu @nexora-ui/listbox @nexora-ui/overlay @nexora-ui/dropdown @nexora-ui/core
 ```
 
+**Peer dependencies:** `@angular/common`, `@angular/core` **^22.0.0**; other `@nexora-ui/*` peers as in `package.json`.
+
 ## Quick start
 
 ```html

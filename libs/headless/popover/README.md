@@ -4,6 +4,8 @@ Directive that opens a popover overlay anchored to the host element. Pass the pa
 
 **Public API:** Exports from `src/index.ts` are the supported surface ([PUBLIC-API-DESIGN.md](../../../docs/PUBLIC-API-DESIGN.md)).
 
+**Peer dependencies:** `@angular/common`, `@angular/core` **^22.0.0**; `@nexora-ui/core`, `@nexora-ui/overlay`.
+
 ## Usage
 
 ```html

@@ -8,6 +8,8 @@ Minimal foundation for Nexora headless UI: platform utilities (DOM, env, id, eve
 npm install @nexora-ui/core
 ```
 
+**Peer dependencies:** `@angular/common` and `@angular/core` **^22.0.0**.
+
 ## Tree-shaking
 
 The package is built with **`sideEffects: false`**. Import only what you use; your bundler will drop unused exports.

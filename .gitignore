@@ -58,3 +58,8 @@ vitest.config.*.timestamp*
 # Generated declarations should not live in source folders
 libs/**/src/**/*.d.ts
 libs/**/src/**/*.d.ts.map
+.claude/worktrees
+.claude/settings.local.json
+.nx/polygraph
+.nx/self-healing
+.nx/migrate-runs

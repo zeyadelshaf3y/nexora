@@ -27,10 +27,14 @@ jobs:
       # Cache node_modules
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - run: npm ci
+
+      - name: Version plans for changed headless libs
+        if: github.event_name == 'pull_request'
+        run: npx nx release plan:check --group=nexora-headless --base=${{ github.event.pull_request.base.sha }}
 
       # Prepend any command with "nx record --" to record its logs to Nx Cloud
       - run: npx nx record -- npx nx format:check  --base="remotes/origin/main"

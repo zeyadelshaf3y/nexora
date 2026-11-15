@@ -4,6 +4,8 @@ Shared dropdown primitive for trigger + anchored panel behavior. Used by **Selec
 
 **Public API:** Exports from `src/index.ts` are the supported surface ([PUBLIC-API-DESIGN.md](../../../docs/PUBLIC-API-DESIGN.md)).
 
+**Peer dependencies:** `@angular/common`, `@angular/core` **^22.0.0**; `@nexora-ui/core`, `@nexora-ui/overlay`.
+
 ## What it provides
 
 - **DropdownRef** — Create with `DropdownRef.create(options)`. Methods:

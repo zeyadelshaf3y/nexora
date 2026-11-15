@@ -2,6 +2,15 @@
 
 Upgrade notes and migration checklist for headless libs.
 
+## Angular 22 (`@nexora-ui/*` peers `^22.0.0`)
+
+- **Node**: `^22.22.3`, `^24.15.0`, or `>=26` (see repo `.nvmrc` and `package.json` `engines`).
+- **Consumer apps** must upgrade to **Angular 22** before taking new `@nexora-ui/*` releases that declare Angular 22 peers. Angular 21 and 22 cannot share one install.
+- **Nx workspace** (this repo): Nx **24.x**, TypeScript **6.0.x**, Vite **8.x**.
+- After upgrading, run the [upgrade checklist](#upgrade-checklist) and `nx run demo:build` / `nx run demo:serve` for smoke checks.
+- Demo shell components may still use `ChangeDetectionStrategy.Eager` from the automatic v22 migration; new code should use **OnPush** and signals.
+- **npm**: Install versions published after the Angular 22 release train (version plan `.nx/version-plans/angular-22-major.md` → major bump on all `@nexora-ui/*` packages when merged to `main`). Until then, npm `latest` may still list Angular 21 peers.
+
 ## Upgrade checklist
 
 - Read each affected library README for API changes.

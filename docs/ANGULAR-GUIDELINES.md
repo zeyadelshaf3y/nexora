@@ -1,6 +1,6 @@
 # Angular Guidelines and Best Practices
 
-Nexora targets **Angular 21** (standalone APIs, signal inputs, modern control flow). Prefer the patterns below so the codebase stays consistent, testable, and aligned with the framework’s direction.
+Nexora targets **Angular 22** (standalone APIs, signal inputs, modern control flow). Prefer the patterns below so the codebase stays consistent, testable, and aligned with the framework’s direction.
 
 ## Signals
 

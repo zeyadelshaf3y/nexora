@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FocusTrapDirective } from '@nexora-ui/interactions';
 import { CloseDrawerDirective } from '@nexora-ui/overlay';
 
@@ -22,6 +22,7 @@ import { CloseDrawerDirective } from '@nexora-ui/overlay';
       </div>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       :host {

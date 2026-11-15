@@ -4,8 +4,28 @@ Quick reference for developing in the Nexora repo: setup, commands, and where to
 
 ## Setup
 
-- **Node**: Use the version in `.nvmrc` (or project docs). `nvm use` if using nvm.
+- **Node**: **22** (see `.nvmrc`; `nvm use` if using nvm). Angular 22 requires Node ^22.22.3 (or supported 24/26 per `package.json` `engines`).
 - **Install**: `npm ci` in CI; locally `npm install` (see `package-lock.json`).
+
+## Publishing to npm (GitHub Actions)
+
+Releases are **not** automatic from code changes alone. Nx uses **version plan** files under `.nx/version-plans/`.
+
+1. **Change** publishable headless libs (see `nx.json` → `release.groups.nexora-headless`).
+2. **Plan** the semver bump and commit the plan file in the same PR:
+
+   ```bash
+   npx nx release plan major --group=nexora-headless -m "Your changelog line"
+   # or: patch | minor | major per project: nx release plan patch -p core -m "..."
+   ```
+
+3. **Verify locally**: `npm run release:nx:dry-run`
+4. **Merge to `main`**. The [Release](.github/workflows/release.yml) workflow runs `nx release --yes` (skip with `[skip release]` in the commit message).
+5. **Secrets**: GitHub repo → Settings → Secrets → `NPM_TOKEN` (npm automation token with publish access to `@nexora-ui/*`).
+
+PR CI runs `nx release plan:check` so touched headless projects must have a matching plan file.
+
+Manual publish (without Nx release): `npm run release:headless` after building — you manage versions yourself.
 
 ## Commands
 

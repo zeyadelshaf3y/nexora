@@ -6,6 +6,8 @@ Overlay system: dialogs (9 positions), drawers (4 positions), scroll/focus strat
 
 **Internal entry:** `@nexora-ui/overlay/internal` exposes component ref I/O helpers, the pane close-registry (`registerCloseableRef`, …), and `BaseCloseOverlayDirective` for sibling headless packages (e.g. popover’s close button). See [internal/README.md](./internal/README.md).
 
+**Peer dependencies:** `@angular/core` **^22.0.0**; `rxjs` **^7.x**; `@nexora-ui/core`.
+
 ## Tree-shaking and bundle size
 
 This package includes both the **overlay engine** (OverlayService, ref, positioning, portal, close behavior) and **dialog/drawer** conveniences (DialogService, DrawerService, close directives). If your app only uses **tooltip** or **popover**, import only what you need (e.g. use `@nexora-ui/tooltip` or `@nexora-ui/popover`); they do not use DialogService or DrawerService, so the bundler can tree-shake those out when they are unused. The package is built with `sideEffects: false`. To verify tree-shaking, build an app that uses only tooltip (or tooltip + popover), run a production build, and confirm that the bundle does not contain dialog/drawer symbols (e.g. search for `DialogService`).

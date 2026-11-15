@@ -1,9 +1,18 @@
-import { Component, EventEmitter, inject, Input, Output, type Provider } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+  type Provider,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { provideSnackbarDefaults, SNACKBAR_REF } from '@nexora-ui/snackbar';
 
 @Component({
   selector: 'app-demo-default-snackbar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="notify-snackbar" [attr.data-variant]="variant || 'info'">
       @if (title) {

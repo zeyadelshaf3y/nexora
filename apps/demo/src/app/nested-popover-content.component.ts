@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { OverlayArrowDirective } from '@nexora-ui/overlay';
 import { ClosePopoverDirective } from '@nexora-ui/popover';
 
@@ -17,6 +17,7 @@ import { ClosePopoverDirective } from '@nexora-ui/popover';
       <button class="btn btn-sm btn-ghost" nxrPopoverClose>Close</button>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       :host {

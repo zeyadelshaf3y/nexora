@@ -4,6 +4,8 @@ Headless snackbar: open with a template or component, position at viewport edges
 
 **Public API:** Exports from `src/index.ts` are stable for consumers ([PUBLIC-API-DESIGN.md](../../../docs/PUBLIC-API-DESIGN.md)).
 
+**Peer dependencies:** `@angular/common`, `@angular/core` **^22.0.0**; `rxjs` **^7.x**; `@nexora-ui/core`, `@nexora-ui/overlay`.
+
 ## Usage
 
 ```ts

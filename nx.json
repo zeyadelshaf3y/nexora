@@ -34,6 +34,44 @@
       "options": {
         "targetName": "eslint:lint"
       }
+    },
+    {
+      "plugin": "@nx/vitest",
+      "options": {
+        "testMode": "watch",
+        "testTargetName": "test"
+      },
+      "include": [
+        "libs/headless/combobox/**/*",
+        "libs/headless/dropdown/**/*",
+        "libs/headless/listbox/**/*",
+        "libs/headless/listbox-cdk/**/*",
+        "libs/headless/mention/**/*",
+        "libs/headless/menu/**/*",
+        "libs/headless/select/**/*"
+      ]
+    },
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      },
+      "include": [
+        "apps/demo/**/*",
+        "libs/headless/combobox/**/*",
+        "libs/headless/core/**/*",
+        "libs/headless/dropdown/**/*",
+        "libs/headless/interactions/**/*",
+        "libs/headless/listbox/**/*",
+        "libs/headless/listbox-cdk/**/*",
+        "libs/headless/mention/**/*",
+        "libs/headless/menu/**/*",
+        "libs/headless/overlay/**/*",
+        "libs/headless/popover/**/*",
+        "libs/headless/select/**/*",
+        "libs/headless/snackbar/**/*",
+        "libs/headless/tooltip/**/*"
+      ]
     }
   ],
   "targetDefaults": {
@@ -46,15 +84,6 @@
       "cache": true,
       "inputs": ["default", "^production"]
     },
-    "@nx/eslint:lint": {
-      "cache": true,
-      "inputs": [
-        "default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.mjs"
-      ]
-    },
     "@nx/angular:ng-packagr-lite": {
       "cache": true,
       "dependsOn": ["^build"],
@@ -66,10 +95,6 @@
       "inputs": ["production", "^production"]
     },
     "@angular/build:unit-test": {
-      "cache": true,
-      "inputs": ["default", "^production"]
-    },
-    "@nx/vitest:test": {
       "cache": true,
       "inputs": ["default", "^production"]
     }
@@ -134,5 +159,9 @@
       "style": "scss",
       "unitTestRunner": "vitest-angular"
     }
-  }
+  },
+  "affected": {
+    "legacy": true
+  },
+  "analytics": false
 }

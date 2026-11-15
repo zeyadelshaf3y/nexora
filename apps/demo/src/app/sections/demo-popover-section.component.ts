@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import type { TemplateRef } from '@angular/core';
 import type { Placement } from '@nexora-ui/overlay';
 import { PopoverTriggerDirective } from '@nexora-ui/popover';
@@ -7,6 +7,7 @@ import { PopoverTriggerDirective } from '@nexora-ui/popover';
   selector: 'app-demo-popover-section',
   standalone: true,
   imports: [PopoverTriggerDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './demo-popover-section.component.html',
 })
 export class DemoPopoverSectionComponent {

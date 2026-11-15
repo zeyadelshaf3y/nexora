@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import type { SnackbarPlacement } from '@nexora-ui/snackbar';
 
 export type SnackbarVariant = {
@@ -11,6 +11,7 @@ export type SnackbarVariant = {
 @Component({
   selector: 'app-demo-snackbar-section',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './demo-snackbar-section.component.html',
 })
 export class DemoSnackbarSectionComponent {

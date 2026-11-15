@@ -2,6 +2,16 @@
 
 Headless UI primitives for Angular. Unstyled, accessible building blocks you style and compose yourself. Tree-shakable: import only what you use.
 
+## Requirements
+
+|                         |                                                                         |
+| ----------------------- | ----------------------------------------------------------------------- |
+| **Angular**             | **^22.0.0** (peer on every published `@nexora-ui/*` package)            |
+| **RxJS**                | **^7.x** (overlay, snackbar, and other packages that list it as a peer) |
+| **This repo (develop)** | Node **^22.22.3** (`.nvmrc`), TypeScript **6.x**, Nx **24.x**           |
+
+Upgrading a consumer app from Angular 21: [docs/MIGRATION.md](docs/MIGRATION.md).
+
 ## Packages
 
 | Package                                                             | Description                                                                                                                               |

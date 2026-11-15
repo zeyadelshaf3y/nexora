@@ -2,8 +2,8 @@
   "name": "@nexora-ui/menu",
   "version": "0.2.15",
   "peerDependencies": {
-    "@angular/common": "^21.1.0",
-    "@angular/core": "^21.1.0",
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
     "@nexora-ui/core": "^0.1.2",
     "@nexora-ui/dropdown": "^0.1.10",
     "@nexora-ui/overlay": "^0.4.1",

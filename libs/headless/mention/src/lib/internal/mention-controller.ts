@@ -52,11 +52,11 @@ import { buildMentionPanelOverlayConfig } from './mention-panel-overlay-config';
 import { createMentionPanelInjector, createMentionPanelPortal } from './mention-panel-portal';
 import type { MentionPanelContext } from './mention-panel-tokens';
 import { buildTriggerConfigLookup } from './mention-programmatic-insert';
+import { subscribeMentionViewportChanges } from './mention-viewport-tracking';
 import {
   createMentionVirtualAnchorElement,
   removeMentionVirtualAnchorElement,
 } from './mention-virtual-anchor';
-import { subscribeMentionViewportChanges } from './mention-viewport-tracking';
 
 export type {
   MentionController,

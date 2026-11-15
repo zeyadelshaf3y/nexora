@@ -29,6 +29,8 @@ Headless, accessible select (dropdown) for Angular. Composes `@nexora-ui/listbox
 npm install @nexora-ui/select @nexora-ui/dropdown @nexora-ui/listbox @nexora-ui/overlay @nexora-ui/core
 ```
 
+**Peer dependencies:** `@angular/common`, `@angular/core`, `@angular/forms` **^22.0.0**; other `@nexora-ui/*` peers as in `package.json`.
+
 ## Quick Start
 
 ```html

@@ -4,6 +4,8 @@ Headless tooltip directive: shows a tooltip overlay anchored to the host on hove
 
 **Public API:** Exports from `src/index.ts` are the supported surface ([PUBLIC-API-DESIGN.md](../../../docs/PUBLIC-API-DESIGN.md)).
 
+**Peer dependencies:** `@angular/common`, `@angular/core` **^22.0.0**; `@nexora-ui/overlay`.
+
 ## Usage
 
 ```html

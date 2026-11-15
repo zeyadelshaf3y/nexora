@@ -204,6 +204,7 @@ Caret rects use `getBoundingClientRect` with a **`getClientRects` fallback** so 
 
 ## Dependencies
 
+- `@angular/common`, `@angular/core` **^22.0.0** (peer)
 - `@nexora-ui/core`
 - `@nexora-ui/overlay`
 
