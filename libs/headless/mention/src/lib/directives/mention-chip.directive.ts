@@ -44,8 +44,8 @@ export class MentionChipDirective implements OnDestroy {
   }
 
   static ngTemplateContextGuard(
-    _dir: MentionChipDirective,
-    _ctx: unknown,
+    _dir: MentionChipDirective, // eslint-disable-line @typescript-eslint/no-unused-vars -- Angular template guard contract
+    _ctx: unknown, // eslint-disable-line @typescript-eslint/no-unused-vars -- Angular template guard contract
   ): _ctx is MentionChipContext {
     return true;
   }

@@ -14,6 +14,7 @@ import { IconComponent } from '../core/icons';
 @Component({
   selector: 'app-custom-snackbar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="notify-snackbar notify-snackbar--custom" [attr.data-variant]="variant || 'info'">
       <strong class="notify-snackbar-title">{{ title }}</strong>

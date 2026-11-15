@@ -1,4 +1,11 @@
-import { Component, DestroyRef, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CloseDialogDirective, OVERLAY_REF } from '@nexora-ui/overlay';
 
 @Component({
@@ -36,6 +43,7 @@ import { CloseDialogDirective, OVERLAY_REF } from '@nexora-ui/overlay';
       </div>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       :host {

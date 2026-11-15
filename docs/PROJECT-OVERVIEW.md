@@ -41,7 +41,7 @@ Autocomplete, command palette, mega/tiered/context menus, menu bar, date/time/co
 
 | Category            | Tool / version                                                                                 |
 | ------------------- | ---------------------------------------------------------------------------------------------- |
-| **Framework**       | Angular (v21 in use). Standalone components/directives, signals, modern control flow.          |
+| **Framework**       | Angular (v22). Standalone components/directives, signals, modern control flow.                 |
 | **Monorepo**        | Nx. Apps and libs are Nx projects. Use `nx run <project>:<target>` for build, test, lint, e2e. |
 | **Package manager** | npm (`package-lock.json`; CI uses `npm ci`).                                                   |
 | **Linting**         | ESLint (angular-eslint). Run via `nx run-many -t lint`.                                        |

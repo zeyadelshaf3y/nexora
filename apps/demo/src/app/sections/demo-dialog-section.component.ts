@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import type { TemplateRef } from '@angular/core';
 import { OverlayTriggerDirective } from '@nexora-ui/overlay';
 
@@ -6,6 +6,7 @@ import { OverlayTriggerDirective } from '@nexora-ui/overlay';
   selector: 'app-demo-dialog-section',
   standalone: true,
   imports: [OverlayTriggerDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './demo-dialog-section.component.html',
 })
 export class DemoDialogSectionComponent {

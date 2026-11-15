@@ -21,6 +21,8 @@ Headless, accessible combobox for Angular. Input + dropdown with search; single 
 npm install @nexora-ui/combobox @nexora-ui/listbox @nexora-ui/dropdown @nexora-ui/overlay @nexora-ui/core
 ```
 
+**Peer dependencies:** `@angular/common`, `@angular/core`, `@angular/forms` **^22.0.0**; other `@nexora-ui/*` peers as in `package.json`.
+
 ## Quick start
 
 ```html

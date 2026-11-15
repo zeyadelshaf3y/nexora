@@ -1,4 +1,10 @@
-import { Component, inject, input, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  ViewEncapsulation,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { TooltipTriggerDirective } from '@nexora-ui/tooltip';
 
 import { IconComponent } from '../core/icons';
@@ -41,6 +47,7 @@ import { ThemeService } from '../core/theme.service';
       </div>
     </header>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       .app-header {

@@ -2,6 +2,8 @@
 
 Meta package that installs all published headless libraries from Nexora.
 
+**Angular ^22.0.0** is required (same peer range as each included `@nexora-ui/*` package). Upgrading from Angular 21: [MIGRATION.md](../../../docs/MIGRATION.md).
+
 ## Install all headless packages
 
 ```bash

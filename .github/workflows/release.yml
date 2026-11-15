@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           registry-url: https://registry.npmjs.org
           scope: '@nexora-ui'
@@ -48,6 +48,9 @@ jobs:
 
       - name: Push synced release tags
         run: git push origin --tags
+
+      - name: Version plan check
+        run: npx nx release plan:check --group=nexora-headless
 
       - name: Release packages
         run: npx nx release --yes

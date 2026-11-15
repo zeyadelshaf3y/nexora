@@ -10,6 +10,8 @@ Headless interaction primitives for Nexora UI. Currently: focus trap for modals 
 npm install @nexora-ui/interactions
 ```
 
+**Peer dependencies:** `@angular/common`, `@angular/core` **^22.0.0**; `@nexora-ui/core`.
+
 ## Focus trap
 
 **nxrFocusTrap** — Keeps keyboard focus within the host. On Tab / Shift+Tab, focus wraps between the first and last focusable element. Use on modal containers to meet WCAG 2.4.3 (Focus Order).

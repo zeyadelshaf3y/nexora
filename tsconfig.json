@@ -36,5 +36,8 @@
     {
       "path": "./libs/headless/menu"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0"
+  }
 }

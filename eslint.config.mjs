@@ -6,9 +6,6 @@ import angular from 'angular-eslint';
 import importPlugin from 'eslint-plugin-import';
 import unusedImports from 'eslint-plugin-unused-imports';
 
-import angularTemplateParser from '@angular-eslint/template-parser';
-import angularTemplate from '@angular-eslint/eslint-plugin-template/dist/index.js';
-
 const TS_FILES = ['**/*.ts', '**/*.tsx'];
 const HTML_FILES = ['**/*.html'];
 
@@ -164,16 +161,11 @@ export default [
   },
 
   // Angular HTML template rules (ONLY HTML files)
+  ...onlyFiles(angular.configs.templateRecommended, HTML_FILES),
+
   {
     files: HTML_FILES,
-    languageOptions: {
-      parser: angularTemplateParser,
-    },
-    plugins: {
-      '@angular-eslint/template': angularTemplate,
-    },
     rules: {
-      ...angularTemplate.configs.recommended.rules,
       '@angular-eslint/template/no-negated-async': 'error',
       '@angular-eslint/template/no-any': 'error',
     },

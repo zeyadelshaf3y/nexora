@@ -17,6 +17,7 @@
     "build": {
       "executor": "@nx/angular:package",
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "defaultConfiguration": "production",
       "options": {
         "project": "libs/headless/listbox-cdk/ng-package.json",
         "tsConfig": "libs/headless/listbox-cdk/tsconfig.lib.json"
@@ -26,8 +27,7 @@
           "tsConfig": "libs/headless/listbox-cdk/tsconfig.lib.prod.json"
         },
         "development": {}
-      },
-      "defaultConfiguration": "production"
+      }
     },
     "nx-release-publish": {
       "options": {
@@ -35,14 +35,26 @@
       }
     },
     "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": [
+        "{projectRoot}/{options.coverage.reportsDirectory}",
+        "{workspaceRoot}/coverage/libs/headless/listbox-cdk"
+      ],
       "options": {
-        "reportsDirectory": "../../../coverage/libs/headless/listbox-cdk"
+        "coverage.reportsDirectory": "../../../coverage/libs/headless/listbox-cdk"
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ]
     }
   }
 }

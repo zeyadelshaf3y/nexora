@@ -1,4 +1,4 @@
-import { Component, inject, ViewEncapsulation } from '@angular/core';
+import { Component, inject, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
@@ -27,6 +27,7 @@ import { SidebarComponent } from './sidebar.component';
       </div>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       .layout-content {

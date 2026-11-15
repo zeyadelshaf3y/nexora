@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import type { Placement } from '@nexora-ui/overlay';
 import { TooltipTriggerDirective } from '@nexora-ui/tooltip';
 
@@ -6,6 +6,7 @@ import { TooltipTriggerDirective } from '@nexora-ui/tooltip';
   selector: 'app-demo-tooltip-section',
   standalone: true,
   imports: [TooltipTriggerDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './demo-tooltip-section.component.html',
 })
 export class DemoTooltipSectionComponent {

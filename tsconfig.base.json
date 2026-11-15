@@ -36,7 +36,10 @@
       "@nexora-ui/mention": ["libs/headless/mention/src/index.ts"],
       "@nexora-ui/listbox-cdk": ["libs/headless/listbox-cdk/src/index.ts"],
       "@nexora-ui/listbox-cdk/internal": ["libs/headless/listbox-cdk/src/internal-entry.ts"]
-    }
+    },
+    "noUncheckedSideEffectImports": false,
+    "esModuleInterop": false,
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "tmp"]
 }

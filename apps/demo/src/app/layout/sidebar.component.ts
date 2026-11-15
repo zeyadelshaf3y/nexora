@@ -1,4 +1,4 @@
-import { Component, inject, ViewEncapsulation } from '@angular/core';
+import { Component, inject, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   ListboxDirective,
@@ -113,6 +113,7 @@ interface MenuAction {
       </ng-template>
     </aside>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       .sidebar {

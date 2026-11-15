@@ -31,4 +31,11 @@ export default [
     // Override or add rules here
     rules: {},
   },
+  {
+    files: ['**/*.ts'],
+    rules: {
+      // v22 migration stamped Eager on shells that predate explicit OnPush.
+      '@angular-eslint/prefer-on-push-component-change-detection': 'off',
+    },
+  },
 ];

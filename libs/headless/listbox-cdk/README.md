@@ -15,7 +15,7 @@ CDK virtual-scroll list panel used by **combobox** and **select** in built-in vi
 
 **Internal entry** (`@nexora-ui/listbox-cdk/internal`): portal, signals factory, scroll/index utilities, `afterVirtualPanelFirstPaint`. See [internal/README.md](./internal/README.md).
 
-Peers: `@nexora-ui/listbox`, `@angular/cdk`, `@nexora-ui/overlay` (portal).
+Peers: Angular **^22.0.0** (`@angular/common`, `@angular/core`, `@angular/cdk`); `@nexora-ui/core`, `@nexora-ui/listbox`, `@nexora-ui/overlay` (portal).
 
 ## When you use this
 
