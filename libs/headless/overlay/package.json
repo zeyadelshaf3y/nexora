@@ -1,9 +1,9 @@
 {
   "name": "@nexora-ui/overlay",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "peerDependencies": {
     "@angular/core": "^22.0.0",
-    "@nexora-ui/core": "^0.1.2",
+    "@nexora-ui/core": "^0.2.0",
     "rxjs": "^7.0.0"
   },
   "sideEffects": false

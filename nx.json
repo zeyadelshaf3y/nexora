@@ -141,7 +141,7 @@
       "commit": true,
       "commitMessage": "chore(release): publish",
       "tag": true,
-      "push": true
+      "push": false
     }
   },
   "generators": {

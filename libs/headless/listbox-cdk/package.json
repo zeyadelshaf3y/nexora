@@ -1,13 +1,13 @@
 {
   "name": "@nexora-ui/listbox-cdk",
-  "version": "0.1.16",
+  "version": "0.2.0",
   "peerDependencies": {
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
     "@angular/cdk": "^22.0.0",
-    "@nexora-ui/core": "^0.1.2",
-    "@nexora-ui/listbox": "^0.3.6",
-    "@nexora-ui/overlay": "^0.4.1"
+    "@nexora-ui/core": "^0.2.0",
+    "@nexora-ui/listbox": "^0.4.0",
+    "@nexora-ui/overlay": "^0.5.0"
   },
   "sideEffects": false
 }

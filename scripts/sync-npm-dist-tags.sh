@@ -25,8 +25,16 @@ packages=(
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+npm_retry="${root}/scripts/npm-view-retry.sh"
+retry="${NPM_REGISTRY_RETRY:-1}"
+
 highest_version() {
   local pkg="$1"
+  if [[ "$retry" == 1 ]] && v="$("${npm_retry}" highest "$pkg" 2>/dev/null)"; then
+    printf '%s' "$v"
+    return
+  fi
   npm view "@nexora-ui/${pkg}" versions --json \
     | node "${script_dir}/highest-semver.mjs"
 }

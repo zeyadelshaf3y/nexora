@@ -22,10 +22,23 @@ issues=0
 printf '%-14s %-10s %-10s %-10s %s\n' PACKAGE SOURCE NPM_MAX NPM_LATEST STATUS
 printf '%-14s %-10s %-10s %-10s %s\n' ------- ------ ------- ---------- ------
 
+npm_retry="${root}/scripts/npm-view-retry.sh"
+retry="${NPM_REGISTRY_RETRY:-1}"
+
 for pkg in "${packages[@]}"; do
   source="$(source_version "$pkg")"
-  npm_max="$(highest_npm "$pkg")"
-  npm_latest="$(npm view "@nexora-ui/${pkg}" dist-tags.latest 2>/dev/null || echo '?')"
+  if [[ "$retry" == 1 ]]; then
+    if nm="$("${npm_retry}" match "$pkg" "$source" 2>/dev/null)"; then
+      npm_max="$nm"
+      npm_latest="$nm"
+    else
+      npm_max="$(highest_npm "$pkg")"
+      npm_latest="$(npm view "@nexora-ui/${pkg}" dist-tags.latest 2>/dev/null || echo '?')"
+    fi
+  else
+    npm_max="$(highest_npm "$pkg")"
+    npm_latest="$(npm view "@nexora-ui/${pkg}" dist-tags.latest 2>/dev/null || echo '?')"
+  fi
 
   status=OK
   if [[ "$source" != "$npm_max" ]]; then

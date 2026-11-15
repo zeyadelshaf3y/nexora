@@ -56,9 +56,13 @@ jobs:
         run: npx nx release --yes
 
       - name: Sync npm latest dist-tags
+        env:
+          NPM_REGISTRY_RETRY: '1'
         run: npm run release:sync-npm-dist-tags
 
       - name: Verify headless package versions
+        env:
+          NPM_REGISTRY_RETRY: '1'
         run: npm run release:verify-versions
 
       - name: Push release commit and tags
